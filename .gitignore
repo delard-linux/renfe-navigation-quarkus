@@ -1,62 +1,44 @@
-# Python
-__pycache__/
-*.py[cod]
-*.pyo
-*.pyd
-*.so
-*.dylib
-*.egg-info/
-.eggs/
-*.egg
+target/
+!.mvn/wrapper/maven-wrapper.jar
+!**/src/main/**/target/
+!**/src/test/**/target/
+
+### IntelliJ IDEA ###
+.idea
+*.iws
+*.iml
+*.ipr
+
+### Eclipse ###
+.apt_generated
+.classpath
+.factorypath
+.project
+.settings
+.springBeans
+.sts4-cache
+
+### NetBeans ###
+/nbproject/private/
+/nbbuild/
+/dist/
+/nbdist/
+/.nb-gradle/
 build/
-dist/
-pip-wheel-metadata/
-*.log
+!**/src/main/**/build/
+!**/src/test/**/build/
 
-# Virtual environments
-.venv/
-venv/
-env/
-ENV/
-
-# Environment files
-.env
-.env.*
-
-# Testing and coverage
-.pytest_cache/
-.coverage
-.coverage.*
-htmlcov/          # Reportes HTML de cobertura de tests
-
-# Type checker / linters caches
-.mypy_cache/
-.pyright/
-.ruff_cache/
-
-# Playwright
-playwright-report/
-test-results/
-blob-report/
-trace.zip
-trace.trace
-.traces/
-ms-playwright/
-playwright/.cache/
-
-# Editor/IDE
+### VS Code ###
 .vscode/
-.idea/
-*.code-workspace
 
-# OS
+### Mac OS ###
 .DS_Store
-Thumbs.db
 
-# Misc
-.python-version
-.cache/
+### Quarkus ###
+.quarkus/
 
-# Responses logs
-responses/
-*.log
+
+# Old Python files and launcher
+/old_python/
+/main.py
+
