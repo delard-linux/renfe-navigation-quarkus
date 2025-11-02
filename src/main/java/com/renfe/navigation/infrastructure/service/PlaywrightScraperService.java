@@ -11,10 +11,6 @@ import org.jboss.logging.Logger;
 
 import java.util.*;
 
-/**
- * Service for scraping trains from Renfe website using Playwright
- * Translated from Python search_trains_service.py
- */
 @ApplicationScoped
 public class PlaywrightScraperService {
 
@@ -32,21 +28,10 @@ public class PlaywrightScraperService {
     @Inject
     ResponseStorageService responseStorageService;
 
-    /**
-     * Perform a train search using Renfe's website with Playwright browser automation
-     *
-     * @param origin Origin station name
-     * @param destination Destination station name
-     * @param dateOut Outbound date (YYYY-MM-DD)
-     * @param dateReturn Optional return date (YYYY-MM-DD)
-     * @param adults Number of adult passengers
-     * @return Tuple with (outbound_trains, return_trains) where return_trains can be null
-     */
     public SearchTrainsResult searchTrains(String origin, String destination, String dateOut,
                                            String dateReturn, int adults) {
         LOG.infof("[SCRAPER] Starting Chromium browser");
 
-        // Find stations in catalog
         Map<String, String> originStation = renfeCommonService.findStation(origin);
         Map<String, String> destStation = renfeCommonService.findStation(destination);
 
@@ -57,27 +42,23 @@ public class PlaywrightScraperService {
                 destStation.getOrDefault("desgEstacion", destination),
                 destStation.getOrDefault("clave", ""));
 
-        // Convert dates from YYYY-MM-DD to DD/MM/YYYY
         String dateOutFormatted = renfeCommonService.formatDate(dateOut);
         String dateReturnFormatted = "";
-
         if (dateReturn != null && !dateReturn.isEmpty()) {
             dateReturnFormatted = renfeCommonService.formatDate(dateReturn);
         }
 
-        // Build form data
         Map<String, String> formData = buildFormData(
                 originStation, destStation, dateOutFormatted, dateReturnFormatted, adults
         );
 
-        LOG.infof("[SCRAPER] Search parameters: %s -> %s%s",
+        LOG.infof("[SCRAPER] Search parameters: %s -> %s",
                 dateOutFormatted,
-                dateReturnFormatted.isEmpty() ? "One way only" : dateReturnFormatted,
-                "");
+                dateReturnFormatted.isEmpty() ? "One way only" : dateReturnFormatted
+        );
 
         try (Playwright playwright = Playwright.create()) {
             Browser browser = createBrowser(playwright);
-
             try {
                 BrowserContext context = browser.newContext(new Browser.NewContextOptions()
                         .setLocale(config.getLocale())
@@ -85,23 +66,21 @@ public class PlaywrightScraperService {
                 );
 
                 Page page = context.newPage();
-
                 try {
                     LOG.infof("[SCRAPER] Navigating to %s", config.getRenfeSearchUrl());
                     page.navigate(config.getRenfeSearchUrl(), new Page.NavigateOptions()
                             .setWaitUntil(WaitUntilState.DOMCONTENTLOADED)
+                            .setTimeout(config.getNavigationTimeoutMs())
                     );
 
-                    // Send form via JavaScript
                     String jsFormSubmit = buildFormSubmitScript(formData);
                     page.evaluate(jsFormSubmit);
 
-                    LOG.info("[SCRAPER] Waiting for server response...");
+                    LOG.info("[SCRAPER] Waiting for server response (network idle)...");
                     page.waitForLoadState(LoadState.NETWORKIDLE, new Page.WaitForLoadStateOptions()
-                            .setTimeout(30000)
+                            .setTimeout(config.getNetworkIdleTimeoutMs())
                     );
 
-                    // Save HTML response
                     String responseContent = page.content();
                     responseStorageService.saveResponse(responseContent, 200);
 
@@ -113,16 +92,15 @@ public class PlaywrightScraperService {
                         try {
                             LOG.info("[SCRAPER] Finding return results");
                             Locator vueltaTab = page.locator("[id*='vuelta'], [class*='vuelta'], a:has-text('Vuelta')");
-
                             if (vueltaTab.count() > 0) {
                                 vueltaTab.first().click();
-                                page.waitForTimeout(500);
+                                page.waitForTimeout(config.getShortTimeoutMs());
 
                                 LOG.info("[SCRAPER] Extracting return results");
                                 trainsRet = extractResults(page);
                             }
                         } catch (Exception e) {
-                            LOG.warnf("[SCRAPER] Could not extract return trains: %s", e.getMessage());
+                            LOG.warnf(e, "[SCRAPER] Could not extract return trains: %s", e.getMessage());
                             trainsRet = null;
                         }
                     }
@@ -137,16 +115,12 @@ public class PlaywrightScraperService {
             } finally {
                 browser.close();
             }
-
         } catch (Exception e) {
             LOG.errorf(e, "[SCRAPER] Error during scraping");
             throw new RuntimeException("Error scraping trains: " + e.getMessage(), e);
         }
     }
 
-    /**
-     * Create and launch Chromium browser with configured settings
-     */
     private Browser createBrowser(Playwright playwright) {
         return playwright.chromium().launch(new BrowserType.LaunchOptions()
                 .setHeadless(config.isHeadless())
@@ -154,16 +128,12 @@ public class PlaywrightScraperService {
         );
     }
 
-    /**
-     * Build form data map for Renfe search
-     */
     private Map<String, String> buildFormData(Map<String, String> originStation,
                                               Map<String, String> destStation,
                                               String dateOutFormatted,
                                               String dateReturnFormatted,
                                               int adults) {
         Map<String, String> formData = new LinkedHashMap<>();
-
         formData.put("tipoBusqueda", "autocomplete");
         formData.put("currenLocation", "menuBusqueda");
         formData.put("vengoderenfecom", "SI");
@@ -191,13 +161,9 @@ public class PlaywrightScraperService {
         formData.put("franjaHoraV", "");
         formData.put("Idioma", "es");
         formData.put("Pais", "ES");
-
         return formData;
     }
 
-    /**
-     * Build JavaScript for form submission
-     */
     private String buildFormSubmitScript(Map<String, String> formData) {
         StringBuilder sb = new StringBuilder();
         sb.append("const form = document.createElement('form');");
@@ -213,17 +179,12 @@ public class PlaywrightScraperService {
         sb.append("}");
         sb.append("document.body.appendChild(form);");
         sb.append("form.submit();");
-
         return sb.toString();
     }
 
-    /**
-     * Convert map to JSON string for JavaScript
-     */
     private String mapToJsonString(Map<String, String> map) {
         StringBuilder sb = new StringBuilder();
         sb.append("{");
-
         boolean first = true;
         for (Map.Entry<String, String> entry : map.entrySet()) {
             if (!first) {
@@ -232,14 +193,10 @@ public class PlaywrightScraperService {
             sb.append("'").append(entry.getKey()).append("':'").append(escapeJsonString(entry.getValue())).append("'");
             first = false;
         }
-
         sb.append("}");
         return sb.toString();
     }
 
-    /**
-     * Escape special characters in JSON string
-     */
     private String escapeJsonString(String str) {
         if (str == null) {
             return "";
@@ -251,25 +208,15 @@ public class PlaywrightScraperService {
                 .replace("\r", "\\r");
     }
 
-    /**
-     * Extract page HTML content and parse it using the parser
-     */
     private List<Train> extractResults(Page page) throws InterruptedException {
         LOG.info("[SCRAPER] Waiting for results to load...");
-        page.waitForLoadState(LoadState.NETWORKIDLE);
-
+        page.waitForLoadState(LoadState.NETWORKIDLE, new Page.WaitForLoadStateOptions().setTimeout(config.getNetworkIdleTimeoutMs()));
         String html = page.content();
-
-        // Use parser to extract trains
         List<Train> trains = trainHtmlParser.parseTrainList(html);
         LOG.infof("[PARSER] Extracted %d trains", trains.size());
-
         return trains;
     }
 
-    /**
-     * Result class for train search
-     */
     public static class SearchTrainsResult {
         public final List<Train> outboundTrains;
         public final List<Train> returnTrains;

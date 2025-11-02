@@ -24,6 +24,18 @@ public class PlaywrightConfig {
     @ConfigProperty(name = "playwright.locale", defaultValue = "es-ES")
     public String locale;
 
+    @ConfigProperty(name = "playwright.timeout-ms", defaultValue = "30000")
+    public int timeoutMs;
+
+    @ConfigProperty(name = "playwright.timeout-navigation-ms", defaultValue = "30000")
+    public int navigationTimeoutMs;
+
+    @ConfigProperty(name = "playwright.timeout-networkidle-ms", defaultValue = "30000")
+    public int networkIdleTimeoutMs;
+
+    @ConfigProperty(name = "playwright.timeout-short-ms", defaultValue = "500")
+    public int shortTimeoutMs;
+
     @ConfigProperty(name = "renfe.search-url")
     public String renfeSearchUrl;
 
@@ -50,6 +62,22 @@ public class PlaywrightConfig {
         return locale;
     }
 
+    public int getTimeoutMs() {
+        return timeoutMs;
+    }
+
+    public int getNavigationTimeoutMs() {
+        return navigationTimeoutMs;
+    }
+
+    public int getNetworkIdleTimeoutMs() {
+        return networkIdleTimeoutMs;
+    }
+
+    public int getShortTimeoutMs() {
+        return shortTimeoutMs;
+    }
+
     public String getRenfeSearchUrl() {
         return renfeSearchUrl;
     }
@@ -58,4 +86,3 @@ public class PlaywrightConfig {
         return responsesDir;
     }
 }
-
