@@ -53,6 +53,40 @@ src/main/java/com/renfe/navigation/
 - ✅ DTOs separados del dominio
 - ✅ CORS habilitado
 
+## Instalación de Playwright en Windows
+
+Para ejecutar los tests E2E que usan Playwright, primero asegúrate de tener Java, Maven y Node.js instalados.
+
+### Instalar Playwright (descarga de navegadores)
+
+#### Bash
+```bash
+mvn org.codehaus.mojo:exec-maven-plugin:3.3.0:java -e -Dexec.mainClass=com.microsoft.playwright.CLI -Dexec.args="install --with-deps"
+```
+
+#### PowerShell
+```powershell
+mvn --% org.codehaus.mojo:exec-maven-plugin:3.3.0:java -e -Dexec.mainClass=com.microsoft.playwright.CLI -Dexec.args="install --with-deps"
+```
+
+Esto descargará los navegadores necesarios para ejecutar los tests E2E con Playwright.
+
+## Ejecución de tests E2E reales con Playwright
+
+Para ejecutar el test real de Playwright sobre la API REST, usa uno de los siguientes comandos Maven según tu terminal:
+
+### Bash
+```bash
+mvn verify -Dit.test="com.renfe.navigation.infrastructure.adapter.input.rest.TrainResourcePlaywrightRealTest" -DskipITs=false
+```
+
+### PowerShell
+```powershell
+mvn --% verify -Dit.test="com.renfe.navigation.infrastructure.adapter.input.rest.TrainResourcePlaywrightRealTest#shouldReturnTrainsWhenSearchingWithPlaywrightTest" -DskipITs=false
+```
+
+Esto ejecutará el test E2E real con Playwright, permitiendo observar la automatización real del navegador sobre la web de Renfe.
+
 ## Endpoints
 
 ### GET /trains

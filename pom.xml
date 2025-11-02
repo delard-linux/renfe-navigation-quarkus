@@ -62,7 +62,7 @@
         <dependency>
             <groupId>com.microsoft.playwright</groupId>
             <artifactId>playwright</artifactId>
-            <version>1.40.0</version>
+            <version>1.56.0</version>
         </dependency>
 
         <!-- HTML Parsing with JSoup -->
@@ -101,6 +101,11 @@
                         </goals>
                     </execution>
                 </executions>
+            </plugin>
+            <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>exec-maven-plugin</artifactId>
+                <version>3.3.0</version>
             </plugin>
             <plugin>
                 <artifactId>maven-compiler-plugin</artifactId>
