@@ -4,14 +4,12 @@ import com.renfe.navigation.domain.model.Train;
 import com.renfe.navigation.domain.port.output.TrainScraperPort;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.enterprise.inject.Alternative;
-import jakarta.annotation.Priority;
 
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
 @Alternative
-@Priority(1)
 @ApplicationScoped
 public class TestTrainScraperAdapter implements TrainScraperPort {
 

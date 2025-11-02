@@ -47,4 +47,3 @@ public class TrainScraperAdapter implements TrainScraperPort {
         }
     }
 }
-
