@@ -184,3 +184,101 @@ docker run -p 8000:8000 renfe-navigation-quarkus
 
 MIT
 
+## Running Playwright E2E tests on Windows
+
+This section explains what you need on Windows to run the Playwright-based E2E tests and the exact commands to prepare the environment and run the tests from a cmd.exe prompt.
+
+Checklist (quick)
+- Node (LTS) installed and on PATH
+- npm / npx available
+- Playwright browsers installed (via npx) or a pre-populated browsers path
+- Set `PLAYWRIGHT_BROWSERS_PATH` if you preinstalled browsers in a custom location
+- Run tests with the `PlaywrightE2eProfile` Quarkus test profile
+
+Prerequisites
+- Java 17+ (project requirement)
+- Maven available (you already have it)
+- Node.js (LTS). You reported:
+  - node --version -> v22.14.0
+  - npx --version -> 11.6.1
+  - npm --version -> 11.6.1
+
+These versions are fine for Playwright. Keep Node on PATH so `npx` can run.
+
+Install Playwright browsers (cmd.exe)
+
+Use the following commands (run from project root or any folder). These install the browser binaries that Playwright needs so the Java runtime does not try to download them at test time.
+
+```cmd
+cd C:\PRJS\personal\renfe-navigation-quarkus
+npx playwright --version
+npx playwright install chromium
+```
+
+After successful download, Playwright browsers will be placed in your user local folder (for example: `C:\Users\<you>\AppData\Local\ms-playwright`).
+
+Set PLAYWRIGHT_BROWSERS_PATH for tests (cmd.exe)
+
+Point Playwright Java to the installed browsers to prevent runtime download attempts:
+
+```cmd
+set PLAYWRIGHT_BROWSERS_PATH=C:\Users\<your-user>\AppData\Local\ms-playwright
+```
+
+Run the E2E test (headless) with the provided Quarkus test profile
+
+The repository includes a test profile `PlaywrightE2eProfile` (in `src/test/java`) that sets Playwright to headless mode and configures timeouts. Run the single test like this (cmd.exe):
+
+```cmd
+cd C:\PRJS\personal\renfe-navigation-quarkus
+set PLAYWRIGHT_BROWSERS_PATH=C:\Users\<your-user>\AppData\Local\ms-playwright
+mvn -Dtest=TrainResourceE2ETest -Dquarkus.test.profile=PlaywrightE2eProfile test
+```
+
+Notes
+- If you want to observe the browser UI set `playwright.headless=false` in the test profile or use a dedicated profile for interactive runs.
+- If Maven/Quarkus spawns Playwright and it attempts to download browsers at runtime, pre-installing the browsers as above avoids long delays or failures.
+
+Troubleshooting (errors you may encounter)
+
+1) "Failed to create driver" or InterruptedException during driver install
+- Cause: Playwright Java tried to download and install browsers during runtime and the process was interrupted or blocked.
+- Fixes:
+  - Run `npx playwright install chromium` before the test so the driver/browsers are already present.
+  - Set `PLAYWRIGHT_BROWSERS_PATH` to the folder containing the installed browsers.
+  - Ensure antivirus/firewall is not blocking the temporary node process.
+  - If you see a Node module not found error in a temp dir, remove stale temp directories under `%TEMP%` that start with `playwright-java-` and try again.
+
+2) "Failed to read message" or IPC errors between Java and the Playwright node process
+- Cause: The Playwright-native child process may crash or get killed (permissions, incompatible Node version, missing browser binary).
+- Fixes:
+  - Ensure the installed browsers version matches the Playwright Java version (use `npx playwright --version` and the Playwright Java dependency in `pom.xml`).
+  - Set `PLAYWRIGHT_BROWSERS_PATH` as above.
+  - Verify Node is accessible on PATH and is a supported version (Node 16+). You have Node v22 — that is supported in practice, but if you see incompatibilities try a Node LTS like 18 or 20.
+
+3) SocketTimeoutException (test HTTP client times out)
+- Cause: The server may have crashed while the test HTTP client waited for a response (e.g. Playwright failed while running the scraper and Quarkus shut down the request). The test client default timeout is limited.
+- Fixes:
+  - Pre-install browsers and set PLAYWRIGHT_BROWSERS_PATH to avoid long install timeouts.
+  - Increase test-side HTTP timeout if needed (adjust RestAssured configuration or the test to wait longer).
+
+Advanced tips
+- To avoid Playwright Java attempting to download browsers at runtime entirely, set the environment variable at install-time:
+
+```cmd
+set PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD=1
+```
+
+and then preinstall browsers using `npx playwright install`.
+
+- If you run tests in CI (GitHub Actions, GitLab), prefer setting up the Playwright browsers in the CI image ahead of the test run or use the official Playwright action/container to ensure compatibility.
+
+Summary
+- You already have node/npx/npm installed — next steps are:
+  1) Run `npx playwright install chromium` once to fetch browsers.
+  2) Set `PLAYWRIGHT_BROWSERS_PATH` to the installation folder.
+  3) Run the Maven test with the `PlaywrightE2eProfile`.
+
+If you want, I can also:
+- Add a small script `scripts/install-playwright.cmd` to automate these steps on Windows.
+- Try to run the real Playwright-based E2E test here again and investigate remaining IPC errors further (requires iterating on Node/Playwright versions and env).

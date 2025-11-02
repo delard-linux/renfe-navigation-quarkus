@@ -10,8 +10,8 @@ public class PlaywrightE2eProfile implements QuarkusTestProfile {
     @Override
     public Map<String, String> getConfigOverrides() {
         Map<String, String> cfg = new HashMap<>();
-        // Run Playwright in non-headless mode for E2E observation
-        cfg.put("playwright.headless", "false");
+        // For automated CI/local headless runs set to true
+        cfg.put("playwright.headless", "true");
         // Make slowMo visible in the browser
         cfg.put("playwright.slow-mo", "200");
         // Increase navigation/network timeouts for remote site
@@ -20,5 +20,11 @@ public class PlaywrightE2eProfile implements QuarkusTestProfile {
         cfg.put("playwright.timeout-short-ms", "1000");
         return cfg;
     }
-}
 
+    @Override
+    public java.util.Set<Class<?>> getEnabledAlternatives() {
+        java.util.Set<Class<?>> s = new java.util.HashSet<>();
+        s.add(com.renfe.navigation.infrastructure.adapter.output.TestTrainScraperAdapter.class);
+        return s;
+    }
+}

@@ -37,8 +37,4 @@ build/
 ### Quarkus ###
 .quarkus/
 
-
-# Old Python files and launcher
-/old_python/
-/main.py
-
+node_modules/ 
