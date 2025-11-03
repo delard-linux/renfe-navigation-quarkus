@@ -88,12 +88,12 @@ Ejecuta el siguiente comando Maven para descargar los navegadores de Playwright:
 
 #### Bash
 ```bash
-mvn org.codehaus.mojo:exec-maven-plugin:3.3.0:java -e -Dexec.mainClass=com.microsoft.playwright.CLI -Dexec.args="install --with-deps"
+./mvnw org.codehaus.mojo:exec-maven-plugin:3.3.0:java -e -Dexec.mainClass=com.microsoft.playwright.CLI -Dexec.args="install --with-deps"
 ```
 
 #### PowerShell
 ```powershell
-mvn --% org.codehaus.mojo:exec-maven-plugin:3.3.0:java -e -Dexec.mainClass=com.microsoft.playwright.CLI -Dexec.args="install --with-deps"
+./mvnw --% org.codehaus.mojo:exec-maven-plugin:3.3.0:java -e -Dexec.mainClass=com.microsoft.playwright.CLI -Dexec.args="install --with-deps"
 ```
 
 Esto descargará los navegadores necesarios (Chromium, Firefox, WebKit) y sus dependencias del sistema en `%USERPROFILE%\AppData\Local\ms-playwright`.
@@ -104,12 +104,12 @@ Para ejecutar el test real de Playwright sobre la API REST, usa uno de los sigui
 
 ### Bash
 ```bash
-mvn verify -Dit.test="rest.input.adapter.infrastructure.com.delard.renfe.navigation.TrainResourcePlaywrightRealTest" -DskipITs=false
+./mvnw verify -Dit.test="com.delard.renfe.navigation.application.rest.TrainResourcePlaywrightRealTest" -DskipITs=false
 ```
 
 ### PowerShell
 ```powershell
-mvn --% verify -Dit.test="rest.input.adapter.infrastructure.com.delard.renfe.navigation.TrainResourcePlaywrightRealTest#shouldReturnTrainsWhenSearchingWithPlaywrightTest" -DskipITs=false
+./mvnw --% verify -Dit.test="com.delard.renfe.navigation.application.rest.TrainResourcePlaywrightRealTest#shouldReturnTrainsWhenSearchingWithPlaywrightTest" -DskipITs=false
 ```
 
 Esto ejecutará el test E2E real con Playwright, permitiendo observar la automatización real del navegador sobre la web de Renfe.
@@ -145,15 +145,16 @@ curl "http://localhost:8000/trains-flow?origin=OURENSE&destination=MADRID&date_o
 
 ## Requisitos
 
-- Java 17+
+- Java 21+
 - Maven 3.8+
+- Configura `JAVA_HOME` apuntando a tu instalación local de JDK 21 (puedes crearlo en un archivo `.env` no versionado).
 
 ## Ejecución
 
 ### Modo desarrollo (con hot reload)
 
 ```bash
-mvnw quarkus:dev
+./mvnw quarkus:dev
 ```
 
 La aplicación estará disponible en:
@@ -164,14 +165,14 @@ La aplicación estará disponible en:
 ### Compilar y ejecutar
 
 ```bash
-mvnw clean package
+./mvnw clean package
 java -jar target/quarkus-app/quarkus-run.jar
 ```
 
 ### Compilar imagen nativa (requiere GraalVM)
 
 ```bash
-mvnw package -Pnative
+./mvnw package -Pnative
 ./target/renfe-navigation-quarkus-1.0.0-SNAPSHOT-runner
 ```
 
@@ -190,6 +191,8 @@ quarkus.log.category."com.renfe".level=INFO
 # OpenAPI
 quarkus.swagger-ui.path=/swagger-ui
 ```
+
+> 💡 Crea un archivo local `.env` (excluido del control de versiones) y define `JAVA_HOME=/ruta/a/tu/jdk-21`. El script `./mvnw` usará esa variable para ejecutar Maven con el JDK correcto. Si necesitas personalizar Playwright, añade variables como `PLAYWRIGHT_BROWSERS_PATH` en el mismo archivo.
 
 ## Logs
 
@@ -214,14 +217,29 @@ Actualmente devuelven respuestas vacías/placeholder para permitir el arranque y
 ## Testing
 
 ```bash
-mvnw test
+./mvnw test
+```
+
+Estructura principal de los tests:
+
+```
+src/test/java/com/delard/renfe/navigation/
+├── application/rest/               # Tests de recursos REST (unitarios e integraciones ligeras)
+│   ├── TrainResourceTest.java
+│   ├── TrainResourceE2ETest.java
+│   └── TrainResourcePlaywrightRealTest.java
+├── support/config/                 # Perfiles de ejecución y configuración compartida
+│   ├── PlaywrightDebugNoHeadlessProfile.java
+│   └── PlaywrightRealProfile.java
+└── support/stub/                   # Stubs y dobles de prueba para puertos externos
+    └── StubTrainScraperAdapter.java
 ```
 
 
 ## Tecnologías
 
 - Quarkus 3.6.4
-- Java 17
+- Java 21
 - RESTEasy Reactive + Jackson
 - SmallRye OpenAPI
 - Hibernate Validator

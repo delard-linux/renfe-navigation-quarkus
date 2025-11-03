@@ -1,4 +1,4 @@
-package com.delard.renfe.navigation.infrastructure.adapter.input.rest;
+package com.delard.renfe.navigation.application.rest;
 
 import io.quarkus.test.junit.QuarkusTest;
 import io.restassured.http.ContentType;
@@ -119,4 +119,5 @@ public class TrainResourceTest {
             .statusCode(400);
     }
 }
+
 

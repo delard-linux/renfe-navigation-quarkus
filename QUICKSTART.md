@@ -4,14 +4,16 @@
 
 ```bash
 # 1. Compilar el proyecto
-mvn clean package -DskipTests
+./mvnw clean package -DskipTests
 
 # 2. Ejecutar en modo desarrollo (con hot reload)
-mvn quarkus:dev
+./mvnw quarkus:dev
 
 # 3. Acceder a la aplicación
 http://localhost:8000
 ```
+
+> 💡 Antes de ejecutar los comandos, crea un archivo `.env` (no se versiona) con `JAVA_HOME=/ruta/a/tu/jdk-21` para que el wrapper utilice el JDK correcto.
 
 ## Endpoints Disponibles
 
@@ -59,21 +61,21 @@ Los siguientes adaptadores están creados, pero vacíos (retornan datos placehol
 
 ```bash
 # Ejecutar tests
-mvn test
+./mvnw test
 
 # Test de un endpoint específico
-mvn test -Dtest=TrainResourceTest#testGetTrainsEndpoint
+./mvnw test -Dtest=TrainResourceTest#testGetTrainsEndpoint
 ```
 
 ## Compilación para Producción
 
 ```bash
 # JAR normal
-mvn clean package
+./mvnw clean package
 java -jar target/quarkus-app/quarkus-run.jar
 
 # Imagen nativa (requiere GraalVM)
-mvn package -Pnative
+./mvnw package -Pnative
 ./target/renfe-navigation-quarkus-1.0.0-SNAPSHOT-runner
 ```
 
@@ -108,14 +110,14 @@ quarkus.http.port=8080
 
 ### Error: Java version
 ```bash
-# Requiere Java 17+
+# Requiere Java 21+
 java -version
 ```
 
 ### Error de compilación
 ```bash
 # Limpiar y recompilar
-mvn clean install -U
+./mvnw clean install -U
 ```
 
 ## Próximos Pasos

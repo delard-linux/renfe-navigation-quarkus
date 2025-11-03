@@ -1,4 +1,4 @@
-package com.delard.renfe.navigation.infrastructure.adapter.input.rest;
+package com.delard.renfe.navigation.support.config;
 
 import io.quarkus.test.junit.QuarkusTestProfile;
 
@@ -21,4 +21,5 @@ public class PlaywrightRealProfile implements QuarkusTestProfile {
         return cfg;
     }
 }
+
 

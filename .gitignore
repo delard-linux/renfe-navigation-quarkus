@@ -37,6 +37,5 @@ build/
 ### Quarkus ###
 .quarkus/
 
-### Python (old experiments) ###
-old_python/
-main.py
+### Environment variables ###
+.env

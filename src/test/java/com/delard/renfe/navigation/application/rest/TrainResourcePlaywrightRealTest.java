@@ -1,5 +1,6 @@
-package com.delard.renfe.navigation.infrastructure.adapter.input.rest;
+package com.delard.renfe.navigation.application.rest;
 
+import com.delard.renfe.navigation.support.config.PlaywrightDebugNoHeadlessProfile;
 import io.quarkus.test.junit.QuarkusTest;
 import io.quarkus.test.junit.TestProfile;
 import io.restassured.http.ContentType;
@@ -10,7 +11,7 @@ import static io.restassured.RestAssured.given;
 import static org.hamcrest.CoreMatchers.notNullValue;
 
 @QuarkusTest
-@TestProfile(PlaywrightRealProfile.class)
+@TestProfile(PlaywrightDebugNoHeadlessProfile.class)
 class TrainResourcePlaywrightRealTest {
 
     /**
@@ -42,3 +43,5 @@ class TrainResourcePlaywrightRealTest {
         }
     }
 }
+
+

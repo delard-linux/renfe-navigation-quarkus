@@ -1,6 +1,6 @@
-package com.delard.renfe.navigation.infrastructure.adapter.input.rest;
+package com.delard.renfe.navigation.support.config;
 
-import com.delard.renfe.navigation.infrastructure.adapter.output.TestTrainScraperAdapter;
+import com.delard.renfe.navigation.support.stub.StubTrainScraperAdapter;
 import io.quarkus.test.junit.QuarkusTestProfile;
 
 import java.util.HashMap;
@@ -25,7 +25,7 @@ public class PlaywrightDebugNoHeadlessProfile implements QuarkusTestProfile {
     @Override
     public java.util.Set<Class<?>> getEnabledAlternatives() {
         java.util.Set<Class<?>> s = new java.util.HashSet<>();
-        s.add(TestTrainScraperAdapter.class);
+        s.add(StubTrainScraperAdapter.class);
         return s;
     }
 }

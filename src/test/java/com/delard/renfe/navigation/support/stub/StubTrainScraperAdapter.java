@@ -1,4 +1,4 @@
-package com.delard.renfe.navigation.infrastructure.adapter.output;
+package com.delard.renfe.navigation.support.stub;
 
 import com.delard.renfe.navigation.domain.model.Train;
 import com.delard.renfe.navigation.domain.port.output.TrainScraperPort;
@@ -9,9 +9,14 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
+/**
+ * Implementación stub del puerto {@link TrainScraperPort} utilizada en pruebas.
+ * Devuelve un conjunto fijo de trenes de ida y una lista vacía para los de vuelta,
+ * permitiendo aislar los tests de la integración real con Playwright o servicios externos.
+ */
 @Alternative
 @ApplicationScoped
-public class TestTrainScraperAdapter implements TrainScraperPort {
+public class StubTrainScraperAdapter implements TrainScraperPort {
 
     @Override
     public List<List<Train>> scrapeTrains(String origin, String destination, String dateOut, String dateReturn, int adults) {
@@ -22,3 +27,5 @@ public class TestTrainScraperAdapter implements TrainScraperPort {
         return Arrays.asList(outBoundTrains, returnTrains);
     }
 }
+
+

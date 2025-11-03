@@ -1,5 +1,6 @@
-package com.delard.renfe.navigation.infrastructure.adapter.input.rest;
+package com.delard.renfe.navigation.application.rest;
 
+import com.delard.renfe.navigation.support.config.PlaywrightDebugNoHeadlessProfile;
 import io.quarkus.test.junit.QuarkusTest;
 import io.quarkus.test.junit.TestProfile;
 import io.restassured.http.ContentType;
@@ -34,4 +35,5 @@ public class TrainResourceE2ETest {
             .body("trains_out", notNullValue());
     }
 }
+
 
