@@ -37,7 +37,6 @@ build/
 ### Quarkus ###
 .quarkus/
 
-### Node.js (not needed for Playwright Java, but keeping node_modules if created accidentally) ###
-node_modules/
-package.json
-package-lock.json
+### Python (old experiments) ###
+old_python/
+main.py

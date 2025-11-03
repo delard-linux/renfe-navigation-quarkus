@@ -55,7 +55,7 @@ src/main/java/com/renfe/navigation/
 
 ## Instalación de Playwright en Windows
 
-Para ejecutar los tests E2E que usan Playwright, primero asegúrate de tener Java, Maven y Node.js instalados.
+Para ejecutar los tests E2E que usan Playwright, primero asegúrate de tener Java y Maven instalados.
 
 ### Dependencias Maven requeridas
 
@@ -84,34 +84,19 @@ Antes de instalar Playwright, asegúrate de que tu `pom.xml` incluye las siguien
 
 ### Instalar Playwright (descarga de navegadores)
 
-**Nota importante:** Playwright Java **requiere Node.js instalado** aunque el proyecto sea Java. Playwright Java internamente lanza un proceso Node.js para controlar los navegadores. Asegúrate de tener Node.js LTS instalado y en el PATH.
+Ejecuta el siguiente comando Maven para descargar los navegadores de Playwright:
 
-#### Script automatizado (Windows cmd.exe)
-
-El proyecto incluye un script que verifica las dependencias Maven y luego instala Playwright:
-
-```cmd
-scripts\install-playwright.cmd
-```
-
-Este script:
-1. Verifica que las dependencias Maven (playwright y exec-maven-plugin) estén en el `pom.xml`
-2. Verifica que Node.js esté instalado (requerido por Playwright Java en runtime)
-3. Descarga los navegadores de Playwright usando el CLI de Playwright Java (vía Maven)
-
-#### Instalación manual
-
-##### Bash
+#### Bash
 ```bash
 mvn org.codehaus.mojo:exec-maven-plugin:3.3.0:java -e -Dexec.mainClass=com.microsoft.playwright.CLI -Dexec.args="install --with-deps"
 ```
 
-##### PowerShell
+#### PowerShell
 ```powershell
 mvn --% org.codehaus.mojo:exec-maven-plugin:3.3.0:java -e -Dexec.mainClass=com.microsoft.playwright.CLI -Dexec.args="install --with-deps"
 ```
 
-Esto descargará los navegadores necesarios para ejecutar los tests E2E con Playwright.
+Esto descargará los navegadores necesarios (Chromium, Firefox, WebKit) y sus dependencias del sistema en `%USERPROFILE%\AppData\Local\ms-playwright`.
 
 ## Ejecución de tests E2E reales con Playwright
 
@@ -260,91 +245,18 @@ docker run -p 8000:8000 renfe-navigation-quarkus
 
 MIT
 
-## Running Playwright E2E tests on Windows
+## Troubleshooting Playwright
 
-This section explains what you need on Windows to run the Playwright-based E2E tests and the exact commands to prepare the environment and run the tests from a cmd.exe prompt.
+Si encuentras errores al ejecutar tests con Playwright, verifica lo siguiente:
 
-Checklist (quick)
-- Node (LTS) installed and on PATH
-- npm / npx available
-- Playwright browsers installed (via npx) or a pre-populated browsers path
-- Set `PLAYWRIGHT_BROWSERS_PATH` if you preinstalled browsers in a custom location
-- Run tests with the `PlaywrightE2eProfile` Quarkus test profile
+1. **Navegadores no instalados**: Ejecuta el comando de instalación de Playwright mostrado arriba.
 
-Prerequisites
-- Java 17+ (project requirement)
-- Maven available (you already have it)
-- **Node.js (LTS)** - **REQUIRED**: Playwright Java internally spawns a Node.js child process to control browsers. You reported:
-  - node --version -> v22.14.0
-  - npx --version -> 11.6.1
-  - npm --version -> 11.6.1
+2. **Timeout en tests**: Si los tests fallan por timeout, verifica que los navegadores estén correctamente instalados y que no haya procesos bloqueados por antivirus/firewall.
 
-These versions are fine for Playwright. Keep Node on PATH so Playwright Java can find it at runtime.
+3. **Versión incompatible**: Asegúrate de que la versión de Playwright en el `pom.xml` coincida con los navegadores instalados. Si cambias la versión, reinstala los navegadores.
 
-Install Playwright browsers (cmd.exe)
-
-Use Maven to invoke the Playwright Java CLI to download browsers. This ensures the browser versions match your Playwright Java dependency version.
-
-```cmd
-cd C:\PRJS\personal\renfe-navigation-quarkus
-mvn org.codehaus.mojo:exec-maven-plugin:3.3.0:java -e -Dexec.mainClass=com.microsoft.playwright.CLI -Dexec.args="install --with-deps"
-```
-
-After successful download, Playwright browsers will be placed in your user local folder (for example: `C:\Users\<you>\AppData\Local\ms-playwright`).
-
-Set PLAYWRIGHT_BROWSERS_PATH for tests (cmd.exe)
-
-Point Playwright Java to the installed browsers to prevent runtime download attempts:
-
-```cmd
-set PLAYWRIGHT_BROWSERS_PATH=C:\Users\<your-user>\AppData\Local\ms-playwright
-```
-
-Run the E2E test (headless) with the provided Quarkus test profile
-
-The repository includes a test profile `PlaywrightE2eProfile` (in `src/test/java`) that sets Playwright to headless mode and configures timeouts. Run the single test like this (cmd.exe):
-
-```cmd
-cd C:\PRJS\personal\renfe-navigation-quarkus
-set PLAYWRIGHT_BROWSERS_PATH=C:\Users\<your-user>\AppData\Local\ms-playwright
-mvn -Dtest=TrainResourceE2ETest -Dquarkus.test.profile=PlaywrightE2eProfile test
-```
-
-Notes
-- If you want to observe the browser UI set `playwright.headless=false` in the test profile or use a dedicated profile for interactive runs.
-- If Maven/Quarkus spawns Playwright and it attempts to download browsers at runtime, pre-installing the browsers as above avoids long delays or failures.
-
-Troubleshooting (errors you may encounter)
-
-1) "Failed to create driver" or InterruptedException during driver install
-- Cause: Playwright Java tried to download and install browsers during runtime and the process was interrupted or blocked.
-- Fixes:
-  - Run the Maven install command before the test so the driver/browsers are already present.
-  - Set `PLAYWRIGHT_BROWSERS_PATH` to the folder containing the installed browsers.
-  - Ensure antivirus/firewall is not blocking the temporary node process.
-  - If you see a Node module not found error in a temp dir, remove stale temp directories under `%TEMP%` that start with `playwright-java-` and try again.
-
-2) "Failed to read message" or IPC errors between Java and the Playwright node process
-- Cause: The Playwright-native child process may crash or get killed (permissions, incompatible Node version, missing browser binary).
-- Fixes:
-  - Ensure the installed browsers version matches the Playwright Java version (use `npx playwright --version` and the Playwright Java dependency in `pom.xml`).
-  - Set `PLAYWRIGHT_BROWSERS_PATH` as above.
-  - Verify Node is accessible on PATH and is a supported version (Node 16+). You have Node v22 — that is supported in practice, but if you see incompatibilities try a Node LTS like 18 or 20.
-
-3) SocketTimeoutException (test HTTP client times out)
-- Cause: The server may have crashed while the test HTTP client waited for a response (e.g. Playwright failed while running the scraper and Quarkus shut down the request). The test client default timeout is limited.
-- Fixes:
-  - Pre-install browsers and set PLAYWRIGHT_BROWSERS_PATH to avoid long install timeouts.
-  - Increase test-side HTTP timeout if needed (adjust RestAssured configuration or the test to wait longer).
-
-Advanced tips
-- To avoid Playwright Java attempting to download browsers at runtime entirely, preinstall browsers using the Maven command or the provided script before running tests.
-
-- If you run tests in CI (GitHub Actions, GitLab), prefer setting up the Playwright browsers in the CI image ahead of the test run or use the official Playwright action/container to ensure compatibility.
-
-Summary
-- You already have node/npm installed (required for Playwright Java runtime) — next steps are:
-  1) Run the Maven install command once to fetch browsers: `scripts\install-playwright.cmd`
-  2) Set `PLAYWRIGHT_BROWSERS_PATH` to the installation folder (optional).
-  3) Run the Maven test with the `PlaywrightE2eProfile`.
+4. **Variable de entorno (opcional)**: Si prefieres usar una ubicación personalizada para los navegadores, puedes configurar:
+   ```cmd
+   set PLAYWRIGHT_BROWSERS_PATH=C:\ruta\personalizada\ms-playwright
+   ```
 
