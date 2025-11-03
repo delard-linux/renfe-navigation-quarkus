@@ -9,9 +9,17 @@ import static io.restassured.RestAssured.given;
 import static org.hamcrest.CoreMatchers.notNullValue;
 
 @QuarkusTest
-@TestProfile(PlaywrightE2eProfile.class)
+@TestProfile(PlaywrightDebugNoHeadlessProfile.class)
+/**
+ * Pruebas E2E del recurso de trenes usando Playwright en modo no headless (debug).
+ * Valida que la búsqueda de trenes retorne JSON con campos esperados.
+ */
 public class TrainResourceE2ETest {
 
+    /**
+     * Comprueba que el GET `/trains` responde 200 y contiene `trains_out`.
+     * Usa parámetros de ejemplo para simular una búsqueda de ida.
+     */
     @Test
     public void e2eGetTrainsNonHeadless() {
         given()

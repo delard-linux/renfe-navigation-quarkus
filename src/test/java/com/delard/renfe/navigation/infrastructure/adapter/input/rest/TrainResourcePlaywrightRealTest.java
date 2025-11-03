@@ -13,6 +13,11 @@ import static org.hamcrest.CoreMatchers.notNullValue;
 @TestProfile(PlaywrightRealProfile.class)
 class TrainResourcePlaywrightRealTest {
 
+    /**
+     * Verifica que el endpoint `/trains` devuelve resultados válidos cuando se realiza
+     * una búsqueda real con Playwright en modo headless. También imprime la respuesta
+     * formateada para facilitar la inspección manual en los logs del test.
+     */
     @Test
     void shouldReturnTrainsWhenSearchingWithPlaywrightTest() {
         Response resp = given()

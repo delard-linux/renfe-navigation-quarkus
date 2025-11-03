@@ -6,16 +6,16 @@ import io.quarkus.test.junit.QuarkusTestProfile;
 import java.util.HashMap;
 import java.util.Map;
 
-public class PlaywrightE2eProfile implements QuarkusTestProfile {
+public class PlaywrightDebugNoHeadlessProfile implements QuarkusTestProfile {
 
     @Override
     public Map<String, String> getConfigOverrides() {
         Map<String, String> cfg = new HashMap<>();
-        // For automated CI/local headless runs set to true
-        cfg.put("playwright.headless", "true");
-        // Make slowMo visible in the browser
+        // Perfil de depuración: ejecuta Playwright con ventana visible (no headless)
+        cfg.put("playwright.headless", "false");
+        // Aumenta el slow-mo para observar mejor las acciones en el navegador
         cfg.put("playwright.slow-mo", "200");
-        // Increase navigation/network timeouts for remote site
+        // Aumenta timeouts por tratarse de navegación remota
         cfg.put("playwright.timeout-navigation-ms", "60000");
         cfg.put("playwright.timeout-networkidle-ms", "60000");
         cfg.put("playwright.timeout-short-ms", "1000");
@@ -29,3 +29,5 @@ public class PlaywrightE2eProfile implements QuarkusTestProfile {
         return s;
     }
 }
+
+

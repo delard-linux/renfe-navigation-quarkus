@@ -9,8 +9,16 @@ import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.notNullValue;
 
 @QuarkusTest
+/**
+ * Pruebas unitarias/integración del recurso de trenes.
+ * Se validan respuestas correctas y errores de validación comunes.
+ */
 public class TrainResourceTest {
 
+    /**
+     * Valida que `/trains` devuelve 200 y JSON con los campos básicos esperados
+     * cuando se proporcionan parámetros válidos para una búsqueda de ida.
+     */
     @Test
     public void testGetTrainsEndpoint() {
         given()
@@ -29,6 +37,10 @@ public class TrainResourceTest {
             .body("trains_out", notNullValue());
     }
 
+    /**
+     * Valida que `/trains` acepta fecha de vuelta y devuelve 200
+     * con los campos de ida y la fecha de regreso presente.
+     */
     @Test
     public void testGetTrainsWithReturnDate() {
         given()
@@ -47,6 +59,9 @@ public class TrainResourceTest {
             .body("adults", is(2));
     }
 
+    /**
+     * Verifica que si falta `origin` el endpoint responde con 400 (petición inválida).
+     */
     @Test
     public void testGetTrainsMissingOrigin() {
         given()
@@ -57,6 +72,9 @@ public class TrainResourceTest {
             .statusCode(400);
     }
 
+    /**
+     * Verifica que un formato de fecha inválido en `date_out` provoca un 400.
+     */
     @Test
     public void testGetTrainsInvalidDateFormat() {
         given()
@@ -68,6 +86,9 @@ public class TrainResourceTest {
             .statusCode(400);
     }
 
+    /**
+     * Comprueba el endpoint `/trains-flow` retorna 200 y campos `message` y `filepath`.
+     */
     @Test
     public void testGetTrainsFlowEndpoint() {
         given()
@@ -83,6 +104,9 @@ public class TrainResourceTest {
             .body("filepath", notNullValue());
     }
 
+    /**
+     * Verifica que un número de adultos fuera de rango devuelve un 400.
+     */
     @Test
     public void testGetTrainsInvalidAdultsCount() {
         given()
