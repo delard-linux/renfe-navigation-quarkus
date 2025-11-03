@@ -1,6 +1,8 @@
 package com.delard.renfe.navigation.application.rest;
 
+import com.delard.renfe.navigation.support.config.PlaywrightDebugNoHeadlessProfile;
 import io.quarkus.test.junit.QuarkusTest;
+import io.quarkus.test.junit.TestProfile;
 import io.restassured.http.ContentType;
 import org.junit.jupiter.api.Test;
 
@@ -9,6 +11,7 @@ import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.notNullValue;
 
 @QuarkusTest
+@TestProfile(PlaywrightDebugNoHeadlessProfile.class)
 /**
  * Pruebas unitarias/integración del recurso de trenes.
  * Se validan respuestas correctas y errores de validación comunes.
