@@ -217,20 +217,6 @@ Actualmente devuelven respuestas vacías/placeholder para permitir el arranque y
 mvnw test
 ```
 
-## Docker
-
-Crear imagen Docker:
-
-```bash
-mvnw package
-docker build -f src/main/docker/Dockerfile.jvm -t renfe-navigation-quarkus .
-```
-
-Ejecutar contenedor:
-
-```bash
-docker run -p 8000:8000 renfe-navigation-quarkus
-```
 
 ## Tecnologías
 

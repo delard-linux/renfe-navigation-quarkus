@@ -77,15 +77,6 @@ mvn package -Pnative
 ./target/renfe-navigation-quarkus-1.0.0-SNAPSHOT-runner
 ```
 
-## Docker
-
-```bash
-# Construir imagen
-docker build -f src/main/docker/Dockerfile.jvm -t renfe-navigation .
-
-# Ejecutar contenedor
-docker run -p 8000:8000 renfe-navigation
-```
 
 ## Configuración
 
