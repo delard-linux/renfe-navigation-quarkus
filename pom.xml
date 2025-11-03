@@ -3,9 +3,11 @@
          xmlns="http://maven.apache.org/POM/4.0.0"
          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
     <modelVersion>4.0.0</modelVersion>
-    <groupId>com.renfe</groupId>
+    <groupId>com.delard.renfe</groupId>
     <artifactId>renfe-navigation-quarkus</artifactId>
     <version>1.0.0-SNAPSHOT</version>
+    <name>Renfe Navigation API</name>
+    <description>API para la compra de billetes en RENFE - Microservicio de búsqueda y navegación con arquitectura hexagonal</description>
 
     <properties>
         <compiler-plugin.version>3.11.0</compiler-plugin.version>
