@@ -11,7 +11,7 @@
 
     <properties>
         <compiler-plugin.version>3.11.0</compiler-plugin.version>
-        <maven.compiler.release>17</maven.compiler.release>
+        <maven.compiler.release>21</maven.compiler.release>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
         <quarkus.platform.artifact-id>quarkus-bom</quarkus.platform.artifact-id>
@@ -147,6 +147,26 @@
                     </execution>
                 </executions>
             </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-toolchains-plugin</artifactId>
+                <version>3.0.0</version>
+                <executions>
+                  <execution>
+                    <goals>
+                      <goal>toolchain</goal>
+                    </goals>
+                  </execution>
+                </executions>
+                <configuration>
+                  <toolchains>
+                    <jdk>
+                      <version>21</version>
+                      <vendor>adoptium</vendor>
+                    </jdk>
+                  </toolchains>
+                </configuration>
+              </plugin>
         </plugins>
     </build>
 
@@ -165,4 +185,3 @@
         </profile>
     </profiles>
 </project>
-
