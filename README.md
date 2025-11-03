@@ -104,12 +104,12 @@ Para ejecutar el test real de Playwright sobre la API REST, usa uno de los sigui
 
 ### Bash
 ```bash
-mvn verify -Dit.test="com.renfe.navigation.infrastructure.adapter.input.rest.TrainResourcePlaywrightRealTest" -DskipITs=false
+mvn verify -Dit.test="rest.input.adapter.infrastructure.com.delard.renfe.navigation.TrainResourcePlaywrightRealTest" -DskipITs=false
 ```
 
 ### PowerShell
 ```powershell
-mvn --% verify -Dit.test="com.renfe.navigation.infrastructure.adapter.input.rest.TrainResourcePlaywrightRealTest#shouldReturnTrainsWhenSearchingWithPlaywrightTest" -DskipITs=false
+mvn --% verify -Dit.test="rest.input.adapter.infrastructure.com.delard.renfe.navigation.TrainResourcePlaywrightRealTest#shouldReturnTrainsWhenSearchingWithPlaywrightTest" -DskipITs=false
 ```
 
 Esto ejecutará el test E2E real con Playwright, permitiendo observar la automatización real del navegador sobre la web de Renfe.
