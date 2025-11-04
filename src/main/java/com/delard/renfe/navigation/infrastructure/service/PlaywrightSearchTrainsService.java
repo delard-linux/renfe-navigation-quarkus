@@ -10,11 +10,12 @@ import jakarta.inject.Inject;
 import org.jboss.logging.Logger;
 
 import java.util.*;
+import java.util.stream.Collectors;
 
 @ApplicationScoped
-public class PlaywrightScraperService {
+public class PlaywrightSearchTrainsService {
 
-    private static final Logger LOG = Logger.getLogger(PlaywrightScraperService.class);
+    private static final Logger LOG = Logger.getLogger(PlaywrightSearchTrainsService.class);
 
     @Inject
     PlaywrightConfig config;
@@ -28,17 +29,21 @@ public class PlaywrightScraperService {
     @Inject
     ResponseStorageService responseStorageService;
 
+    @Inject
+    PlaywrightFactory playwrightFactory;
+
     public SearchTrainsResult searchTrains(String origin, String destination, String dateOut,
                                            String dateReturn, int adults) {
-        LOG.infof("[SCRAPER] Starting Chromium browser");
+        LOG.infof("Starting Chromium browser");
 
+        // TODO: que pasa en caso de que haya mas de una estación con la misma cadena?
         Map<String, String> originStation = renfeCommonService.findStation(origin);
         Map<String, String> destStation = renfeCommonService.findStation(destination);
 
-        LOG.infof("[SCRAPER] Origin: %s - Key: %s",
+        LOG.infof("Origin: %s - Key: %s",
                 originStation.getOrDefault("desgEstacion", origin),
                 originStation.getOrDefault("clave", ""));
-        LOG.infof("[SCRAPER] Destination: %s - Key: %s",
+        LOG.infof("Destination: %s - Key: %s",
                 destStation.getOrDefault("desgEstacion", destination),
                 destStation.getOrDefault("clave", ""));
 
@@ -52,12 +57,12 @@ public class PlaywrightScraperService {
                 originStation, destStation, dateOutFormatted, dateReturnFormatted, adults
         );
 
-        LOG.infof("[SCRAPER] Search parameters: %s -> %s",
+        LOG.infof("Search parameters: %s -> %s",
                 dateOutFormatted,
                 dateReturnFormatted.isEmpty() ? "One way only" : dateReturnFormatted
         );
 
-        try (Playwright playwright = Playwright.create()) {
+        try (Playwright playwright = playwrightFactory.create()) {
             Browser browser = createBrowser(playwright);
             try {
                 BrowserContext context = browser.newContext(new Browser.NewContextOptions()
@@ -67,7 +72,7 @@ public class PlaywrightScraperService {
 
                 Page page = context.newPage();
                 try {
-                    LOG.infof("[SCRAPER] Navigating to %s", config.getRenfeSearchUrl());
+                    LOG.infof("Navigating to %s", config.getRenfeSearchUrl());
                     page.navigate(config.getRenfeSearchUrl(), new Page.NavigateOptions()
                             .setWaitUntil(WaitUntilState.DOMCONTENTLOADED)
                             .setTimeout(config.getNavigationTimeoutMs())
@@ -76,7 +81,7 @@ public class PlaywrightScraperService {
                     String jsFormSubmit = buildFormSubmitScript(formData);
                     page.evaluate(jsFormSubmit);
 
-                    LOG.info("[SCRAPER] Waiting for server response (network idle)...");
+                    LOG.info("Waiting for server response (network idle)...");
                     page.waitForLoadState(LoadState.NETWORKIDLE, new Page.WaitForLoadStateOptions()
                             .setTimeout(config.getNetworkIdleTimeoutMs())
                     );
@@ -84,28 +89,28 @@ public class PlaywrightScraperService {
                     String responseContent = page.content();
                     responseStorageService.saveResponse(responseContent, 200);
 
-                    LOG.info("[SCRAPER] Extracting outbound results");
+                    LOG.info("Extracting outbound results");
                     List<Train> trainsOut = extractResults(page);
 
                     List<Train> trainsRet = null;
                     if (!dateReturnFormatted.isEmpty() && !trainsOut.isEmpty()) {
                         try {
-                            LOG.info("[SCRAPER] Finding return results");
+                            LOG.info("Finding return results");
                             Locator vueltaTab = page.locator("[id*='vuelta'], [class*='vuelta'], a:has-text('Vuelta')");
                             if (vueltaTab.count() > 0) {
                                 vueltaTab.first().click();
                                 page.waitForTimeout(config.getShortTimeoutMs());
 
-                                LOG.info("[SCRAPER] Extracting return results");
+                                LOG.info("Extracting return results");
                                 trainsRet = extractResults(page);
                             }
                         } catch (Exception e) {
-                            LOG.warnf(e, "[SCRAPER] Could not extract return trains: %s", e.getMessage());
+                            LOG.warnf(e, "Could not extract return trains: %s", e.getMessage());
                             trainsRet = null;
                         }
                     }
 
-                    LOG.info("[SCRAPER] Closing browser");
+                    LOG.info("Closing browser");
                     return new SearchTrainsResult(trainsOut, trainsRet);
 
                 } finally {
@@ -116,7 +121,7 @@ public class PlaywrightScraperService {
                 browser.close();
             }
         } catch (Exception e) {
-            LOG.errorf(e, "[SCRAPER] Error during scraping");
+            LOG.errorf(e, "Error during scraping");
             throw new RuntimeException("Error scraping trains: " + e.getMessage(), e);
         }
     }
@@ -209,7 +214,7 @@ public class PlaywrightScraperService {
     }
 
     private List<Train> extractResults(Page page) throws InterruptedException {
-        LOG.info("[SCRAPER] Waiting for results to load...");
+        LOG.info("Waiting for results to load...");
         page.waitForLoadState(LoadState.NETWORKIDLE, new Page.WaitForLoadStateOptions().setTimeout(config.getNetworkIdleTimeoutMs()));
         String html = page.content();
         List<Train> trains = trainHtmlParser.parseTrainList(html);
@@ -224,6 +229,38 @@ public class PlaywrightScraperService {
         public SearchTrainsResult(List<Train> outboundTrains, List<Train> returnTrains) {
             this.outboundTrains = outboundTrains;
             this.returnTrains = returnTrains;
+        }
+
+        @Override
+        public String toString() {
+            return "SearchTrainsResult{" +
+                "outboundTrains=" + summarize(outboundTrains) +
+                ", returnTrains=" + summarize(returnTrains) +
+                '}';
+        }
+
+        private String summarize(List<Train> trains) {
+            if (trains == null || trains.isEmpty()) {
+                return "[]";
+            }
+            return trains.stream()
+                .map(this::describeTrain)
+                .collect(Collectors.joining(", ", "[", "]"));
+        }
+
+        private String describeTrain(Train train) {
+            if (train == null) {
+                return "null";
+            }
+            return String.format("%s %s-%s %.2f€",
+                valueOrDefault(train.getTrainId(), "(sin-id)"),
+                valueOrDefault(train.getDepartureTime(), "--"),
+                valueOrDefault(train.getArrivalTime(), "--"),
+                train.getPriceFrom());
+        }
+
+        private String valueOrDefault(String value, String fallback) {
+            return (value == null || value.isBlank()) ? fallback : value;
         }
     }
 }

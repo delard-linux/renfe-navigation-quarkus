@@ -2,7 +2,7 @@ package com.delard.renfe.navigation.infrastructure.adapter.output;
 
 import com.delard.renfe.navigation.domain.model.Train;
 import com.delard.renfe.navigation.domain.port.output.TrainScraperPort;
-import com.delard.renfe.navigation.infrastructure.service.PlaywrightScraperService;
+import com.delard.renfe.navigation.infrastructure.service.PlaywrightSearchTrainsService;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import org.jboss.logging.Logger;
@@ -20,7 +20,7 @@ public class TrainScraperAdapter implements TrainScraperPort {
     private static final Logger LOG = Logger.getLogger(TrainScraperAdapter.class);
 
     @Inject
-    PlaywrightScraperService playwrightScraperService;
+    PlaywrightSearchTrainsService playwrightSearchTrainsService;
 
     @Override
     public List<List<Train>> scrapeTrains(String origin, String destination, String dateOut,
@@ -29,8 +29,8 @@ public class TrainScraperAdapter implements TrainScraperPort {
                 origin, destination, dateOut, dateReturn, adults);
 
         try {
-            PlaywrightScraperService.SearchTrainsResult result =
-                    playwrightScraperService.searchTrains(origin, destination, dateOut, dateReturn, adults);
+            PlaywrightSearchTrainsService.SearchTrainsResult result =
+                playwrightSearchTrainsService.searchTrains(origin, destination, dateOut, dateReturn, adults);
 
             List<Train> trainsOut = result.outboundTrains != null ? result.outboundTrains : new ArrayList<>();
             List<Train> trainsReturn = result.returnTrains;
