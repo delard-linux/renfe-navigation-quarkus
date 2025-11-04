@@ -1,7 +1,12 @@
 target/
-!.mvn/wrapper/maven-wrapper.jar
 !**/src/main/**/target/
 !**/src/test/**/target/
+
+# Ignore files downloaded by the wrapper
+/.mvn/wrapper/
+# BUT keep tracking of the essential files:
+!.mvn/wrapper/maven-wrapper.properties
+!.mvn/wrapper/maven-wrapper.jar
 
 ### IntelliJ IDEA ###
 .idea
