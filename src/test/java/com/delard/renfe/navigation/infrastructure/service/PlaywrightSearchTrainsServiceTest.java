@@ -21,9 +21,10 @@ import java.util.Map;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doNothing;
+import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
@@ -90,12 +91,8 @@ class PlaywrightSearchTrainsServiceTest {
         when(config.getRenfeSearchUrl()).thenReturn("https://renfe.test/search");
         when(config.getNavigationTimeoutMs()).thenReturn(1000);
         when(config.getNetworkIdleTimeoutMs()).thenReturn(1000);
-        when(config.getShortTimeoutMs()).thenReturn(100);
-
-        doNothing().when(page).navigate(anyString(), any(Page.NavigateOptions.class));
-        doNothing().when(page).evaluate(anyString());
-        doNothing().when(page).waitForLoadState(any(LoadState.class), any(Page.WaitForLoadStateOptions.class));
-        doNothing().when(page).waitForTimeout(anyInt());
+        when(page.navigate(anyString(), any(Page.NavigateOptions.class))).thenReturn(null);
+        when(page.evaluate(anyString())).thenReturn(null);
 
         String htmlResponse = "<html>OK</html>";
         when(page.content()).thenReturn(htmlResponse);
@@ -103,7 +100,7 @@ class PlaywrightSearchTrainsServiceTest {
         Train mockTrain = new Train("T123", "AVE", "08:00", "10:00", "2h", 25.0);
         when(trainHtmlParser.parseTrainList(htmlResponse)).thenReturn(List.of(mockTrain));
 
-        doNothing().when(responseStorageService).saveResponse(htmlResponse, 200);
+        when(responseStorageService.saveResponse(htmlResponse, 200)).thenReturn("/tmp/resp.html");
 
         PlaywrightSearchTrainsService.SearchTrainsResult result = service.searchTrains(
             "OURENSE", "MADRID", "2025-12-01", null, 1
@@ -114,7 +111,7 @@ class PlaywrightSearchTrainsServiceTest {
 
         Mockito.verify(responseStorageService).saveResponse(htmlResponse, 200);
         Mockito.verify(trainHtmlParser).parseTrainList(htmlResponse);
-        Mockito.verify(page).waitForLoadState(LoadState.NETWORKIDLE, any(Page.WaitForLoadStateOptions.class));
+        Mockito.verify(page, times(2)).waitForLoadState(eq(LoadState.NETWORKIDLE), any(Page.WaitForLoadStateOptions.class));
     }
 }
 
