@@ -12,6 +12,7 @@ public class FareOption {
     private String currency;
     private String code;
     private String tpEnlace;
+    private String plan;
     private List<String> features;
 
     public FareOption() {
@@ -67,6 +68,14 @@ public class FareOption {
 
     public void setTpEnlace(String tpEnlace) {
         this.tpEnlace = tpEnlace;
+    }
+
+    public String getPlan() {
+        return plan;
+    }
+
+    public void setPlan(String plan) {
+        this.plan = plan;
     }
 
     public List<String> getFeatures() {

@@ -87,6 +87,7 @@ public final class TrainMapper {
         dto.setCurrency(fare.getCurrency());
         dto.setCode(fare.getCode());
         dto.setTpEnlace(fare.getTpEnlace());
+        dto.setPlan(fare.getPlan());
         dto.setFeatures(fare.getFeatures());
 
         return dto;

@@ -17,6 +17,8 @@ public class FareOptionDTO {
     @JsonProperty("tp_enlace")
     private String tpEnlace;
 
+    private String plan;
+
     private List<String> features = new ArrayList<>();
 
     public FareOptionDTO() {
@@ -61,6 +63,14 @@ public class FareOptionDTO {
 
     public void setTpEnlace(String tpEnlace) {
         this.tpEnlace = tpEnlace;
+    }
+
+    public String getPlan() {
+        return plan;
+    }
+
+    public void setPlan(String plan) {
+        this.plan = plan;
     }
 
     public List<String> getFeatures() {

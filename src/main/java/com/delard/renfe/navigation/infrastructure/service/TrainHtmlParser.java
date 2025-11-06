@@ -28,8 +28,14 @@ public class TrainHtmlParser {
      *
      * @param htmlContent HTML content of the page that holds the train list
      * @return List of Train objects with full details for each train
+     * @throws IllegalArgumentException if htmlContent is null
+     * @throws RuntimeException if there's a critical error parsing the HTML document
      */
     public List<Train> parseTrainList(String htmlContent) {
+        if (htmlContent == null) {
+            throw new IllegalArgumentException("HTML content cannot be null");
+        }
+
         List<Train> trains = new ArrayList<>();
 
         try {
@@ -49,11 +55,16 @@ public class TrainHtmlParser {
                     trainIndex++;
                 } catch (Exception e) {
                     LOG.warnf(e, "[PARSER] Error extracting train at index %d", trainIndex);
+                    // Continue processing other trains even if one fails
                 }
             }
 
+        } catch (IllegalArgumentException e) {
+            // Re-throw IllegalArgumentException (e.g., null HTML)
+            throw e;
         } catch (Exception e) {
-            LOG.errorf(e, "[PARSER] Error parsing HTML");
+            LOG.errorf(e, "[PARSER] Critical error parsing HTML document");
+            throw new RuntimeException("Failed to parse HTML content: " + e.getMessage(), e);
         }
 
         return trains;
@@ -121,16 +132,25 @@ public class TrainHtmlParser {
         }
 
         // Extract available fares
-        // HTML format: div.seleccion-resumen-bottom.card inside div.planes-opciones
-        // Use a more flexible selector that finds elements with both classes
-        Elements fareCards = row.select("div.seleccion-resumen-bottom.card, div[class*='seleccion-resumen-bottom'][class*='card']");
+        // HTML format: div with class "seleccion-resumen-bottom" and "card" inside div.planes-opciones
+        // The selector needs to match elements that have both classes (space-separated)
+        Element planesOpciones = row.selectFirst("div.planes-opciones");
+        Elements fareCards = new Elements();
         
-        // If no fares found, try searching within planes-opciones
-        if (fareCards.isEmpty()) {
-            Element planesOpciones = row.selectFirst("div.planes-opciones");
-            if (planesOpciones != null) {
-                fareCards = planesOpciones.select("div.seleccion-resumen-bottom.card, div[class*='seleccion-resumen-bottom'][class*='card']");
+        if (planesOpciones != null) {
+            // Select divs that have both "seleccion-resumen-bottom" and "card" classes
+            // Using attribute selector to match class values containing both strings
+            fareCards = planesOpciones.select("div[class*='seleccion-resumen-bottom'][class*='card']");
+            
+            // Fallback: if still empty, try selecting by role="button" which fare cards have
+            if (fareCards.isEmpty()) {
+                fareCards = planesOpciones.select("div[role='button'][class*='seleccion-resumen-bottom']");
             }
+        }
+        
+        // If still no fares found, try direct selection from row
+        if (fareCards.isEmpty()) {
+            fareCards = row.select("div[class*='seleccion-resumen-bottom'][class*='card']");
         }
         
         LOG.infof("[PARSER] Found %d fare cards for train %s", fareCards.size(), trainId);
@@ -139,10 +159,17 @@ public class TrainHtmlParser {
             try {
                 FareOption fare = parseFareCard(fareCards.get(i), trainId);
                 if (fare != null) {
-                    train.getFares().add(fare);
+                    // Get the fares list and add to it (getFares returns a copy, so we need to get-set)
+                    List<FareOption> fares = train.getFares();
+                    fares.add(fare);
+                    train.setFares(fares);
+                    LOG.infof("[PARSER] Successfully parsed fare %d for train %s: %s (%.2f€)", 
+                            i, trainId, fare.getName(), fare.getPrice());
+                } else {
+                    LOG.warnf("[PARSER] parseFareCard returned null for fare %d of train %s", i, trainId);
                 }
             } catch (Exception e) {
-                LOG.warnf(e, "[PARSER] Error extracting fare %d for train %s", i, trainId);
+                LOG.warnf(e, "[PARSER] Error extracting fare %d for train %s: %s", i, trainId, e.getMessage());
             }
         }
 
@@ -163,31 +190,59 @@ public class TrainHtmlParser {
     private FareOption parseFareCard(Element fareCard, String trainId) throws Exception {
         FareOption fare = new FareOption();
 
-        // Fare name
-        // HTML format: <div class="card-header">...<span style="padding-right:10px;">Básico</span>... or "Prémium" directly
-        Element header = fareCard.selectFirst("div.card-header");
-        if (header != null) {
-            Element nameSpan = header.selectFirst("span[style*='padding-right']");
-            if (nameSpan != null) {
-                fare.setName(nameSpan.text().trim());
-            } else {
-                // Fallback: extract text before the price (e.g., "Prémium" or "Básico")
-                String headerText = header.text().trim();
-                // Remove price and extract fare name
-                Pattern pattern = Pattern.compile("^([^\\d€]+?)(?:\\s*\\d+[,.]?\\d*\\s*€)?");
-                Matcher matcher = pattern.matcher(headerText);
-                if (matcher.find()) {
-                    String name = matcher.group(1).trim();
-                    if (!name.isEmpty()) {
-                        fare.setName(name);
-                    } else {
-                        fare.setName("Unknown");
-                    }
+        // Fare name - try multiple sources
+        // 1. First try data-titulo-tarifa attribute (most reliable)
+        if (fareCard.hasAttr("data-titulo-tarifa")) {
+            String tituloTarifa = fareCard.attr("data-titulo-tarifa").trim();
+            if (!tituloTarifa.isEmpty()) {
+                fare.setName(tituloTarifa);
+            }
+        }
+        
+        // 2. If not found, try card-header with span[style*='padding-right']
+        if (fare.getName() == null || fare.getName().isEmpty()) {
+            Element header = fareCard.selectFirst("div.card-header");
+            if (header != null) {
+                Element nameSpan = header.selectFirst("span[style*='padding-right']");
+                if (nameSpan != null) {
+                    fare.setName(nameSpan.text().trim());
                 } else {
+                    // Fallback: extract text before the price (e.g., "Prémium" or "Básico")
+                    String headerText = header.text().trim();
+                    // Remove price and extract fare name
+                    Pattern pattern = Pattern.compile("^([^\\d€]+?)(?:\\s*\\d+[,.]?\\d*\\s*€)?");
+                    Matcher matcher = pattern.matcher(headerText);
+                    if (matcher.find()) {
+                        String name = matcher.group(1).trim();
+                        if (!name.isEmpty()) {
+                            fare.setName(name);
+                        }
+                    }
+                    
                     // Last resort: use first non-empty text node
-                    String text = header.ownText().trim();
-                    fare.setName(text.isEmpty() ? "Unknown" : text);
+                    if (fare.getName() == null || fare.getName().isEmpty()) {
+                        String text = header.ownText().trim();
+                        if (!text.isEmpty()) {
+                            fare.setName(text);
+                        }
+                    }
                 }
+            }
+        }
+        
+        // 3. Final fallback: use "Unknown" if still not found
+        if (fare.getName() == null || fare.getName().isEmpty()) {
+            fare.setName("Unknown");
+        }
+        
+        // Extract fare plan/subtitle (e.g., "Con cambios y anulaciones", "La más completa")
+        // These are in span.plan-elige or span.plan-premium within the fare card
+        // Look for spans with class starting with "plan" (plan-elige, plan-premium, etc.)
+        Element planElem = fareCard.selectFirst("span[class^='plan']");
+        if (planElem != null) {
+            String planText = planElem.text().trim();
+            if (!planText.isEmpty()) {
+                fare.setPlan(planText);
             }
         }
 
@@ -211,13 +266,19 @@ public class TrainHtmlParser {
 
         // Features / amenities
         // HTML format: <ul class="lista-opciones">...<li>Feature text</li>...
-        Elements features = fareCard.select("ul.lista-opciones li, ul.list-group li");
-        for (Element feature : features) {
+        // Also check for list-group-flush which is used in some cases
+        Elements featureElements = fareCard.select("ul.lista-opciones li, ul.list-group li, ul.list-group-flush li");
+        List<String> features = fare.getFeatures();
+        for (Element feature : featureElements) {
             String featureText = feature.text().trim();
             if (!featureText.isEmpty()) {
-                fare.getFeatures().add(featureText);
+                features.add(featureText);
             }
         }
+        fare.setFeatures(features);
+        
+        LOG.debugf("[PARSER] Extracted %d features for fare %s of train %s", 
+                fare.getFeatures().size(), fare.getName(), trainId);
 
         return fare;
     }

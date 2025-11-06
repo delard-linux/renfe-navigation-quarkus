@@ -12,6 +12,9 @@ import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 import java.util.List;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.SerializationFeature;
+
 import static org.junit.jupiter.api.Assertions.*;
 
 /**
@@ -36,9 +39,9 @@ class TrainHtmlParserTest {
 
     @Test
     void testParseTrainListWithNullHtml() {
-        List<Train> trains = parser.parseTrainList(null);
-        assertNotNull(trains);
-        assertTrue(trains.isEmpty());
+        assertThrows(IllegalArgumentException.class, () -> {
+            parser.parseTrainList(null);
+        });
     }
 
     @Test
@@ -176,14 +179,18 @@ class TrainHtmlParserTest {
                 <div class="selectedTren" role="listitem" id="tren_i_1">
                     <h5 aria-hidden="true">08:00</h5>
                     <h5 aria-hidden="true">12:30</h5>
-                    <div class="seleccion-resumen-bottom card" data-precio-tarifa="45,50" data-cod-tarifa="BASIC" data-cod-tpenlacesilencio="TP1">
-                        <div class="card-header">
-                            <span style="padding-right: 10px">Basic</span>
+                    <div class="planes-opciones">
+                        <div class="seleccion-resumen-bottom card" data-precio-tarifa="45,50" data-cod-tarifa="BASIC" data-cod-tpenlacesilencio="TP1" data-titulo-tarifa="Basic">
+                            <div class="card-header">
+                                <span style="padding-right: 10px">Basic</span>
+                            </div>
+                            <div class="card-body">
+                                <ul class="lista-opciones list-group list-group-flush">
+                                    <li>WIFI</li>
+                                    <li>Power</li>
+                                </ul>
+                            </div>
                         </div>
-                        <ul>
-                            <li>WIFI</li>
-                            <li>Power</li>
-                        </ul>
                     </div>
                 </div>
             </body>
@@ -193,17 +200,18 @@ class TrainHtmlParserTest {
         List<Train> trains = parser.parseTrainList(html);
         assertEquals(1, trains.size());
         Train train = trains.get(0);
-        // Fares selector looks for div with both 'seleccion-resumen-bottom' and 'card' classes
-        assertTrue(train.getFares().size() >= 0);
+        // Fares selector looks for div with both 'seleccion-resumen-bottom' and 'card' classes inside planes-opciones
+        assertFalse(train.getFares().isEmpty(), "Should parse at least one fare");
+        assertEquals(1, train.getFares().size(), "Should parse exactly one fare");
         
-        if (!train.getFares().isEmpty()) {
-            FareOption fare = train.getFares().get(0);
-            assertEquals("Basic", fare.getName());
-            assertEquals(45.50, fare.getPrice(), 0.01);
-            assertEquals("BASIC", fare.getCode());
-            assertEquals("TP1", fare.getTpEnlace());
-            assertEquals(2, fare.getFeatures().size());
-        }
+        FareOption fare = train.getFares().get(0);
+        assertEquals("Basic", fare.getName());
+        assertEquals(45.50, fare.getPrice(), 0.01);
+        assertEquals("BASIC", fare.getCode());
+        assertEquals("TP1", fare.getTpEnlace());
+        assertEquals(2, fare.getFeatures().size(), "Should parse 2 features (WIFI and Power)");
+        assertTrue(fare.getFeatures().contains("WIFI"), "Features should contain WIFI");
+        assertTrue(fare.getFeatures().contains("Power"), "Features should contain Power");
     }
 
     @Test
@@ -321,6 +329,16 @@ class TrainHtmlParserTest {
         // Verify that multiple trains were parsed
         assertNotNull(trains);
         assertTrue(trains.size() > 1, "Should parse multiple trains from real HTML");
+        
+        // Verify exact count: should be 41 trains
+        assertEquals(41, trains.size(), "Should parse exactly 41 trains from real HTML");
+        
+        // Verify that exactly 10 trains have duration "3 horas 19 minutos"
+        long trainsWithDuration3h19m = trains.stream()
+                .filter(train -> "3 horas 19 minutos".equals(train.getDuration()))
+                .count();
+        assertEquals(10, trainsWithDuration3h19m, 
+                "Should find exactly 10 trains with duration '3 horas 19 minutos'");
         
         // Verify all trains have required fields
         for (Train train : trains) {
