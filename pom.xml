@@ -293,6 +293,10 @@
                                     <minimum>0.50</minimum>
                                 </limit>
                             </limits>
+                            <!-- Exclude packages that only have integration tests -->
+                            <excludes>
+                                <exclude>com.delard.renfe.navigation.infrastructure.adapter.input.rest</exclude>
+                            </excludes>
                         </rule>
                     </rules>
                 </configuration>
