@@ -1,0 +1,124 @@
+# Cursor Rules for Java/Quarkus Project
+
+## Language and Comments
+- All code comments, JavaDoc, and documentation MUST be in English
+- Use clear, descriptive English for all comments
+- JavaDoc comments should follow standard Java conventions (@param, @return, @throws)
+- TODO/FIXME comments must be in English
+- Error messages and log messages should be in English
+
+## Code Style
+- Follow Java naming conventions (PascalCase for classes, camelCase for methods/variables)
+- Use meaningful variable and method names in English
+- Prefer explicit over implicit code
+- Use final for immutable variables when possible
+- Prefer composition over inheritance
+
+## Architecture
+- Follow Hexagonal Architecture (Ports & Adapters) pattern
+- Domain layer should have NO external dependencies
+- Application layer orchestrates business logic
+- Infrastructure layer contains adapters (REST, database, external services)
+- Use dependency injection (CDI) for all dependencies
+
+## Testing Structure
+
+### Unit Tests (`src/test/java`)
+- Unit tests MUST be placed in `src/test/java`
+- Unit tests should use mocks/stubs to isolate the code under test
+- DO NOT use `@QuarkusTest` in unit tests
+- Use JUnit 5 and Mockito for unit testing
+- Test one class/component at a time
+- Naming convention: `*Test.java` (e.g., `PlaywrightSearchTrainsServiceTest.java`)
+
+### Integration Tests (`src/it/java`)
+- Integration tests MUST be placed in `src/it/java`
+- Integration tests can use `@QuarkusTest` to test with real Quarkus context
+- Integration tests may interact with real services, databases, or external APIs
+- Use Maven Failsafe plugin naming conventions: `*IT.java`, `*ITCase.java`, or `*E2ETest.java`
+- Test profiles and stubs for integration tests should be in `src/it/java/com/.../support/`
+- Naming convention: `*IT.java` for integration tests (e.g., `TrainResourceIT.java`)
+
+### Test Organization
+```
+src/
+├── test/java/              # Unit tests only
+│   └── com/.../
+│       └── [package]/     # Mirror main package structure
+│           └── *Test.java  # Unit tests with mocks
+│
+└── it/java/                # Integration tests only
+    └── com/.../
+        ├── [package]/     # Mirror main package structure
+        │   └── *IT.java   # Integration tests
+        └── support/        # Test support classes
+            ├── config/     # Test profiles
+            └── stub/       # Test stubs/doubles
+```
+
+## Maven Configuration
+- Use Maven Surefire plugin for unit tests (`src/test/java`)
+- Use Maven Failsafe plugin for integration tests (`src/it/java`)
+- Configure build-helper-maven-plugin to add `src/it/java` as test source
+- Integration tests should run in `integration-test` phase, unit tests in `test` phase
+
+## Dependencies
+- Keep domain layer free of framework dependencies
+- Use Quarkus dependencies only in infrastructure/application layers
+- Prefer CDI annotations over manual dependency management
+- Use MicroProfile Config for configuration
+
+## REST API
+- Use JAX-RS annotations for REST endpoints
+- Use Bean Validation for input validation
+- Separate DTOs from domain models
+- Use mappers to convert between domain and DTOs
+- Return appropriate HTTP status codes
+- Use OpenAPI annotations for API documentation
+
+## Logging
+- Use structured logging with JBoss Logging
+- Use appropriate log levels (DEBUG, INFO, WARN, ERROR)
+- Include context in log messages (use placeholders: `LOG.infof("Message: %s", value)`)
+- Log prefixes for different operations: `[REQUEST]`, `[SUCCESS]`, `[ERROR]`, `[FLOW REQUEST]`, etc.
+
+## Error Handling
+- Use checked exceptions for recoverable errors
+- Use unchecked exceptions for programming errors
+- Provide meaningful error messages in English
+- Log errors with full context before re-throwing
+
+## File Organization
+- One public class per file
+- Package structure should mirror domain structure
+- Keep related classes in the same package
+- Use meaningful package names that reflect the architecture layer
+
+## Code Quality
+- Avoid deep nesting (max 3-4 levels)
+- Keep methods focused and small (ideally < 50 lines)
+- Extract complex logic into separate methods
+- Use meaningful names that describe intent
+- Remove unused imports and dead code
+
+## Git Commit Messages
+- Write commit messages in English
+- Use conventional commit format when possible
+- Be descriptive about what changed and why
+
+## When Creating New Code
+1. Determine if it's unit test or integration test
+2. Place in correct directory (`src/test/java` or `src/it/java`)
+3. Use appropriate naming convention
+4. Write all comments in English
+5. Follow the architectural pattern (domain/application/infrastructure)
+6. Add appropriate JavaDoc comments
+7. Use dependency injection for all dependencies
+
+## When Modifying Existing Code
+1. Translate any Spanish comments to English
+2. Ensure tests are in correct directories
+3. Maintain architectural boundaries
+4. Update JavaDoc if method signatures change
+5. Keep unit and integration tests separate
+
