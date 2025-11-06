@@ -13,10 +13,10 @@ import static org.hamcrest.CoreMatchers.notNullValue;
 @QuarkusTest
 @TestProfile(PlaywrightDebugNoHeadlessProfile.class)
 /**
- * Pruebas unitarias/integración del recurso de trenes.
+ * Pruebas de integración del recurso de trenes.
  * Se validan respuestas correctas y errores de validación comunes.
  */
-public class TrainResourceTest {
+public class TrainResourceIT {
 
     /**
      * Valida que `/trains` devuelve 200 y JSON con los campos básicos esperados

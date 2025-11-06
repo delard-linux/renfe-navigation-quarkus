@@ -12,9 +12,9 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 @QuarkusTest
 @TestProfile(PlaywrightRealProfile.class)
-class PlaywrightSearchTrainsServiceE2ETest {
+class PlaywrightSearchTrainsServiceIT {
 
-    private static final Logger LOG = Logger.getLogger(PlaywrightSearchTrainsServiceE2ETest.class);
+    private static final Logger LOG = Logger.getLogger(PlaywrightSearchTrainsServiceIT.class);
 
     @Inject
     PlaywrightSearchTrainsService playwrightSearchTrainsService;

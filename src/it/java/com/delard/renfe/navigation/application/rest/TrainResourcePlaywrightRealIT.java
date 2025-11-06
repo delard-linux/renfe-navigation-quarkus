@@ -12,7 +12,7 @@ import static org.hamcrest.CoreMatchers.notNullValue;
 
 @QuarkusTest
 @TestProfile(PlaywrightDebugNoHeadlessProfile.class)
-class TrainResourcePlaywrightRealTest {
+class TrainResourcePlaywrightRealIT {
 
     /**
      * Verifica que el endpoint `/trains` devuelve resultados válidos cuando se realiza
