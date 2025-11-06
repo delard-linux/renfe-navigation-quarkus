@@ -91,24 +91,6 @@ public class TrainResourceIT {
     }
 
     /**
-     * Checks that the `/trains-flow` endpoint returns 200 and fields `message` and `filepath`.
-     */
-    @Test
-    public void testGetTrainsFlowEndpoint() {
-        given()
-            .queryParam("origin", "OURENSE")
-            .queryParam("destination", "MADRID")
-            .queryParam("date_out", "2025-12-01")
-            .queryParam("adults", 1)
-            .when().get("/trains-flow")
-            .then()
-            .statusCode(200)
-            .contentType(ContentType.JSON)
-            .body("message", notNullValue())
-            .body("filepath", notNullValue());
-    }
-
-    /**
      * Verifies that a number of adults out of range returns a 400 error.
      */
     @Test

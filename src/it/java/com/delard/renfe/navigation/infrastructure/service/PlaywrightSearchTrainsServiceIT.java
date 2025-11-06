@@ -22,7 +22,7 @@ class PlaywrightSearchTrainsServiceIT {
     @Test
     void shouldRetrieveOutboundTrainsFromRenfe() {
         PlaywrightSearchTrainsService.SearchTrainsResult result = playwrightSearchTrainsService.searchTrains(
-            "OURENSE", "MADRID", "2025-12-01", null, 1
+            "OURENSE", "MADRID", "2025-12-15", null, 1
         );
 
         LOG.infof("E2E outbound trains count: %d", result.outboundTrains != null ? result.outboundTrains.size() : 0);
