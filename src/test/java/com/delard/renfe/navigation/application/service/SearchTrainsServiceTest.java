@@ -267,6 +267,53 @@ class SearchTrainsServiceTest {
         assertNull(result.getTrainsReturn());
     }
 
+    @Test
+    @DisplayName("Should handle null trainsOut list correctly")
+    void shouldHandleNullTrainsOutListCorrectly() {
+        String origin = REAL_ORIGIN;
+        String destination = REAL_DESTINATION;
+        String dateOut = REAL_DATE_OUT;
+        String dateReturn = null;
+        int adults = 1;
+
+        // Simulate scraper returning a list with null first element
+        List<List<Train>> scraperResult = new ArrayList<>();
+        scraperResult.add(null);
+
+        when(trainScraperPort.scrapeTrains(origin, destination, dateOut, dateReturn, adults))
+                .thenReturn(scraperResult);
+
+        TrainsResponse result = service.searchTrains(origin, destination, dateOut, dateReturn, adults);
+
+        assertNotNull(result);
+        assertNull(result.getTrainsOut());
+        assertNull(result.getTrainsReturn());
+    }
+
+    @Test
+    @DisplayName("Should handle null trainsReturn list correctly when result has two elements")
+    void shouldHandleNullTrainsReturnListCorrectly() {
+        String origin = REAL_ORIGIN;
+        String destination = REAL_DESTINATION;
+        String dateOut = REAL_DATE_OUT;
+        String dateReturn = REAL_DATE_RETURN;
+        int adults = 1;
+
+        Train trainOut1 = createTrain("T123", "AVE", "08:00", "10:00", "2h", 25.0);
+        List<Train> trainsOut = Arrays.asList(trainOut1);
+        List<List<Train>> scraperResult = Arrays.asList(trainsOut, null);
+
+        when(trainScraperPort.scrapeTrains(origin, destination, dateOut, dateReturn, adults))
+                .thenReturn(scraperResult);
+
+        TrainsResponse result = service.searchTrains(origin, destination, dateOut, dateReturn, adults);
+
+        assertNotNull(result);
+        assertNotNull(result.getTrainsOut());
+        assertEquals(1, result.getTrainsOut().size());
+        assertNull(result.getTrainsReturn());
+    }
+
     private Train createTrain(String trainId, String serviceType, String departureTime,
                               String arrivalTime, String duration, double priceFrom) {
         Train train = new Train();

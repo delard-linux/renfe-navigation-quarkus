@@ -3,7 +3,6 @@ package com.delard.renfe.navigation.application.service;
 import com.delard.renfe.navigation.domain.model.FlowResponse;
 import com.delard.renfe.navigation.domain.port.output.FlowScraperPort;
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -18,11 +17,10 @@ import static org.mockito.Mockito.lenient;
 /**
  * Unit tests for SearchTrainsFlowService
  * 
- * NOTE: This test class is disabled because the FlowScraperAdapter functionality
- * is not yet fully implemented. Once the flow scraping feature is complete,
- * remove the @Disabled annotation to enable these tests.
+ * NOTE: These tests verify the service layer logic even though FlowScraperAdapter
+ * is a placeholder. The tests ensure the service correctly handles the flow execution
+ * and error scenarios.
  */
-@Disabled("Flow scraping functionality is not yet implemented")
 @ExtendWith(MockitoExtension.class)
 class SearchTrainsFlowServiceTest {
 
