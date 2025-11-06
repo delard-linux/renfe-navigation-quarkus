@@ -98,22 +98,6 @@ Run the following Maven command to download Playwright browsers:
 
 This will download the necessary browsers (Chromium, Firefox, WebKit) and their system dependencies to `%USERPROFILE%\AppData\Local\ms-playwright`.
 
-## Running Real E2E Tests with Playwright
-
-To run the real Playwright test on the REST API, use one of the following Maven commands according to your terminal:
-
-### Bash
-```bash
-./mvnw verify -Dit.test="com.delard.renfe.navigation.application.rest.TrainResourceIT" -DskipITs=false
-```
-
-### PowerShell
-```powershell
-./mvnw --% verify -Dit.test="com.delard.renfe.navigation.application.rest.TrainResourceIT#testGetTrainsWithFormattedOutput" -DskipITs=false
-```
-
-This will run the integration tests with Playwright, allowing you to observe real browser automation on the Renfe website.
-
 ## Endpoints
 
 ### GET /trains
@@ -368,13 +352,19 @@ Integration tests verify interactions between layers using real Quarkus context 
 
 #### Running Integration Tests
 
+To run integration tests that use Playwright with real browser automation, use one of the following Maven commands according to your terminal:
+
+**Bash:**
+```bash
+./mvnw verify -Dit.test="com.delard.renfe.navigation.application.rest.TrainResourceIT" -DskipITs=false
+```
+
+This will run the integration tests with Playwright, allowing you to observe real browser automation on the Renfe website.
+
+
 ```bash
 # Run all integration tests
 ./mvnw integration-test -DskipTests -DskipITs=false
-
-# Run specific integration test
-./mvnw verify -Dit.test=TrainResourceIT -DskipITs=false
-```
 
 ### Test Execution Commands Summary
 
