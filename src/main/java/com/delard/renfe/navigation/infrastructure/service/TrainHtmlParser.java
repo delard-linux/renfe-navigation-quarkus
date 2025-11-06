@@ -73,7 +73,8 @@ public class TrainHtmlParser {
         train.setTrainId(trainId);
 
         // Extract service type from train image alt text
-        Element img = row.selectFirst("img[alt~=Tipo][alt~=de][alt~=tren]");
+        // HTML format: alt="Imagen de Tren. Tipo de tren AVE"
+        Element img = row.selectFirst("img[alt*='Tipo de tren']");
         if (img != null && img.hasAttr("alt")) {
             Pattern pattern = Pattern.compile("Tipo de tren\\s+(\\w+)");
             Matcher matcher = pattern.matcher(img.attr("alt"));
@@ -98,12 +99,14 @@ public class TrainHtmlParser {
         }
 
         // Extract minimum price
+        // HTML format: title="Precio desde 63,10"
         Element precioElem = row.selectFirst("span.precio-final");
         if (precioElem != null && precioElem.hasAttr("title")) {
-            Pattern pattern = Pattern.compile("([\\d,]+)");
+            Pattern pattern = Pattern.compile("Precio desde\\s+([\\d,]+)|([\\d,]+)");
             Matcher matcher = pattern.matcher(precioElem.attr("title"));
             if (matcher.find()) {
-                double price = Double.parseDouble(matcher.group(1).replace(",", "."));
+                String priceStr = matcher.group(1) != null ? matcher.group(1) : matcher.group(2);
+                double price = Double.parseDouble(priceStr.replace(",", "."));
                 train.setPriceFrom(price);
             }
         }
@@ -118,7 +121,20 @@ public class TrainHtmlParser {
         }
 
         // Extract available fares
-        Elements fareCards = row.select("div[class*='seleccion-resumen-bottom'][class*='card']");
+        // HTML format: div.seleccion-resumen-bottom.card inside div.planes-opciones
+        // Use a more flexible selector that finds elements with both classes
+        Elements fareCards = row.select("div.seleccion-resumen-bottom.card, div[class*='seleccion-resumen-bottom'][class*='card']");
+        
+        // If no fares found, try searching within planes-opciones
+        if (fareCards.isEmpty()) {
+            Element planesOpciones = row.selectFirst("div.planes-opciones");
+            if (planesOpciones != null) {
+                fareCards = planesOpciones.select("div.seleccion-resumen-bottom.card, div[class*='seleccion-resumen-bottom'][class*='card']");
+            }
+        }
+        
+        LOG.infof("[PARSER] Found %d fare cards for train %s", fareCards.size(), trainId);
+        
         for (int i = 0; i < fareCards.size(); i++) {
             try {
                 FareOption fare = parseFareCard(fareCards.get(i), trainId);
@@ -148,20 +164,29 @@ public class TrainHtmlParser {
         FareOption fare = new FareOption();
 
         // Fare name
+        // HTML format: <div class="card-header">...<span style="padding-right:10px;">Básico</span>... or "Prémium" directly
         Element header = fareCard.selectFirst("div.card-header");
         if (header != null) {
             Element nameSpan = header.selectFirst("span[style*='padding-right']");
             if (nameSpan != null) {
                 fare.setName(nameSpan.text().trim());
             } else {
-                // Fallback: extract text before the price
+                // Fallback: extract text before the price (e.g., "Prémium" or "Básico")
                 String headerText = header.text().trim();
-                Pattern pattern = Pattern.compile("^([^\\d€]+)");
+                // Remove price and extract fare name
+                Pattern pattern = Pattern.compile("^([^\\d€]+?)(?:\\s*\\d+[,.]?\\d*\\s*€)?");
                 Matcher matcher = pattern.matcher(headerText);
                 if (matcher.find()) {
-                    fare.setName(matcher.group(1).trim());
+                    String name = matcher.group(1).trim();
+                    if (!name.isEmpty()) {
+                        fare.setName(name);
+                    } else {
+                        fare.setName("Unknown");
+                    }
                 } else {
-                    fare.setName("Unknown");
+                    // Last resort: use first non-empty text node
+                    String text = header.ownText().trim();
+                    fare.setName(text.isEmpty() ? "Unknown" : text);
                 }
             }
         }
@@ -185,7 +210,8 @@ public class TrainHtmlParser {
         }
 
         // Features / amenities
-        Elements features = fareCard.select("li");
+        // HTML format: <ul class="lista-opciones">...<li>Feature text</li>...
+        Elements features = fareCard.select("ul.lista-opciones li, ul.list-group li");
         for (Element feature : features) {
             String featureText = feature.text().trim();
             if (!featureText.isEmpty()) {
