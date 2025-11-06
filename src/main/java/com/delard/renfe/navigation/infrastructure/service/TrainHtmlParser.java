@@ -43,7 +43,7 @@ public class TrainHtmlParser {
 
             // Find all train rows
             Elements trainRows = doc.select("div.selectedTren[role='listitem']");
-            LOG.infof("[PARSER] Found %d train rows", trainRows.size());
+            LOG.debugf("[PARSER] Found %d train rows", trainRows.size());
 
             int trainIndex = 0;
             for (Element row : trainRows) {
@@ -153,7 +153,7 @@ public class TrainHtmlParser {
             fareCards = row.select("div[class*='seleccion-resumen-bottom'][class*='card']");
         }
         
-        LOG.infof("[PARSER] Found %d fare cards for train %s", fareCards.size(), trainId);
+        LOG.debugf("[PARSER] Found %d fare cards for train %s", fareCards.size(), trainId);
         
         for (int i = 0; i < fareCards.size(); i++) {
             try {
@@ -163,7 +163,7 @@ public class TrainHtmlParser {
                     List<FareOption> fares = train.getFares();
                     fares.add(fare);
                     train.setFares(fares);
-                    LOG.infof("[PARSER] Successfully parsed fare %d for train %s: %s (%.2f€)", 
+                    LOG.debugf("[PARSER] Successfully parsed fare %d for train %s: %s (%.2f€)", 
                             i, trainId, fare.getName(), fare.getPrice());
                 } else {
                     LOG.warnf("[PARSER] parseFareCard returned null for fare %d of train %s", i, trainId);
