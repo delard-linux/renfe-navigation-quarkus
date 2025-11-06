@@ -99,7 +99,7 @@ The following plugins MUST be configured in `pom.xml` with the recommended confi
     - `check` (test phase): validates coverage thresholds
   - Coverage thresholds: 60% lines, 50% branches
   - Must set `haltOnFailure=false` to allow build to succeed with warnings
-- **Version**: Use property `${jacoco-maven-plugin.version}` (recommended: 0.8.11)
+- **Version**: Use property `${jacoco-maven-plugin.version}` (recommended: 0.8.14)
 
 ### Plugin Version Properties
 
@@ -107,7 +107,7 @@ Define plugin versions in properties section:
 - `surefire-plugin.version=3.1.2`
 - `failsafe-plugin.version=3.3.0`
 - `build-helper-maven-plugin.version=3.5.0`
-- `jacoco-maven-plugin.version=0.8.11`
+- `jacoco-maven-plugin.version=0.8.14`
 
 ### Execution Phases Summary
 

@@ -129,9 +129,9 @@ curl "http://localhost:8000/trains-flow?origin=OURENSE&destination=MADRID&date_o
 
 ## Requirements
 
-- Java 21+
+- Java 25+
 - Maven 3.8+
-- Configure `JAVA_HOME` pointing to your local JDK 21 installation (you can create it in an unversioned `.env` file).
+- Configure `JAVA_HOME` pointing to your local JDK 25 installation (you can create it in an unversioned `.env` file).
 
 ## Execution
 
@@ -176,7 +176,7 @@ quarkus.log.category."com.renfe".level=INFO
 quarkus.swagger-ui.path=/swagger-ui
 ```
 
-> 💡 Create a local `.env` file (excluded from version control) and define `JAVA_HOME=/path/to/your/jdk-21`. The `./mvnw` script will use that variable to run Maven with the correct JDK. If you need to customize Playwright, add variables like `PLAYWRIGHT_BROWSERS_PATH` in the same file.
+> 💡 Create a local `.env` file (excluded from version control) and define `JAVA_HOME=/path/to/your/jdk-25`. The `./mvnw` script will use that variable to run Maven with the correct JDK. If you need to customize Playwright, add variables like `PLAYWRIGHT_BROWSERS_PATH` in the same file.
 
 ## Logs
 
@@ -397,13 +397,13 @@ This will run the integration tests with Playwright, allowing you to observe rea
 
 ## Technologies
 
-- Quarkus 3.6.4
-- Java 21
+- Quarkus 3.27.0 (LTS)
+- Java 25
 - RESTEasy Reactive + Jackson
 - SmallRye OpenAPI
 - Hibernate Validator
 - JBoss Logging
-- JaCoCo 0.8.11 (Code Coverage)
+- JaCoCo 0.8.14 (Code Coverage)
 
 ## License
 

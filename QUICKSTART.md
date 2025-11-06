@@ -13,7 +13,7 @@
 http://localhost:8000
 ```
 
-> 💡 Before running the commands, create a `.env` file (not versioned) with `JAVA_HOME=/path/to/your/jdk-21` so the wrapper uses the correct JDK.
+> 💡 Before running the commands, create a `.env` file (not versioned) with `JAVA_HOME=/path/to/your/jdk-25` so the wrapper uses the correct JDK.
 
 ## Available Endpoints
 
@@ -110,7 +110,7 @@ quarkus.http.port=8080
 
 ### Error: Java version
 ```bash
-# Requires Java 21+
+# Requires Java 25+
 java -version
 ```
 

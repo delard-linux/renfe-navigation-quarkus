@@ -33,14 +33,14 @@ else
 fi
 
 if [ ! -x "$JAVA_CMD" ]; then
-  echo "ERROR: Java not found. Configure JAVA_HOME pointing to JDK 21 or add 'java' to PATH." >&2
+  echo "ERROR: Java not found. Configure JAVA_HOME pointing to JDK 25 or add 'java' to PATH." >&2
   exit 1
 fi
 
 JAVA_VERSION=$("$JAVA_CMD" -version 2>&1 | awk -F '"' '/version/ {print $2}')
 JAVA_MAJOR=${JAVA_VERSION%%.*}
-if [ "${JAVA_MAJOR:-0}" -lt 21 ]; then
-  echo "ERROR: JDK 21 or higher is required. Detected version: $JAVA_VERSION" >&2
+if [ "${JAVA_MAJOR:-0}" -lt 25 ]; then
+  echo "ERROR: JDK 25 or higher is required. Detected version: $JAVA_VERSION" >&2
   exit 1
 fi
 
