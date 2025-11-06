@@ -242,6 +242,10 @@
                     <includes>
                         <include>**/*IT.java</include>
                     </includes>
+                    <!-- Use skipITs property to control IT tests independently from unit tests -->
+                    <!-- When skipTests is set but skipITs is not, default skipITs to false to allow IT tests -->
+                    <skipTests>${skipITs}</skipTests>
+                    <skipITs>${skipITs}</skipITs>
                 </configuration>
             </plugin>
             <!-- JaCoCo plugin for unit test coverage -->
