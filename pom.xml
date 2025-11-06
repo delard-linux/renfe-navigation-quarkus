@@ -207,8 +207,6 @@
                     <testSourceDirectory>src/it/java</testSourceDirectory>
                     <includes>
                         <include>**/*IT.java</include>
-                        <include>**/*ITCase.java</include>
-                        <include>**/*E2ETest.java</include>
                     </includes>
                 </configuration>
             </plugin>
@@ -263,9 +261,6 @@
                     <!-- Only include unit tests, exclude integration tests -->
                     <excludes>
                         <exclude>**/it/**</exclude>
-                        <exclude>**/*IT.java</exclude>
-                        <exclude>**/*ITCase.java</exclude>
-                        <exclude>**/*E2ETest.java</exclude>
                     </excludes>
                 </configuration>
             </plugin>

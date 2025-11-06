@@ -104,15 +104,15 @@ To run the real Playwright test on the REST API, use one of the following Maven 
 
 ### Bash
 ```bash
-./mvnw verify -Dit.test="com.delard.renfe.navigation.application.rest.TrainResourcePlaywrightRealIT" -DskipITs=false
+./mvnw verify -Dit.test="com.delard.renfe.navigation.application.rest.TrainResourceIT" -DskipITs=false
 ```
 
 ### PowerShell
 ```powershell
-./mvnw --% verify -Dit.test="com.delard.renfe.navigation.application.rest.TrainResourcePlaywrightRealIT#shouldReturnTrainsWhenSearchingWithPlaywrightTest" -DskipITs=false
+./mvnw --% verify -Dit.test="com.delard.renfe.navigation.application.rest.TrainResourceIT#testGetTrainsWithFormattedOutput" -DskipITs=false
 ```
 
-This will run the real E2E test with Playwright, allowing you to observe real browser automation on the Renfe website.
+This will run the integration tests with Playwright, allowing you to observe real browser automation on the Renfe website.
 
 ## Endpoints
 
@@ -227,9 +227,7 @@ src/test/java/com/delard/renfe/navigation/     # Unit Tests (Maven Surefire)
 
 src/it/java/com/delard/renfe/navigation/      # Integration Tests (Maven Failsafe)
 ├── application/rest/                           # Integration tests (REST resources)
-│   ├── TrainResourceIT.java
-│   ├── TrainResourceE2ETest.java
-│   └── TrainResourcePlaywrightRealIT.java
+│   └── TrainResourceIT.java                    # All REST endpoint integration tests
 ├── infrastructure/service/                     # Integration tests (services)
 │   └── PlaywrightSearchTrainsServiceIT.java
 ├── support/config/                             # Execution profiles and shared configuration
@@ -353,17 +351,16 @@ Integration tests verify interactions between layers using real Quarkus context 
 #### Current Integration Tests
 
 **`TrainResourceIT.java`**
-- **Purpose**: Tests REST endpoints with real Quarkus context
-- **What it tests**: HTTP request/response cycle, validation, DTO mapping
+- **Purpose**: Comprehensive integration tests for REST endpoints with real Quarkus context
+- **What it tests**: 
+  - HTTP request/response cycle
+  - Request validation (Bean Validation)
+  - DTO mapping and response structure
+  - Error handling (400 errors for invalid inputs)
+  - Multiple endpoints (`/trains` and `/trains-flow`)
+  - Debug output with formatted JSON responses
+- **Test cases**: 7 tests covering valid requests, return dates, validation errors, edge cases, and debug output
 - **Uses**: `@QuarkusTest`, REST Assured, test profiles
-
-**`TrainResourceE2ETest.java`**
-- **Purpose**: End-to-end test of train search endpoint
-- **What it tests**: Complete flow from HTTP request to response
-
-**`TrainResourcePlaywrightRealIT.java`**
-- **Purpose**: Tests with real Playwright execution
-- **What it tests**: Actual browser automation and HTML parsing
 
 **`PlaywrightSearchTrainsServiceIT.java`**
 - **Purpose**: Integration test of Playwright service with real browser
@@ -377,9 +374,6 @@ Integration tests verify interactions between layers using real Quarkus context 
 
 # Run specific integration test
 ./mvnw verify -Dit.test=TrainResourceIT -DskipITs=false
-
-# Run both unit and integration tests
-./mvnw verify -DskipITs=false
 ```
 
 ### Test Execution Commands Summary

@@ -35,9 +35,10 @@
 - Integration tests MUST be placed in `src/it/java`
 - Integration tests can use `@QuarkusTest` to test with real Quarkus context
 - Integration tests may interact with real services, databases, or external APIs
-- Use Maven Failsafe plugin naming conventions: `*IT.java`, `*ITCase.java`, or `*E2ETest.java`
+- **MANDATORY naming convention: ALL integration tests MUST use `*IT.java` suffix**
+- **DO NOT use `*ITCase.java`, `*E2ETest.java`, or any other naming pattern**
 - Test profiles and stubs for integration tests should be in `src/it/java/com/.../support/`
-- Naming convention: `*IT.java` for integration tests (e.g., `TrainResourceIT.java`)
+- All tests for a single resource/class should be unified in a single `*IT.java` file
 
 ### Test Organization
 ```
@@ -57,10 +58,72 @@ src/
 ```
 
 ## Maven Configuration
-- Use Maven Surefire plugin for unit tests (`src/test/java`)
-- Use Maven Failsafe plugin for integration tests (`src/it/java`)
-- Configure build-helper-maven-plugin to add `src/it/java` as test source
-- Integration tests should run in `integration-test` phase, unit tests in `test` phase
+
+### Required Plugins
+
+The following plugins MUST be configured in `pom.xml` with the recommended configuration:
+
+#### 1. Maven Surefire Plugin (Unit Tests)
+- **Purpose**: Executes unit tests from `src/test/java`
+- **Configuration requirements**:
+  - Must include `systemPropertyVariables` with `java.util.logging.manager=org.jboss.logmanager.LogManager` (required for Quarkus)
+  - Runs tests matching `**/*Test.java` pattern
+  - Executes in `test` phase
+- **Version**: Use property `${surefire-plugin.version}` (recommended: 3.1.2)
+
+#### 2. Build Helper Maven Plugin (Add IT Sources)
+- **Purpose**: Adds `src/it/java` as a test source directory
+- **Configuration requirements**:
+  - Must add execution in `generate-test-sources` phase
+  - Must configure `<source>src/it/java</source>`
+  - Required for Maven to compile integration tests
+- **Version**: Use property `${build-helper-maven-plugin.version}` (recommended: 3.5.0)
+
+#### 3. Maven Failsafe Plugin (Integration Tests)
+- **Purpose**: Executes integration tests from `src/it/java`
+- **Configuration requirements**:
+  - **MANDATORY**: Only includes `**/*IT.java` pattern (NO `*ITCase.java` or `*E2ETest.java`)
+  - Must set `<testSourceDirectory>src/it/java</testSourceDirectory>` explicitly
+  - Must have two executions:
+    - `integration-test` phase: runs `integration-test` goal
+    - `verify` phase: runs `verify` goal
+- **Version**: Use property `${failsafe-plugin.version}` (recommended: 3.3.0)
+
+#### 4. JaCoCo Maven Plugin (Code Coverage)
+- **Purpose**: Measures code coverage for unit tests only
+- **Configuration requirements**:
+  - **MANDATORY**: Must exclude `**/it/**` to only measure unit test coverage
+  - Must have three executions:
+    - `prepare-agent`: prepares JaCoCo agent
+    - `report` (test phase): generates HTML report in `target/site/jacoco/index.html`
+    - `check` (test phase): validates coverage thresholds
+  - Coverage thresholds: 60% lines, 50% branches
+  - Must set `haltOnFailure=false` to allow build to succeed with warnings
+- **Version**: Use property `${jacoco-maven-plugin.version}` (recommended: 0.8.11)
+
+### Plugin Version Properties
+
+Define plugin versions in properties section:
+- `surefire-plugin.version=3.1.2`
+- `failsafe-plugin.version=3.3.0`
+- `build-helper-maven-plugin.version=3.5.0`
+- `jacoco-maven-plugin.version=0.8.11`
+
+### Execution Phases Summary
+
+- **Unit Tests**: `test` phase (Surefire)
+- **Integration Tests**: `integration-test` phase (Failsafe)
+- **Coverage Report**: `test` phase (JaCoCo report)
+- **Coverage Check**: `test` phase (JaCoCo check)
+- **IT Source Addition**: `generate-test-sources` phase (Build Helper)
+
+### Critical Configuration Rules
+
+1. **Failsafe MUST only include `**/*IT.java`** - No other test patterns allowed
+2. **JaCoCo MUST exclude `**/it/**`** - Only measures unit test coverage, not integration tests
+3. **Build Helper MUST add `src/it/java`** - Required for Maven to compile integration tests
+4. **Surefire MUST configure logging manager** - Required for Quarkus tests to work correctly
+5. **All plugins should use version properties** - For maintainability and consistency
 
 ## Dependencies
 - Keep domain layer free of framework dependencies
@@ -109,11 +172,15 @@ src/
 ## When Creating New Code
 1. Determine if it's unit test or integration test
 2. Place in correct directory (`src/test/java` or `src/it/java`)
-3. Use appropriate naming convention
+3. Use appropriate naming convention:
+   - Unit tests: `*Test.java` (e.g., `PlaywrightSearchTrainsServiceTest.java`)
+   - Integration tests: `*IT.java` ONLY (e.g., `TrainResourceIT.java`)
+   - **NEVER use `*ITCase.java`, `*E2ETest.java`, or other patterns for integration tests**
 4. Write all comments in English
 5. Follow the architectural pattern (domain/application/infrastructure)
 6. Add appropriate JavaDoc comments
 7. Use dependency injection for all dependencies
+8. **Unify all integration tests for a single resource/class in one `*IT.java` file**
 
 ## When Modifying Existing Code
 1. Translate any Spanish comments to English
@@ -121,4 +188,6 @@ src/
 3. Maintain architectural boundaries
 4. Update JavaDoc if method signatures change
 5. Keep unit and integration tests separate
+6. **Refactor any integration tests not following `*IT.java` naming convention**
+7. **Unify multiple integration test files for the same resource into a single `*IT.java` file**
 
