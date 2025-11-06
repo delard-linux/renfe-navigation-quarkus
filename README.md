@@ -1,67 +1,67 @@
 # Renfe Navigation Quarkus
 
-Microservicio REST API desarrollado con Quarkus para búsqueda de trenes de Renfe, implementado usando arquitectura hexagonal.
+REST API microservice developed with Quarkus for Renfe train search, implemented using hexagonal architecture.
 
-## Arquitectura
+## Architecture
 
-El proyecto sigue la arquitectura hexagonal (Ports & Adapters) con la siguiente estructura:
+The project follows hexagonal architecture (Ports & Adapters) with the following structure:
 
 ```
 src/main/java/com/renfe/navigation/
-├── domain/                          # Capa de dominio (núcleo)
-│   ├── model/                       # Entidades del dominio
+├── domain/                          # Domain layer (core)
+│   ├── model/                       # Domain entities
 │   │   ├── Train.java
 │   │   ├── FareOption.java
 │   │   ├── TrainsResponse.java
 │   │   └── FlowResponse.java
-│   └── port/                        # Puertos (interfaces)
-│       ├── input/                   # Puertos de entrada (casos de uso)
+│   └── port/                        # Ports (interfaces)
+│       ├── input/                   # Input ports (use cases)
 │       │   ├── SearchTrainsUseCase.java
 │       │   └── SearchTrainsFlowUseCase.java
-│       └── output/                  # Puertos de salida
+│       └── output/                  # Output ports
 │           ├── TrainScraperPort.java
 │           └── FlowScraperPort.java
-├── application/                     # Capa de aplicación
-│   └── service/                     # Implementación de casos de uso
+├── application/                     # Application layer
+│   └── service/                     # Use case implementation
 │       ├── SearchTrainsService.java
 │       └── SearchTrainsFlowService.java
-└── infrastructure/                  # Capa de infraestructura (adaptadores)
+└── infrastructure/                  # Infrastructure layer (adapters)
     └── adapter/
-        ├── input/                   # Adaptadores de entrada
+        ├── input/                   # Input adapters
         │   └── rest/                # REST API
         │       ├── TrainResource.java
-        │       ├── dto/             # DTOs para la API
+        │       ├── dto/             # DTOs for the API
         │       │   ├── TrainDTO.java
         │       │   ├── FareOptionDTO.java
         │       │   ├── TrainsResponseDTO.java
         │       │   └── FlowResponseDTO.java
-        │       └── mapper/          # Mappers Domain <-> DTO
+        │       └── mapper/          # Domain <-> DTO Mappers
         │           └── TrainMapper.java
-        └── output/                  # Adaptadores de salida
+        └── output/                  # Output adapters
             ├── TrainScraperAdapter.java
             └── FlowScraperAdapter.java
 ```
 
-## Características
+## Features
 
-- ✅ Arquitectura hexagonal (Ports & Adapters)
-- ✅ API REST con Quarkus RESTEasy Reactive
-- ✅ Documentación OpenAPI/Swagger integrada
-- ✅ Validación de parámetros con Bean Validation
-- ✅ Gestión de logs estructurados
-- ✅ Inyección de dependencias con CDI
-- ✅ DTOs separados del dominio
-- ✅ CORS habilitado
+- ✅ Hexagonal architecture (Ports & Adapters)
+- ✅ REST API with Quarkus RESTEasy Reactive
+- ✅ Integrated OpenAPI/Swagger documentation
+- ✅ Parameter validation with Bean Validation
+- ✅ Structured logging management
+- ✅ Dependency injection with CDI
+- ✅ DTOs separated from domain
+- ✅ CORS enabled
 
-## Instalación de Playwright en Windows
+## Playwright Installation on Windows
 
-Para ejecutar los tests E2E que usan Playwright, primero asegúrate de tener Java y Maven instalados.
+To run E2E tests that use Playwright, first make sure you have Java and Maven installed.
 
-### Dependencias Maven requeridas
+### Required Maven Dependencies
 
-Antes de instalar Playwright, asegúrate de que tu `pom.xml` incluye las siguientes dependencias:
+Before installing Playwright, make sure your `pom.xml` includes the following dependencies:
 
-#### Dependencia de Playwright
+#### Playwright Dependency
 
 ```xml
 <!-- Playwright for Web Scraping -->
@@ -72,7 +72,7 @@ Antes de instalar Playwright, asegúrate de que tu `pom.xml` incluye las siguien
 </dependency>
 ```
 
-#### Plugin exec-maven-plugin
+#### exec-maven-plugin
 
 ```xml
 <plugin>
@@ -82,9 +82,9 @@ Antes de instalar Playwright, asegúrate de que tu `pom.xml` incluye las siguien
 </plugin>
 ```
 
-### Instalar Playwright (descarga de navegadores)
+### Install Playwright (browser download)
 
-Ejecuta el siguiente comando Maven para descargar los navegadores de Playwright:
+Run the following Maven command to download Playwright browsers:
 
 #### Bash
 ```bash
@@ -96,95 +96,95 @@ Ejecuta el siguiente comando Maven para descargar los navegadores de Playwright:
 ./mvnw --% org.codehaus.mojo:exec-maven-plugin:3.3.0:java -e -Dexec.mainClass=com.microsoft.playwright.CLI -Dexec.args="install --with-deps"
 ```
 
-Esto descargará los navegadores necesarios (Chromium, Firefox, WebKit) y sus dependencias del sistema en `%USERPROFILE%\AppData\Local\ms-playwright`.
+This will download the necessary browsers (Chromium, Firefox, WebKit) and their system dependencies to `%USERPROFILE%\AppData\Local\ms-playwright`.
 
-## Ejecución de tests E2E reales con Playwright
+## Running Real E2E Tests with Playwright
 
-Para ejecutar el test real de Playwright sobre la API REST, usa uno de los siguientes comandos Maven según tu terminal:
+To run the real Playwright test on the REST API, use one of the following Maven commands according to your terminal:
 
 ### Bash
 ```bash
-./mvnw verify -Dit.test="com.delard.renfe.navigation.application.rest.TrainResourcePlaywrightRealTest" -DskipITs=false
+./mvnw verify -Dit.test="com.delard.renfe.navigation.application.rest.TrainResourcePlaywrightRealIT" -DskipITs=false
 ```
 
 ### PowerShell
 ```powershell
-./mvnw --% verify -Dit.test="com.delard.renfe.navigation.application.rest.TrainResourcePlaywrightRealTest#shouldReturnTrainsWhenSearchingWithPlaywrightTest" -DskipITs=false
+./mvnw --% verify -Dit.test="com.delard.renfe.navigation.application.rest.TrainResourcePlaywrightRealIT#shouldReturnTrainsWhenSearchingWithPlaywrightTest" -DskipITs=false
 ```
 
-Esto ejecutará el test E2E real con Playwright, permitiendo observar la automatización real del navegador sobre la web de Renfe.
+This will run the real E2E test with Playwright, allowing you to observe real browser automation on the Renfe website.
 
 ## Endpoints
 
 ### GET /trains
 
-Busca trenes entre dos estaciones.
+Searches for trains between two stations.
 
-**Parámetros:**
-- `origin` (required): Estación de origen (ej: "OURENSE")
-- `destination` (required): Estación de destino (ej: "MADRID")
-- `date_out` (required): Fecha de ida en formato YYYY-MM-DD
-- `date_return` (optional): Fecha de vuelta en formato YYYY-MM-DD
-- `adults` (optional, default=1): Número de pasajeros adultos (1-8)
+**Parameters:**
+- `origin` (required): Origin station (e.g., "OURENSE")
+- `destination` (required): Destination station (e.g., "MADRID")
+- `date_out` (required): Outbound date in YYYY-MM-DD format
+- `date_return` (optional): Return date in YYYY-MM-DD format
+- `adults` (optional, default=1): Number of adult passengers (1-8)
 
-**Ejemplo:**
+**Example:**
 ```bash
 curl "http://localhost:8000/trains?origin=OURENSE&destination=MADRID&date_out=2025-11-15&adults=2"
 ```
 
 ### GET /trains-flow
 
-Ejecuta el flujo completo desde la página principal de Renfe hasta la búsqueda.
+Executes the complete flow from Renfe's main page to the search.
 
-**Parámetros:** Los mismos que `/trains`
+**Parameters:** Same as `/trains`
 
-**Ejemplo:**
+**Example:**
 ```bash
 curl "http://localhost:8000/trains-flow?origin=OURENSE&destination=MADRID&date_out=2025-11-15"
 ```
 
-## Requisitos
+## Requirements
 
 - Java 21+
 - Maven 3.8+
-- Configura `JAVA_HOME` apuntando a tu instalación local de JDK 21 (puedes crearlo en un archivo `.env` no versionado).
+- Configure `JAVA_HOME` pointing to your local JDK 21 installation (you can create it in an unversioned `.env` file).
 
-## Ejecución
+## Execution
 
-### Modo desarrollo (con hot reload)
+### Development mode (with hot reload)
 
 ```bash
 ./mvnw quarkus:dev
 ```
 
-La aplicación estará disponible en:
+The application will be available at:
 - API: http://localhost:8000
 - Swagger UI: http://localhost:8000/swagger-ui
 - OpenAPI spec: http://localhost:8000/openapi
 
-### Compilar y ejecutar
+### Compile and run
 
 ```bash
 ./mvnw clean package
 java -jar target/quarkus-app/quarkus-run.jar
 ```
 
-### Compilar imagen nativa (requiere GraalVM)
+### Compile native image (requires GraalVM)
 
 ```bash
 ./mvnw package -Pnative
 ./target/renfe-navigation-quarkus-1.0.0-SNAPSHOT-runner
 ```
 
-## Configuración
+## Configuration
 
-La configuración se encuentra en `src/main/resources/application.properties`:
+Configuration is located in `src/main/resources/application.properties`:
 
 ```properties
-# Puerto HTTP
+# HTTP Port
 quarkus.http.port=8000
 
-# Nivel de logs
+# Log level
 quarkus.log.level=INFO
 quarkus.log.category."com.renfe".level=INFO
 
@@ -192,27 +192,27 @@ quarkus.log.category."com.renfe".level=INFO
 quarkus.swagger-ui.path=/swagger-ui
 ```
 
-> 💡 Crea un archivo local `.env` (excluido del control de versiones) y define `JAVA_HOME=/ruta/a/tu/jdk-21`. El script `./mvnw` usará esa variable para ejecutar Maven con el JDK correcto. Si necesitas personalizar Playwright, añade variables como `PLAYWRIGHT_BROWSERS_PATH` en el mismo archivo.
+> 💡 Create a local `.env` file (excluded from version control) and define `JAVA_HOME=/path/to/your/jdk-21`. The `./mvnw` script will use that variable to run Maven with the correct JDK. If you need to customize Playwright, add variables like `PLAYWRIGHT_BROWSERS_PATH` in the same file.
 
 ## Logs
 
-La aplicación incluye logs estructurados en múltiples niveles:
+The application includes structured logs at multiple levels:
 
-- `[REQUEST]` - Inicio de petición con parámetros
-- `[SUCCESS]` - Finalización exitosa con métricas
-- `[ERROR]` - Errores con stack trace
-- `[FLOW REQUEST]` - Inicio de flujo
-- `[FLOW SUCCESS]` - Finalización exitosa del flujo
-- `[FLOW ERROR]` - Errores en el flujo
+- `[REQUEST]` - Request start with parameters
+- `[SUCCESS]` - Successful completion with metrics
+- `[ERROR]` - Errors with stack trace
+- `[FLOW REQUEST]` - Flow start
+- `[FLOW SUCCESS]` - Successful flow completion
+- `[FLOW ERROR]` - Flow errors
 
-## Pendiente de implementación
+## Pending Implementation
 
-Los siguientes adaptadores están creados pero pendientes de implementación:
+The following adapters are created but pending implementation:
 
-- `TrainScraperAdapter`: Lógica de scraping de trenes (usar Playwright o similar)
-- `FlowScraperAdapter`: Lógica del flujo completo de navegación
+- `TrainScraperAdapter`: Train scraping logic (use Playwright or similar)
+- `FlowScraperAdapter`: Complete navigation flow logic
 
-Actualmente devuelven respuestas vacías/placeholder para permitir el arranque y prueba de la arquitectura.
+Currently they return empty/placeholder responses to allow architecture startup and testing.
 
 ## Testing
 
@@ -220,23 +220,41 @@ Actualmente devuelven respuestas vacías/placeholder para permitir el arranque y
 ./mvnw test
 ```
 
-Estructura principal de los tests:
+Main test structure:
 
 ```
 src/test/java/com/delard/renfe/navigation/
-├── application/rest/               # Tests de recursos REST (unitarios e integraciones ligeras)
-│   ├── TrainResourceTest.java
+├── infrastructure/service/          # Unit tests with mocks
+│   └── PlaywrightSearchTrainsServiceTest.java
+
+src/it/java/com/delard/renfe/navigation/
+├── application/rest/                # Integration tests (REST resources)
+│   ├── TrainResourceIT.java
 │   ├── TrainResourceE2ETest.java
-│   └── TrainResourcePlaywrightRealTest.java
-├── support/config/                 # Perfiles de ejecución y configuración compartida
+│   └── TrainResourcePlaywrightRealIT.java
+├── infrastructure/service/          # Integration tests (services)
+│   └── PlaywrightSearchTrainsServiceIT.java
+├── support/config/                   # Execution profiles and shared configuration
 │   ├── PlaywrightDebugNoHeadlessProfile.java
 │   └── PlaywrightRealProfile.java
-└── support/stub/                   # Stubs y dobles de prueba para puertos externos
+└── support/stub/                    # Stubs and test doubles for external ports
     └── StubTrainScraperAdapter.java
 ```
 
+### Test Execution Commands
 
-## Tecnologías
+```bash
+# Run only unit tests
+./mvnw test
+
+# Run unit tests + integration tests
+./mvnw verify -DskipITs=false
+
+# Run only integration tests (without unit tests)
+./mvnw integration-test -DskipTests -DskipITs=false
+```
+
+## Technologies
 
 - Quarkus 3.6.4
 - Java 21
@@ -245,22 +263,21 @@ src/test/java/com/delard/renfe/navigation/
 - Hibernate Validator
 - JBoss Logging
 
-## Licencia
+## License
 
 MIT
 
 ## Troubleshooting Playwright
 
-Si encuentras errores al ejecutar tests con Playwright, verifica lo siguiente:
+If you encounter errors when running tests with Playwright, verify the following:
 
-1. **Navegadores no instalados**: Ejecuta el comando de instalación de Playwright mostrado arriba.
+1. **Browsers not installed**: Run the Playwright installation command shown above.
 
-2. **Timeout en tests**: Si los tests fallan por timeout, verifica que los navegadores estén correctamente instalados y que no haya procesos bloqueados por antivirus/firewall.
+2. **Timeout in tests**: If tests fail due to timeout, verify that browsers are correctly installed and that there are no processes blocked by antivirus/firewall.
 
-3. **Versión incompatible**: Asegúrate de que la versión de Playwright en el `pom.xml` coincida con los navegadores instalados. Si cambias la versión, reinstala los navegadores.
+3. **Incompatible version**: Make sure the Playwright version in `pom.xml` matches the installed browsers. If you change the version, reinstall the browsers.
 
-4. **Variable de entorno (opcional)**: Si prefieres usar una ubicación personalizada para los navegadores, puedes configurar:
+4. **Environment variable (optional)**: If you prefer to use a custom location for browsers, you can configure:
    ```cmd
-   set PLAYWRIGHT_BROWSERS_PATH=C:\ruta\personalizada\ms-playwright
+   set PLAYWRIGHT_BROWSERS_PATH=C:\custom\path\ms-playwright
    ```
-

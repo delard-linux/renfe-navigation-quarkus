@@ -1,137 +1,136 @@
 # Quick Start Guide - Renfe Navigation Quarkus
 
-## Inicio Rápido
+## Quick Start
 
 ```bash
-# 1. Compilar el proyecto
+# 1. Build the project
 ./mvnw clean package -DskipTests
 
-# 2. Ejecutar en modo desarrollo (con hot reload)
+# 2. Run in development mode (with hot reload)
 ./mvnw quarkus:dev
 
-# 3. Acceder a la aplicación
+# 3. Access the application
 http://localhost:8000
 ```
 
-> 💡 Antes de ejecutar los comandos, crea un archivo `.env` (no se versiona) con `JAVA_HOME=/ruta/a/tu/jdk-21` para que el wrapper utilice el JDK correcto.
+> 💡 Before running the commands, create a `.env` file (not versioned) with `JAVA_HOME=/path/to/your/jdk-21` so the wrapper uses the correct JDK.
 
-## Endpoints Disponibles
+## Available Endpoints
 
-### 1. Buscar Trenes
+### 1. Search Trains
 ```bash
 GET /trains?origin=OURENSE&destination=MADRID&date_out=2025-12-15&adults=1
 ```
 
-### 2. Flujo Completo
+### 2. Complete Flow
 ```bash
 GET /trains-flow?origin=OURENSE&destination=MADRID&date_out=2025-12-15&adults=1
 ```
 
-### 3. Documentación API
+### 3. API Documentation
 - Swagger UI: http://localhost:8000/swagger-ui
 - OpenAPI Spec: http://localhost:8000/openapi
 
-## Estructura del Proyecto
+## Project Structure
 
 ```
-├── domain/                  # Núcleo del negocio
-│   ├── model/              # Entidades
-│   └── port/               # Interfaces (contratos)
-│       ├── input/          # Casos de uso
-│       └── output/         # Servicios externos
-├── application/            # Lógica de aplicación
-│   └── service/            # Implementación de casos de uso
-└── infrastructure/         # Detalles técnicos
+├── domain/                  # Business core
+│   ├── model/              # Entities
+│   └── port/               # Interfaces (contracts)
+│       ├── input/          # Use cases
+│       └── output/         # External services
+├── application/            # Application logic
+│   └── service/            # Use case implementation
+└── infrastructure/         # Technical details
     └── adapter/
         ├── input/          # REST API
-        └── output/         # Implementaciones externas
+        └── output/         # External implementations
 ```
 
-## Pendiente de Implementar
+## Pending Implementation
 
-Los siguientes adaptadores están creados, pero vacíos (retornan datos placeholder):
+The following adapters are created but empty (return placeholder data):
 
 1. **TrainScraperAdapter** - `src/.../infrastructure/adapter/output/TrainScraperAdapter.java`
-   - Implementar scraping de trenes con Playwright/Selenium
+   - Implement train scraping with Playwright/Selenium
 
 2. **FlowScraperAdapter** - `src/.../infrastructure/adapter/output/FlowScraperAdapter.java`
-   - Implementar navegación completa por el sitio de Renfe
+   - Implement complete navigation through Renfe website
 
 ## Testing
 
 ```bash
-# Ejecutar tests
+# Run tests
 ./mvnw test
 
-# Test de un endpoint específico
-./mvnw test -Dtest=TrainResourceTest#testGetTrainsEndpoint
+# Test a specific endpoint
+./mvnw test -Dtest=PlaywrightSearchTrainsServiceTest#searchTrainsReturnsOutboundResults
 ```
 
-## Compilación para Producción
+## Production Build
 
 ```bash
-# JAR normal
+# Normal JAR
 ./mvnw clean package
 java -jar target/quarkus-app/quarkus-run.jar
 
-# Imagen nativa (requiere GraalVM)
+# Native image (requires GraalVM)
 ./mvnw package -Pnative
 ./target/renfe-navigation-quarkus-1.0.0-SNAPSHOT-runner
 ```
 
 
-## Configuración
+## Configuration
 
-Editar `src/main/resources/application.properties`:
+Edit `src/main/resources/application.properties`:
 
 ```properties
-# Puerto
+# Port
 quarkus.http.port=8000
 
-# Nivel de logs
+# Log level
 quarkus.log.category."com.renfe".level=INFO
 ```
 
 ## Logs
 
-El sistema genera logs estructurados:
-- `[REQUEST]` - Inicio de petición
-- `[SUCCESS]` - Operación exitosa
-- `[ERROR]` - Errores
-- `[FLOW REQUEST]` / `[FLOW SUCCESS]` / `[FLOW ERROR]` - Operaciones de flujo
+The system generates structured logs:
+- `[REQUEST]` - Request start
+- `[SUCCESS]` - Successful operation
+- `[ERROR]` - Errors
+- `[FLOW REQUEST]` / `[FLOW SUCCESS]` / `[FLOW ERROR]` - Flow operations
 
 ## Troubleshooting
 
-### Error: Puerto 8000 ya en uso
+### Error: Port 8000 already in use
 ```properties
-# Cambiar en application.properties
+# Change in application.properties
 quarkus.http.port=8080
 ```
 
 ### Error: Java version
 ```bash
-# Requiere Java 21+
+# Requires Java 21+
 java -version
 ```
 
-### Error de compilación
+### Compilation error
 ```bash
-# Limpiar y recompilar
+# Clean and rebuild
 ./mvnw clean install -U
 ```
 
-## Próximos Pasos
+## Next Steps
 
-1. Implementar `TrainScraperAdapter` con tu lógica de scraping
-2. Implementar `FlowScraperAdapter` con tu navegación
-3. Añadir tests unitarios para los servicios
-4. Configurar CI/CD
-5. Añadir métricas y monitoreo
+1. Implement `TrainScraperAdapter` with your scraping logic
+2. Implement `FlowScraperAdapter` with your navigation
+3. Add unit tests for services
+4. Configure CI/CD
+5. Add metrics and monitoring
 
-## Referencias
+## References
 
-- [Documentación Quarkus](https://quarkus.io/guides/)
-- [Arquitectura Hexagonal](./ARCHITECTURE.md)
-- [Ejemplos de uso](./EXAMPLES.md)
-- [README completo](./README.md)
-
+- [Quarkus Documentation](https://quarkus.io/guides/)
+- [Architecture](./ARCHITECTURE.md)
+- [Usage Examples](./EXAMPLES.md)
+- [Complete README](./README.md)

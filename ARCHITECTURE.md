@@ -1,12 +1,12 @@
-# Arquitectura Hexagonal - Renfe Navigation Quarkus
+# Hexagonal Architecture - Renfe Navigation Quarkus
 
-## Diagrama de Capas
+## Layer Diagram
 
 ```
 ┌─────────────────────────────────────────────────────────────────┐
-│                     ADAPTADORES DE ENTRADA                      │
-│  (Infrastructure Layer - Input Adapters)                        │
-│                                                                 │
+│                     INPUT ADAPTERS                                │
+│  (Infrastructure Layer - Input Adapters)                          │
+│                                                                   │
 │  ┌────────────────────────────────────────────────────────┐     │
 │  │         REST API (TrainResource)                       │     │
 │  │  - GET /trains                                         │     │
@@ -16,29 +16,29 @@
 └─────────────────────────────────────────────────────────────────┘
                               ↓
 ┌─────────────────────────────────────────────────────────────────┐
-│                     CAPA DE APLICACIÓN                          │
-│  (Application Layer - Use Cases)                                │
-│                                                                 │
+│                     APPLICATION LAYER                            │
+│  (Application Layer - Use Cases)                                 │
+│                                                                   │
 │  ┌────────────────────────────────────────────────────────┐     │
 │  │  SearchTrainsService                                   │     │
 │  │  SearchTrainsFlowService                               │     │
-│  │  - Orquestación de lógica de negocio                   │     │
-│  │  - Logging de operaciones                              │     │
+│  │  - Business logic orchestration                        │     │
+│  │  - Operation logging                                   │     │
 │  └────────────────────────────────────────────────────────┘     │
 └─────────────────────────────────────────────────────────────────┘
                               ↓
 ┌─────────────────────────────────────────────────────────────────┐
-│                       CAPA DE DOMINIO                           │
-│  (Domain Layer - Core Business Logic)                           │
-│                                                                 │
-│  ┌─────────────────────┐        ┌─────────────────────────┐     │
-│  │   Ports (Input)     │        │    Ports (Output)       │     │
-│  │                     │        │                         │     │
-│  │  SearchTrainsUseCase│        │  TrainScraperPort       │     │
-│  │  SearchTrainsFlow   │        │  FlowScraperPort        │     │
-│  │  UseCase            │        │                         │     │
-│  └─────────────────────┘        └─────────────────────────┘     │
-│                                                                 │
+│                       DOMAIN LAYER                                │
+│  (Domain Layer - Core Business Logic)                             │
+│                                                                   │
+│  ┌─────────────────────┐        ┌─────────────────────────┐       │
+│  │   Ports (Input)    │        │    Ports (Output)       │       │
+│  │                     │        │                         │       │
+│  │  SearchTrainsUseCase│        │  TrainScraperPort       │       │
+│  │  SearchTrainsFlow   │        │  FlowScraperPort        │       │
+│  │  UseCase            │        │                         │       │
+│  └─────────────────────┘        └─────────────────────────┘       │
+│                                                                   │
 │  ┌────────────────────────────────────────────────────────┐     │
 │  │              Domain Models                             │     │
 │  │  - Train                                               │     │
@@ -49,60 +49,59 @@
 └─────────────────────────────────────────────────────────────────┘
                               ↓
 ┌─────────────────────────────────────────────────────────────────┐
-│                    ADAPTADORES DE SALIDA                        │
-│  (Infrastructure Layer - Output Adapters)                       │
-│                                                                 │
+│                    OUTPUT ADAPTERS                               │
+│  (Infrastructure Layer - Output Adapters)                        │
+│                                                                   │
 │  ┌────────────────────────────────────────────────────────┐     │
-│  │  TrainScraperAdapter (pendiente implementación)        │     │
-│  │  FlowScraperAdapter (pendiente implementación)         │     │
-│  │  - Integración con Renfe                               │     │
+│  │  TrainScraperAdapter (pending implementation)          │     │
+│  │  FlowScraperAdapter (pending implementation)           │     │
+│  │  - Renfe integration                                   │     │
 │  │  - Web scraping / API calls                            │     │
 │  └────────────────────────────────────────────────────────┘     │
 └─────────────────────────────────────────────────────────────────┘
 ```
 
-## Flujo de Datos
+## Data Flow
 
-1. **Request HTTP** → TrainResource (REST Controller)
-2. **Validación** → Bean Validation en parámetros
-3. **Mapping** → DTO a Domain Models
+1. **HTTP Request** → TrainResource (REST Controller)
+2. **Validation** → Bean Validation on parameters
+3. **Mapping** → DTO to Domain Models
 4. **Use Case** → SearchTrainsService (Application Layer)
-5. **Domain Logic** → Procesamiento en capa de dominio
-6. **Port Output** → Llamada a TrainScraperAdapter
+5. **Domain Logic** → Processing in domain layer
+6. **Output Port** → Call to TrainScraperAdapter
 7. **External System** → Renfe website/API
-8. **Response** → Mapeo Domain → DTO → JSON
+8. **Response** → Domain → DTO → JSON mapping
 
-## Principios de Arquitectura Hexagonal
+## Hexagonal Architecture Principles
 
-### ✅ Independencia del Framework
-El dominio no depende de Quarkus ni de ningún framework externo.
+### ✅ Framework Independence
+The domain does not depend on Quarkus or any external framework.
 
-### ✅ Testeable
-Cada capa puede ser testeada independientemente usando mocks de los puertos.
+### ✅ Testable
+Each layer can be tested independently using port mocks.
 
-### ✅ Independencia de UI
-La API REST es solo un adaptador. Se pueden añadir otros (GraphQL, gRPC, etc.).
+### ✅ UI Independence
+The REST API is just an adapter. Others can be added (GraphQL, gRPC, etc.).
 
-### ✅ Independencia de BD/Servicios Externos
-Los adaptadores de salida son intercambiables sin afectar el dominio.
+### ✅ Database/External Services Independence
+Output adapters are interchangeable without affecting the domain.
 
-### ✅ Reglas de Negocio en el Centro
-Todo el conocimiento del negocio está en la capa de dominio.
+### ✅ Business Rules at the Center
+All business knowledge is in the domain layer.
 
-## Tecnologías por Capa
+## Technologies by Layer
 
-| Capa           | Tecnologías                                         |
-|----------------|-----------------------------------------------------|
-| **Entrada**    | JAX-RS, RESTEasy Reactive, Bean Validation, OpenAPI |
-| **Aplicación** | CDI, JBoss Logging                                  |
-| **Dominio**    | Java POJOs (sin dependencias)                       |
-| **Salida**     | A implementar (Playwright, HttpClient, etc.)        |
+| Layer           | Technologies                                         |
+|-----------------|------------------------------------------------------|
+| **Input**       | JAX-RS, RESTEasy Reactive, Bean Validation, OpenAPI |
+| **Application** | CDI, JBoss Logging                                  |
+| **Domain**      | Java POJOs (no dependencies)                        |
+| **Output**      | To be implemented (Playwright, HttpClient, etc.)    |
 
-## Ventajas de esta Arquitectura
+## Advantages of this Architecture
 
-1. **Mantenibilidad**: Cambios en infraestructura no afectan al dominio
-2. **Testabilidad**: Fácil crear tests unitarios con mocks
-3. **Escalabilidad**: Se pueden añadir nuevos adaptadores sin cambiar el core
-4. **Claridad**: Separación clara de responsabilidades
-5. **Reutilización**: La lógica de negocio es independiente de la tecnología
-
+1. **Maintainability**: Infrastructure changes do not affect the domain
+2. **Testability**: Easy to create unit tests with mocks
+3. **Scalability**: New adapters can be added without changing the core
+4. **Clarity**: Clear separation of responsibilities
+5. **Reusability**: Business logic is independent of technology

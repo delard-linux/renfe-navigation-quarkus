@@ -1,42 +1,42 @@
-# Ejemplos de uso de la API
+# API Usage Examples
 
-## 1. Búsqueda simple de trenes (solo ida)
+## 1. Simple train search (outbound only)
 
 ```bash
 curl -X GET "http://localhost:8000/trains?origin=OURENSE&destination=MADRID&date_out=2025-12-15&adults=1"
 ```
 
-## 2. Búsqueda con ida y vuelta
+## 2. Search with outbound and return
 
 ```bash
 curl -X GET "http://localhost:8000/trains?origin=BARCELONA&destination=VALENCIA&date_out=2025-12-20&date_return=2025-12-27&adults=2"
 ```
 
-## 3. Búsqueda con múltiples pasajeros
+## 3. Search with multiple passengers
 
 ```bash
 curl -X GET "http://localhost:8000/trains?origin=MADRID&destination=SEVILLA&date_out=2025-11-25&adults=4"
 ```
 
-## 4. Ejecutar flujo completo
+## 4. Execute complete flow
 
 ```bash
 curl -X GET "http://localhost:8000/trains-flow?origin=OURENSE&destination=MADRID&date_out=2025-12-01&adults=1"
 ```
 
-## 5. Con PowerShell (Windows)
+## 5. With PowerShell (Windows)
 
 ```powershell
 Invoke-RestMethod -Uri "http://localhost:8000/trains?origin=OURENSE&destination=MADRID&date_out=2025-12-15&adults=1" -Method Get
 ```
 
-## 6. Con formato JSON (usando jq)
+## 6. With JSON formatting (using jq)
 
 ```bash
 curl -s "http://localhost:8000/trains?origin=OURENSE&destination=MADRID&date_out=2025-12-15&adults=1" | jq
 ```
 
-## Respuesta de ejemplo
+## Example Response
 
 ```json
 {
@@ -73,13 +73,12 @@ curl -s "http://localhost:8000/trains?origin=OURENSE&destination=MADRID&date_out
 }
 ```
 
-## Acceder a Swagger UI
+## Access Swagger UI
 
-Abrir en el navegador: http://localhost:8000/swagger-ui
+Open in browser: http://localhost:8000/swagger-ui
 
-## Ver especificación OpenAPI
+## View OpenAPI Specification
 
 ```bash
 curl http://localhost:8000/openapi
 ```
-
