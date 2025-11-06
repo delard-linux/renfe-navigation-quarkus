@@ -10,9 +10,9 @@ import java.util.Arrays;
 import java.util.List;
 
 /**
- * Implementación stub del puerto {@link TrainScraperPort} utilizada en pruebas.
- * Devuelve un conjunto fijo de trenes de ida y una lista vacía para los de vuelta,
- * permitiendo aislar los tests de la integración real con Playwright o servicios externos.
+ * Stub implementation of the {@link TrainScraperPort} port used in tests.
+ * Returns a fixed set of outbound trains and an empty list for return trains,
+ * allowing tests to be isolated from real integration with Playwright or external services.
  */
 @Alternative
 @ApplicationScoped

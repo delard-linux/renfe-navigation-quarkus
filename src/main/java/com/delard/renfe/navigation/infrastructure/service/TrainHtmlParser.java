@@ -161,7 +161,7 @@ public class TrainHtmlParser {
                 if (matcher.find()) {
                     fare.setName(matcher.group(1).trim());
                 } else {
-                    fare.setName("Desconocida");
+                    fare.setName("Unknown");
                 }
             }
         }

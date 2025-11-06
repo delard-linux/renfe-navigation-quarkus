@@ -11,11 +11,11 @@ public class PlaywrightDebugNoHeadlessProfile implements QuarkusTestProfile {
     @Override
     public Map<String, String> getConfigOverrides() {
         Map<String, String> cfg = new HashMap<>();
-        // Perfil de depuración: ejecuta Playwright con ventana visible (no headless)
+        // Debug profile: runs Playwright with visible window (not headless)
         cfg.put("playwright.headless", "false");
-        // Aumenta el slow-mo para observar mejor las acciones en el navegador
+        // Increases slow-mo to better observe actions in the browser
         cfg.put("playwright.slow-mo", "200");
-        // Aumenta timeouts por tratarse de navegación remota
+        // Increases timeouts due to remote navigation
         cfg.put("playwright.timeout-navigation-ms", "60000");
         cfg.put("playwright.timeout-networkidle-ms", "60000");
         cfg.put("playwright.timeout-short-ms", "1000");

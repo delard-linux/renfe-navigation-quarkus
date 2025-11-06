@@ -13,14 +13,14 @@ import static org.hamcrest.CoreMatchers.notNullValue;
 @QuarkusTest
 @TestProfile(PlaywrightDebugNoHeadlessProfile.class)
 /**
- * Pruebas de integración del recurso de trenes.
- * Se validan respuestas correctas y errores de validación comunes.
+ * Integration tests for train resource.
+ * Validates correct responses and common validation errors.
  */
 public class TrainResourceIT {
 
     /**
-     * Valida que `/trains` devuelve 200 y JSON con los campos básicos esperados
-     * cuando se proporcionan parámetros válidos para una búsqueda de ida.
+     * Validates that `/trains` returns 200 and JSON with expected basic fields
+     * when valid parameters are provided for an outbound search.
      */
     @Test
     public void testGetTrainsEndpoint() {
@@ -41,8 +41,8 @@ public class TrainResourceIT {
     }
 
     /**
-     * Valida que `/trains` acepta fecha de vuelta y devuelve 200
-     * con los campos de ida y la fecha de regreso presente.
+     * Validates that `/trains` accepts return date and returns 200
+     * with outbound fields and return date present.
      */
     @Test
     public void testGetTrainsWithReturnDate() {
@@ -63,7 +63,7 @@ public class TrainResourceIT {
     }
 
     /**
-     * Verifica que si falta `origin` el endpoint responde con 400 (petición inválida).
+     * Verifies that if `origin` is missing, the endpoint responds with 400 (invalid request).
      */
     @Test
     public void testGetTrainsMissingOrigin() {
@@ -76,7 +76,7 @@ public class TrainResourceIT {
     }
 
     /**
-     * Verifica que un formato de fecha inválido en `date_out` provoca un 400.
+     * Verifies that an invalid date format in `date_out` causes a 400 error.
      */
     @Test
     public void testGetTrainsInvalidDateFormat() {
@@ -90,7 +90,7 @@ public class TrainResourceIT {
     }
 
     /**
-     * Comprueba el endpoint `/trains-flow` retorna 200 y campos `message` y `filepath`.
+     * Checks that the `/trains-flow` endpoint returns 200 and fields `message` and `filepath`.
      */
     @Test
     public void testGetTrainsFlowEndpoint() {
@@ -108,7 +108,7 @@ public class TrainResourceIT {
     }
 
     /**
-     * Verifica que un número de adultos fuera de rango devuelve un 400.
+     * Verifies that a number of adults out of range returns a 400 error.
      */
     @Test
     public void testGetTrainsInvalidAdultsCount() {

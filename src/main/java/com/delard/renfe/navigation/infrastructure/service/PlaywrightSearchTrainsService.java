@@ -36,7 +36,7 @@ public class PlaywrightSearchTrainsService {
                                            String dateReturn, int adults) {
         LOG.infof("Starting Chromium browser");
 
-        // TODO: que pasa en caso de que haya mas de una estación con la misma cadena?
+        // TODO: what happens if there are multiple stations with the same string?
         Map<String, String> originStation = renfeCommonService.findStation(origin);
         Map<String, String> destStation = renfeCommonService.findStation(destination);
 
@@ -253,7 +253,7 @@ public class PlaywrightSearchTrainsService {
                 return "null";
             }
             return String.format("%s %s-%s %.2f€",
-                valueOrDefault(train.getTrainId(), "(sin-id)"),
+                valueOrDefault(train.getTrainId(), "(no-id)"),
                 valueOrDefault(train.getDepartureTime(), "--"),
                 valueOrDefault(train.getArrivalTime(), "--"),
                 train.getPriceFrom());

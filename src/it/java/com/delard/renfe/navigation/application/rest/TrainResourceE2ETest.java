@@ -12,14 +12,14 @@ import static org.hamcrest.CoreMatchers.notNullValue;
 @QuarkusTest
 @TestProfile(PlaywrightDebugNoHeadlessProfile.class)
 /**
- * Pruebas E2E del recurso de trenes usando Playwright en modo no headless (debug).
- * Valida que la búsqueda de trenes retorne JSON con campos esperados.
+ * E2E tests for train resource using Playwright in non-headless mode (debug).
+ * Validates that train search returns JSON with expected fields.
  */
 public class TrainResourceE2ETest {
 
     /**
-     * Comprueba que el GET `/trains` responde 200 y contiene `trains_out`.
-     * Usa parámetros de ejemplo para simular una búsqueda de ida.
+     * Checks that GET `/trains` responds with 200 and contains `trains_out`.
+     * Uses example parameters to simulate an outbound search.
      */
     @Test
     public void e2eGetTrainsNonHeadless() {

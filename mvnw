@@ -10,7 +10,7 @@ WRAPPER_DIR="$MVNW_DIR/.mvn/wrapper"
 WRAPPER_JAR="$WRAPPER_DIR/maven-wrapper.jar"
 WRAPPER_PROPERTIES="$WRAPPER_DIR/maven-wrapper.properties"
 
-# Cargar variables de entorno desde .env si está presente
+# Load environment variables from .env if present
 ENV_FILE="$MVNW_DIR/.env"
 if [ -f "$ENV_FILE" ]; then
   # shellcheck disable=SC1090
@@ -20,12 +20,12 @@ if [ -f "$ENV_FILE" ]; then
 fi
 
 if [ ! -d "$WRAPPER_DIR" ]; then
-  echo "ERROR: No se encontró el directorio $WRAPPER_DIR" >&2
-  echo "Asegúrate de haber incluido .mvn/wrapper en el repositorio." >&2
+  echo "ERROR: Directory $WRAPPER_DIR not found" >&2
+  echo "Make sure you have included .mvn/wrapper in the repository." >&2
   exit 1
 fi
 
-# Determinar el ejecutable de Java
+# Determine Java executable
 if [ -n "$JAVA_HOME" ]; then
   JAVA_CMD="$JAVA_HOME/bin/java"
 else
@@ -33,24 +33,24 @@ else
 fi
 
 if [ ! -x "$JAVA_CMD" ]; then
-  echo "ERROR: No se encontró Java. Configura JAVA_HOME apuntando a un JDK 21 o añade 'java' al PATH." >&2
+  echo "ERROR: Java not found. Configure JAVA_HOME pointing to JDK 21 or add 'java' to PATH." >&2
   exit 1
 fi
 
 JAVA_VERSION=$("$JAVA_CMD" -version 2>&1 | awk -F '"' '/version/ {print $2}')
 JAVA_MAJOR=${JAVA_VERSION%%.*}
 if [ "${JAVA_MAJOR:-0}" -lt 21 ]; then
-  echo "ERROR: Se requiere JDK 21 o superior. Versión detectada: $JAVA_VERSION" >&2
+  echo "ERROR: JDK 21 or higher is required. Detected version: $JAVA_VERSION" >&2
   exit 1
 fi
 
-# Determinar la URL del wrapper desde las propiedades si existe
+# Determine wrapper URL from properties if it exists
 WRAPPER_URL=$(grep '^wrapperUrl=' "$WRAPPER_PROPERTIES" 2>/dev/null | cut -d'=' -f2-)
 if [ -z "$WRAPPER_URL" ]; then
   WRAPPER_URL="https://repo.maven.apache.org/maven2/org/apache/maven/wrapper/maven-wrapper/3.2.0/maven-wrapper-3.2.0.jar"
 fi
 
-# Descargar el wrapper si no está presente
+# Download wrapper if not present
 if [ ! -f "$WRAPPER_JAR" ]; then
   mkdir -p "$WRAPPER_DIR"
   if command -v curl >/dev/null 2>&1; then
@@ -58,14 +58,14 @@ if [ ! -f "$WRAPPER_JAR" ]; then
   elif command -v wget >/dev/null 2>&1; then
     wget --quiet "$WRAPPER_URL" -O "$WRAPPER_JAR"
   else
-    echo "ERROR: No se pudo descargar $WRAPPER_URL" >&2
-    echo "Instala curl o wget para continuar." >&2
+    echo "ERROR: Could not download $WRAPPER_URL" >&2
+    echo "Install curl or wget to continue." >&2
     exit 1
   fi
 fi
 
 if [ ! -f "$WRAPPER_JAR" ]; then
-  echo "ERROR: No se pudo encontrar o descargar $WRAPPER_JAR" >&2
+  echo "ERROR: Could not find or download $WRAPPER_JAR" >&2
   exit 1
 fi
 
