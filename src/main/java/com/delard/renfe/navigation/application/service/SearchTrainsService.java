@@ -28,7 +28,7 @@ public class SearchTrainsService implements SearchTrainsUseCase {
                                        String dateReturn, int adults) {
         Instant startTime = Instant.now();
 
-        LOG.infof("[REQUEST] Starting search: %s -> %s, Outbound: %s, Return: %s, Passengers: %d",
+        LOG.debugf("[REQUEST] Starting search: %s -> %s, Outbound: %s, Return: %s, Passengers: %d",
                 origin, destination, dateOut, dateReturn, adults);
 
         try {
@@ -39,7 +39,7 @@ public class SearchTrainsService implements SearchTrainsUseCase {
             List<Train> trainsReturn = result.size() > 1 ? result.get(1) : null;
 
             Duration elapsed = Duration.between(startTime, Instant.now());
-            LOG.infof("[SUCCESS] Search completed in %.2fs - Outbound trains: %d, Return trains: %d",
+            LOG.debugf("[SUCCESS] Search completed in %.2fs - Outbound trains: %d, Return trains: %d",
                     elapsed.toMillis() / 1000.0,
                     trainsOut != null ? trainsOut.size() : 0,
                     trainsReturn != null ? trainsReturn.size() : 0);

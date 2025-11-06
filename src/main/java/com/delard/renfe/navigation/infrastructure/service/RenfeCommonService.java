@@ -43,7 +43,7 @@ public class RenfeCommonService {
             @SuppressWarnings("unchecked")
             List<Map<String, String>> loadedStations = mapper.readValue(resourceStream, List.class);
             stations = loadedStations;
-            LOG.infof("[SCRAPER] Loaded %d stations from catalog", stations.size());
+            LOG.debugf("[SCRAPER] Loaded %d stations from catalog", stations.size());
 
         } catch (Exception e) {
             LOG.warnf(e, "[SCRAPER] Could not load estaciones.json");

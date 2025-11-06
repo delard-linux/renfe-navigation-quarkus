@@ -35,7 +35,7 @@ public class ResponseStorageService {
             if (!dir.exists()) {
                 boolean created = dir.mkdirs();
                 if (created) {
-                    LOG.infof("[SCRAPER] Created responses directory: %s", config.getResponsesDir());
+                    LOG.debugf("[SCRAPER] Created responses directory: %s", config.getResponsesDir());
                 } else {
                     LOG.warnf("[SCRAPER] Could not create responses directory: %s", config.getResponsesDir());
                 }
@@ -67,7 +67,7 @@ public class ResponseStorageService {
                     content.getBytes(StandardCharsets.UTF_8)
             );
 
-            LOG.infof("[SCRAPER] Response saved as: %s", filename);
+            LOG.debugf("[SCRAPER] Response saved as: %s", filename);
             return filepath;
 
         } catch (IOException e) {

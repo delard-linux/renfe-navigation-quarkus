@@ -25,7 +25,7 @@ public class TrainScraperAdapter implements TrainScraperPort {
     @Override
     public List<List<Train>> scrapeTrains(String origin, String destination, String dateOut,
                                           String dateReturn, int adults) {
-        LOG.infof("Scraping trains: %s -> %s, dateOut: %s, dateReturn: %s, adults: %d",
+        LOG.debugf("Scraping trains: %s -> %s, dateOut: %s, dateReturn: %s, adults: %d",
                 origin, destination, dateOut, dateReturn, adults);
 
         try {

@@ -34,16 +34,16 @@ public class PlaywrightSearchTrainsService {
 
     public SearchTrainsResult searchTrains(String origin, String destination, String dateOut,
                                            String dateReturn, int adults) {
-        LOG.infof("Starting Chromium browser");
+        LOG.debugf("Starting Chromium browser");
 
         // TODO: what happens if there are multiple stations with the same string?
         Map<String, String> originStation = renfeCommonService.findStation(origin);
         Map<String, String> destStation = renfeCommonService.findStation(destination);
 
-        LOG.infof("Origin: %s - Key: %s",
+        LOG.debugf("Origin: %s - Key: %s",
                 originStation.getOrDefault("desgEstacion", origin),
                 originStation.getOrDefault("clave", ""));
-        LOG.infof("Destination: %s - Key: %s",
+        LOG.debugf("Destination: %s - Key: %s",
                 destStation.getOrDefault("desgEstacion", destination),
                 destStation.getOrDefault("clave", ""));
 
@@ -57,7 +57,7 @@ public class PlaywrightSearchTrainsService {
                 originStation, destStation, dateOutFormatted, dateReturnFormatted, adults
         );
 
-        LOG.infof("Search parameters: %s -> %s",
+        LOG.debugf("Search parameters: %s -> %s",
                 dateOutFormatted,
                 dateReturnFormatted.isEmpty() ? "One way only" : dateReturnFormatted
         );
@@ -72,7 +72,7 @@ public class PlaywrightSearchTrainsService {
 
                 Page page = context.newPage();
                 try {
-                    LOG.infof("Navigating to %s", config.getRenfeSearchUrl());
+                    LOG.debugf("Navigating to %s", config.getRenfeSearchUrl());
                     page.navigate(config.getRenfeSearchUrl(), new Page.NavigateOptions()
                             .setWaitUntil(WaitUntilState.DOMCONTENTLOADED)
                             .setTimeout(config.getNavigationTimeoutMs())
@@ -81,7 +81,7 @@ public class PlaywrightSearchTrainsService {
                     String jsFormSubmit = buildFormSubmitScript(formData);
                     page.evaluate(jsFormSubmit);
 
-                    LOG.info("Waiting for server response (network idle)...");
+                    LOG.debug("Waiting for server response (network idle)...");
                     page.waitForLoadState(LoadState.NETWORKIDLE, new Page.WaitForLoadStateOptions()
                             .setTimeout(config.getNetworkIdleTimeoutMs())
                     );
@@ -89,19 +89,19 @@ public class PlaywrightSearchTrainsService {
                     String responseContent = page.content();
                     responseStorageService.saveResponse(responseContent, 200);
 
-                    LOG.info("Extracting outbound results");
+                    LOG.debug("Extracting outbound results");
                     List<Train> trainsOut = extractResults(page);
 
                     List<Train> trainsRet = null;
                     if (!dateReturnFormatted.isEmpty() && !trainsOut.isEmpty()) {
                         try {
-                            LOG.info("Finding return results");
+                            LOG.debug("Finding return results");
                             Locator vueltaTab = page.locator("[id*='vuelta'], [class*='vuelta'], a:has-text('Vuelta')");
                             if (vueltaTab.count() > 0) {
                                 vueltaTab.first().click();
                                 page.waitForTimeout(config.getShortTimeoutMs());
 
-                                LOG.info("Extracting return results");
+                                LOG.debug("Extracting return results");
                                 trainsRet = extractResults(page);
                             }
                         } catch (Exception e) {
@@ -110,7 +110,7 @@ public class PlaywrightSearchTrainsService {
                         }
                     }
 
-                    LOG.info("Closing browser");
+                    LOG.debug("Closing browser");
                     return new SearchTrainsResult(trainsOut, trainsRet);
 
                 } finally {
@@ -214,11 +214,11 @@ public class PlaywrightSearchTrainsService {
     }
 
     private List<Train> extractResults(Page page) throws InterruptedException {
-        LOG.info("Waiting for results to load...");
+        LOG.debug("Waiting for results to load...");
         page.waitForLoadState(LoadState.NETWORKIDLE, new Page.WaitForLoadStateOptions().setTimeout(config.getNetworkIdleTimeoutMs()));
         String html = page.content();
         List<Train> trains = trainHtmlParser.parseTrainList(html);
-        LOG.infof("[PARSER] Extracted %d trains", trains.size());
+        LOG.debugf("[PARSER] Extracted %d trains", trains.size());
         return trains;
     }
 

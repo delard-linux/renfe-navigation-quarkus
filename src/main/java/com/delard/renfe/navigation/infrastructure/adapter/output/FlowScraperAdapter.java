@@ -16,7 +16,7 @@ public class FlowScraperAdapter implements FlowScraperPort {
     @Override
     public String executeFlow(String origin, String destination, String dateOut,
                               String dateReturn, int adults) {
-        LOG.infof("Executing flow: %s -> %s, dateOut: %s, dateReturn: %s, adults: %d",
+        LOG.debugf("Executing flow: %s -> %s, dateOut: %s, dateReturn: %s, adults: %d",
                 origin, destination, dateOut, dateReturn, adults);
 
         // TODO: Implement actual flow execution using Playwright or similar
