@@ -4,6 +4,7 @@ import com.delard.renfe.navigation.domain.model.Train;
 import com.delard.renfe.navigation.domain.model.TrainsResponse;
 import com.delard.renfe.navigation.domain.port.output.TrainScraperPort;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -21,9 +22,18 @@ import static org.mockito.Mockito.lenient;
 
 /**
  * Unit tests for SearchTrainsService
+ * 
+ * Uses real search data: Madrid to Barcelona
+ * Dates: 16/01/2026 (outbound) and 18/01/2026 (return)
  */
 @ExtendWith(MockitoExtension.class)
 class SearchTrainsServiceTest {
+
+    // Real search parameters from resultado_search_trains.html
+    private static final String REAL_ORIGIN = "MADRID";
+    private static final String REAL_DESTINATION = "BARCELONA";
+    private static final String REAL_DATE_OUT = "2026-01-16";  // 16/01/2026
+    private static final String REAL_DATE_RETURN = "2026-01-18";  // 18/01/2026
 
     @Mock
     private TrainScraperPort trainScraperPort;
@@ -45,12 +55,13 @@ class SearchTrainsServiceTest {
     }
 
     @Test
-    void testSearchTrainsSuccessWithReturnTrains() {
-        String origin = "OURENSE";
-        String destination = "MADRID";
-        String dateOut = "2025-12-01";
-        String dateReturn = "2025-12-05";
-        int adults = 2;
+    @DisplayName("Should return complete response with outbound and return trains when both are available")
+    void shouldReturnCompleteResponseWithOutboundAndReturnTrains() {
+        String origin = REAL_ORIGIN;
+        String destination = REAL_DESTINATION;
+        String dateOut = REAL_DATE_OUT;
+        String dateReturn = REAL_DATE_RETURN;
+        int adults = 1;
 
         Train trainOut1 = createTrain("T123", "AVE", "08:00", "10:00", "2h", 25.0);
         Train trainOut2 = createTrain("T456", "ALVIA", "12:00", "14:00", "2h", 30.0);
@@ -80,10 +91,11 @@ class SearchTrainsServiceTest {
     }
 
     @Test
-    void testSearchTrainsSuccessWithoutReturnTrains() {
-        String origin = "OURENSE";
-        String destination = "MADRID";
-        String dateOut = "2025-12-01";
+    @DisplayName("Should return response with only outbound trains when return date is null")
+    void shouldReturnResponseWithOnlyOutboundTrainsWhenReturnDateIsNull() {
+        String origin = REAL_ORIGIN;
+        String destination = REAL_DESTINATION;
+        String dateOut = REAL_DATE_OUT;
         String dateReturn = null;
         int adults = 1;
 
@@ -110,11 +122,12 @@ class SearchTrainsServiceTest {
     }
 
     @Test
-    void testSearchTrainsSuccessWithEmptyReturnList() {
-        String origin = "OURENSE";
-        String destination = "MADRID";
-        String dateOut = "2025-12-01";
-        String dateReturn = "2025-12-05";
+    @DisplayName("Should return empty return trains list when scraper returns empty list for return trains")
+    void shouldReturnEmptyReturnTrainsListWhenScraperReturnsEmptyList() {
+        String origin = REAL_ORIGIN;
+        String destination = REAL_DESTINATION;
+        String dateOut = REAL_DATE_OUT;
+        String dateReturn = REAL_DATE_RETURN;
         int adults = 1;
 
         Train trainOut1 = createTrain("T123", "AVE", "08:00", "10:00", "2h", 25.0);
@@ -134,10 +147,11 @@ class SearchTrainsServiceTest {
     }
 
     @Test
-    void testSearchTrainsSuccessWithEmptyOutboundList() {
-        String origin = "OURENSE";
-        String destination = "MADRID";
-        String dateOut = "2025-12-01";
+    @DisplayName("Should return empty outbound trains list when scraper returns empty list")
+    void shouldReturnEmptyOutboundTrainsListWhenScraperReturnsEmptyList() {
+        String origin = REAL_ORIGIN;
+        String destination = REAL_DESTINATION;
+        String dateOut = REAL_DATE_OUT;
         String dateReturn = null;
         int adults = 1;
 
@@ -156,12 +170,13 @@ class SearchTrainsServiceTest {
     }
 
     @Test
-    void testSearchTrainsThrowsException() {
-        String origin = "OURENSE";
-        String destination = "MADRID";
-        String dateOut = "2025-12-01";
-        String dateReturn = "2025-12-05";
-        int adults = 2;
+    @DisplayName("Should throw RuntimeException with error message when scraper throws exception")
+    void shouldThrowRuntimeExceptionWhenScraperThrowsException() {
+        String origin = REAL_ORIGIN;
+        String destination = REAL_DESTINATION;
+        String dateOut = REAL_DATE_OUT;
+        String dateReturn = REAL_DATE_RETURN;
+        int adults = 1;
         String errorMessage = "Scraping failed";
 
         when(trainScraperPort.scrapeTrains(origin, destination, dateOut, dateReturn, adults))
@@ -179,10 +194,11 @@ class SearchTrainsServiceTest {
     }
 
     @Test
-    void testSearchTrainsWithDifferentAdults() {
-        String origin = "OURENSE";
-        String destination = "MADRID";
-        String dateOut = "2025-12-01";
+    @DisplayName("Should handle different number of adults correctly (1, 3, 5 adults)")
+    void shouldHandleDifferentNumberOfAdultsCorrectly() {
+        String origin = REAL_ORIGIN;
+        String destination = REAL_DESTINATION;
+        String dateOut = REAL_DATE_OUT;
         String dateReturn = null;
 
         Train trainOut1 = createTrain("T123", "AVE", "08:00", "10:00", "2h", 25.0);
@@ -207,7 +223,8 @@ class SearchTrainsServiceTest {
     }
 
     @Test
-    void testSearchTrainsWithNullValues() {
+    @DisplayName("Should handle null input values gracefully")
+    void shouldHandleNullInputValuesGracefully() {
         Train trainOut1 = createTrain("T123", "AVE", "08:00", "10:00", "2h", 25.0);
         List<Train> trainsOut = Arrays.asList(trainOut1);
         List<List<Train>> scraperResult = Arrays.asList(trainsOut);
@@ -226,10 +243,11 @@ class SearchTrainsServiceTest {
     }
 
     @Test
-    void testSearchTrainsWithSingleElementResult() {
-        String origin = "OURENSE";
-        String destination = "MADRID";
-        String dateOut = "2025-12-01";
+    @DisplayName("Should return null for return trains when scraper returns single list (only outbound)")
+    void shouldReturnNullForReturnTrainsWhenScraperReturnsSingleList() {
+        String origin = REAL_ORIGIN;
+        String destination = REAL_DESTINATION;
+        String dateOut = REAL_DATE_OUT;
         String dateReturn = null;
         int adults = 1;
 
