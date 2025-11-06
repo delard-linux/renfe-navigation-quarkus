@@ -174,8 +174,6 @@
                     <!-- Show test names in real-time -->
                     <forkCount>1</forkCount>
                     <reuseForks>true</reuseForks>
-                    <!-- Enable verbose test output to see tests as they run -->
-                    <verbose>true</verbose>
                 </configuration>
             </plugin>
             <plugin>
