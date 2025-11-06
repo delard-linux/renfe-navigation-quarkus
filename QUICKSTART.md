@@ -22,12 +22,7 @@ http://localhost:8000
 GET /trains?origin=OURENSE&destination=MADRID&date_out=2025-12-15&adults=1
 ```
 
-### 2. Complete Flow
-```bash
-GET /trains-flow?origin=OURENSE&destination=MADRID&date_out=2025-12-15&adults=1
-```
-
-### 3. API Documentation
+### 2. API Documentation
 - Swagger UI: http://localhost:8000/swagger-ui
 - OpenAPI Spec: http://localhost:8000/openapi
 
@@ -49,13 +44,10 @@ GET /trains-flow?origin=OURENSE&destination=MADRID&date_out=2025-12-15&adults=1
 
 ## Pending Implementation
 
-The following adapters are created but empty (return placeholder data):
+The following adapter is created but empty (returns placeholder data):
 
 1. **TrainScraperAdapter** - `src/.../infrastructure/adapter/output/TrainScraperAdapter.java`
    - Implement train scraping with Playwright/Selenium
-
-2. **FlowScraperAdapter** - `src/.../infrastructure/adapter/output/FlowScraperAdapter.java`
-   - Implement complete navigation through Renfe website
 
 ## Testing
 
@@ -98,7 +90,6 @@ The system generates structured logs:
 - `[REQUEST]` - Request start
 - `[SUCCESS]` - Successful operation
 - `[ERROR]` - Errors
-- `[FLOW REQUEST]` / `[FLOW SUCCESS]` / `[FLOW ERROR]` - Flow operations
 
 ## Troubleshooting
 
@@ -123,10 +114,9 @@ java -version
 ## Next Steps
 
 1. Implement `TrainScraperAdapter` with your scraping logic
-2. Implement `FlowScraperAdapter` with your navigation
-3. Add unit tests for services
-4. Configure CI/CD
-5. Add metrics and monitoring
+2. Add unit tests for services
+3. Configure CI/CD
+4. Add metrics and monitoring
 
 ## References
 

@@ -18,19 +18,13 @@ curl -X GET "http://localhost:8000/trains?origin=BARCELONA&destination=VALENCIA&
 curl -X GET "http://localhost:8000/trains?origin=MADRID&destination=SEVILLA&date_out=2025-11-25&adults=4"
 ```
 
-## 4. Execute complete flow
-
-```bash
-curl -X GET "http://localhost:8000/trains-flow?origin=OURENSE&destination=MADRID&date_out=2025-12-01&adults=1"
-```
-
-## 5. With PowerShell (Windows)
+## 4. With PowerShell (Windows)
 
 ```powershell
 Invoke-RestMethod -Uri "http://localhost:8000/trains?origin=OURENSE&destination=MADRID&date_out=2025-12-15&adults=1" -Method Get
 ```
 
-## 6. With JSON formatting (using jq)
+## 5. With JSON formatting (using jq)
 
 ```bash
 curl -s "http://localhost:8000/trains?origin=OURENSE&destination=MADRID&date_out=2025-12-15&adults=1" | jq

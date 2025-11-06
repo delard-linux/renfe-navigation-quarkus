@@ -10,7 +10,6 @@
 │  ┌────────────────────────────────────────────────────────┐     │
 │  │         REST API (TrainResource)                       │     │
 │  │  - GET /trains                                         │     │
-│  │  - GET /trains-flow                                    │     │
 │  │  - DTOs, Mappers, Validations                          │     │
 │  └────────────────────────────────────────────────────────┘     │
 └─────────────────────────────────────────────────────────────────┘
@@ -21,7 +20,6 @@
 │                                                                   │
 │  ┌────────────────────────────────────────────────────────┐     │
 │  │  SearchTrainsService                                   │     │
-│  │  SearchTrainsFlowService                               │     │
 │  │  - Business logic orchestration                        │     │
 │  │  - Operation logging                                   │     │
 │  └────────────────────────────────────────────────────────┘     │
@@ -35,8 +33,6 @@
 │  │   Ports (Input)    │        │    Ports (Output)       │       │
 │  │                     │        │                         │       │
 │  │  SearchTrainsUseCase│        │  TrainScraperPort       │       │
-│  │  SearchTrainsFlow   │        │  FlowScraperPort        │       │
-│  │  UseCase            │        │                         │       │
 │  └─────────────────────┘        └─────────────────────────┘       │
 │                                                                   │
 │  ┌────────────────────────────────────────────────────────┐     │
@@ -44,7 +40,6 @@
 │  │  - Train                                               │     │
 │  │  - FareOption                                          │     │
 │  │  - TrainsResponse                                      │     │
-│  │  - FlowResponse                                        │     │
 │  └────────────────────────────────────────────────────────┘     │
 └─────────────────────────────────────────────────────────────────┘
                               ↓
@@ -54,7 +49,6 @@
 │                                                                   │
 │  ┌────────────────────────────────────────────────────────┐     │
 │  │  TrainScraperAdapter (pending implementation)          │     │
-│  │  FlowScraperAdapter (pending implementation)           │     │
 │  │  - Renfe integration                                   │     │
 │  │  - Web scraping / API calls                            │     │
 │  └────────────────────────────────────────────────────────┘     │

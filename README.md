@@ -12,19 +12,15 @@ src/main/java/com/renfe/navigation/
 │   ├── model/                       # Domain entities
 │   │   ├── Train.java
 │   │   ├── FareOption.java
-│   │   ├── TrainsResponse.java
-│   │   └── FlowResponse.java
+│   │   └── TrainsResponse.java
 │   └── port/                        # Ports (interfaces)
 │       ├── input/                   # Input ports (use cases)
-│       │   ├── SearchTrainsUseCase.java
-│       │   └── SearchTrainsFlowUseCase.java
+│       │   └── SearchTrainsUseCase.java
 │       └── output/                  # Output ports
-│           ├── TrainScraperPort.java
-│           └── FlowScraperPort.java
+│           └── TrainScraperPort.java
 ├── application/                     # Application layer
 │   └── service/                     # Use case implementation
-│       ├── SearchTrainsService.java
-│       └── SearchTrainsFlowService.java
+│       └── SearchTrainsService.java
 └── infrastructure/                  # Infrastructure layer (adapters)
     └── adapter/
         ├── input/                   # Input adapters
@@ -33,13 +29,11 @@ src/main/java/com/renfe/navigation/
         │       ├── dto/             # DTOs for the API
         │       │   ├── TrainDTO.java
         │       │   ├── FareOptionDTO.java
-        │       │   ├── TrainsResponseDTO.java
-        │       │   └── FlowResponseDTO.java
+        │       │   └── TrainsResponseDTO.java
         │       └── mapper/          # Domain <-> DTO Mappers
         │           └── TrainMapper.java
         └── output/                  # Output adapters
-            ├── TrainScraperAdapter.java
-            └── FlowScraperAdapter.java
+            └── TrainScraperAdapter.java
 ```
 
 ## Features
@@ -116,17 +110,6 @@ Searches for trains between two stations.
 curl "http://localhost:8000/trains?origin=OURENSE&destination=MADRID&date_out=2025-11-15&adults=2"
 ```
 
-### GET /trains-flow
-
-Executes the complete flow from Renfe's main page to the search.
-
-**Parameters:** Same as `/trains`
-
-**Example:**
-```bash
-curl "http://localhost:8000/trains-flow?origin=OURENSE&destination=MADRID&date_out=2025-11-15"
-```
-
 ## Requirements
 
 - Java 25+
@@ -185,18 +168,14 @@ The application includes structured logs at multiple levels:
 - `[REQUEST]` - Request start with parameters
 - `[SUCCESS]` - Successful completion with metrics
 - `[ERROR]` - Errors with stack trace
-- `[FLOW REQUEST]` - Flow start
-- `[FLOW SUCCESS]` - Successful flow completion
-- `[FLOW ERROR]` - Flow errors
 
 ## Pending Implementation
 
-The following adapters are created but pending implementation:
+The following adapter is created but pending implementation:
 
 - `TrainScraperAdapter`: Train scraping logic (use Playwright or similar)
-- `FlowScraperAdapter`: Complete navigation flow logic
 
-Currently they return empty/placeholder responses to allow architecture startup and testing.
+Currently it returns empty/placeholder responses to allow architecture startup and testing.
 
 ## Testing
 
@@ -341,7 +320,6 @@ Integration tests verify interactions between layers using real Quarkus context 
   - Request validation (Bean Validation)
   - DTO mapping and response structure
   - Error handling (400 errors for invalid inputs)
-  - Multiple endpoints (`/trains` and `/trains-flow`)
   - Debug output with formatted JSON responses
 - **Test cases**: 7 tests covering valid requests, return dates, validation errors, edge cases, and debug output
 - **Uses**: `@QuarkusTest`, REST Assured, test profiles

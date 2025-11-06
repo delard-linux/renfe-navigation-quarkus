@@ -1,10 +1,7 @@
 package com.delard.renfe.navigation.infrastructure.adapter.input.rest;
 
-import com.delard.renfe.navigation.domain.model.FlowResponse;
 import com.delard.renfe.navigation.domain.model.TrainsResponse;
-import com.delard.renfe.navigation.domain.port.input.SearchTrainsFlowUseCase;
 import com.delard.renfe.navigation.domain.port.input.SearchTrainsUseCase;
-import com.delard.renfe.navigation.infrastructure.adapter.input.rest.dto.FlowResponseDTO;
 import com.delard.renfe.navigation.infrastructure.adapter.input.rest.dto.TrainsResponseDTO;
 import com.delard.renfe.navigation.infrastructure.adapter.input.rest.mapper.TrainMapper;
 import jakarta.inject.Inject;
@@ -33,9 +30,6 @@ public class TrainResource {
 
     @Inject
     SearchTrainsUseCase searchTrainsUseCase;
-
-    @Inject
-    SearchTrainsFlowUseCase searchTrainsFlowUseCase;
 
     @GET
     @Path("/trains")
@@ -82,59 +76,6 @@ public class TrainResource {
 
         } catch (Exception e) {
             LOG.errorf(e, "Error processing /trains request");
-            return Response.status(Response.Status.INTERNAL_SERVER_ERROR)
-                    .entity(new ErrorResponse(e.getMessage()))
-                    .build();
-        }
-    }
-
-    @GET
-    @Path("/trains-flow")
-    @Operation(summary = "Execute train search flow",
-               description = "Performs the complete flow from Renfe's homepage to train search")
-    public Response getTrainsFlow(
-            @Parameter(description = "Station origin (e.g., OURENSE)", required = true)
-            @QueryParam("origin")
-            @NotBlank(message = "Origin is required")
-            String origin,
-
-            @Parameter(description = "Station destination (e.g., MADRID)", required = true)
-            @QueryParam("destination")
-            @NotBlank(message = "Destination is required")
-            String destination,
-
-            @Parameter(description = "Outbound date in format YYYY-MM-DD", required = true)
-            @QueryParam("date_out")
-            @NotBlank(message = "Date out is required")
-            @Pattern(regexp = "\\d{4}-\\d{2}-\\d{2}", message = "Date must be in format YYYY-MM-DD")
-            String dateOut,
-
-            @Parameter(description = "Return date in format YYYY-MM-DD (optional)")
-            @QueryParam("date_return")
-            @Pattern(regexp = "\\d{4}-\\d{2}-\\d{2}", message = "Date must be in format YYYY-MM-DD")
-            String dateReturn,
-
-            @Parameter(description = "Number of adult passengers (1-8)")
-            @QueryParam("adults")
-            @DefaultValue("1")
-            @Min(value = 1, message = "Adults must be at least 1")
-            @Max(value = 8, message = "Adults must be at most 8")
-            int adults) {
-
-        try {
-            LOG.infof("REST Request - GET /trains-flow: %s -> %s, dateOut: %s, dateReturn: %s, adults: %d",
-                    origin, destination, dateOut, dateReturn, adults);
-
-            FlowResponse result = searchTrainsFlowUseCase.searchTrainsFlow(
-                    origin, destination, dateOut, dateReturn, adults);
-
-            FlowResponseDTO responseDTO = new FlowResponseDTO(
-                    result.getMessage(), result.getFilepath());
-
-            return Response.ok(responseDTO).build();
-
-        } catch (Exception e) {
-            LOG.errorf(e, "Error processing /trains-flow request");
             return Response.status(Response.Status.INTERNAL_SERVER_ERROR)
                     .entity(new ErrorResponse(e.getMessage()))
                     .build();
