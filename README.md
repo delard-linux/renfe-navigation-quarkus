@@ -216,43 +216,200 @@ Currently they return empty/placeholder responses to allow architecture startup 
 
 ## Testing
 
-```bash
-./mvnw test
-```
+The project follows a clear separation between **unit tests** (fast, isolated) and **integration tests** (slower, real interactions).
 
-Main test structure:
+### Test Structure
 
 ```
-src/test/java/com/delard/renfe/navigation/
-├── infrastructure/service/          # Unit tests with mocks
+src/test/java/com/delard/renfe/navigation/     # Unit Tests (Maven Surefire)
+├── infrastructure/service/                     # Unit tests with mocks
 │   └── PlaywrightSearchTrainsServiceTest.java
 
-src/it/java/com/delard/renfe/navigation/
-├── application/rest/                # Integration tests (REST resources)
+src/it/java/com/delard/renfe/navigation/      # Integration Tests (Maven Failsafe)
+├── application/rest/                           # Integration tests (REST resources)
 │   ├── TrainResourceIT.java
 │   ├── TrainResourceE2ETest.java
 │   └── TrainResourcePlaywrightRealIT.java
-├── infrastructure/service/          # Integration tests (services)
+├── infrastructure/service/                     # Integration tests (services)
 │   └── PlaywrightSearchTrainsServiceIT.java
-├── support/config/                   # Execution profiles and shared configuration
+├── support/config/                             # Execution profiles and shared configuration
 │   ├── PlaywrightDebugNoHeadlessProfile.java
 │   └── PlaywrightRealProfile.java
-└── support/stub/                    # Stubs and test doubles for external ports
+└── support/stub/                               # Stubs and test doubles for external ports
     └── StubTrainScraperAdapter.java
 ```
 
-### Test Execution Commands
+### Unit Tests (`src/test/java`)
+
+Unit tests are fast, isolated tests that use mocks to test individual components without external dependencies.
+
+#### Current Unit Tests
+
+**`PlaywrightSearchTrainsServiceTest.java`**
+- **Purpose**: Tests the `PlaywrightSearchTrainsService` class in isolation
+- **What it tests**:
+  - Train search orchestration logic
+  - Interaction with mocked dependencies (Playwright, parsers, storage)
+  - Form data building and submission
+  - Result extraction and transformation
+- **Mocked dependencies**:
+  - `PlaywrightConfig` - Configuration settings
+  - `RenfeCommonService` - Station lookup and date formatting
+  - `TrainHtmlParser` - HTML parsing logic
+  - `ResponseStorageService` - Response storage
+  - `PlaywrightFactory` - Playwright instance creation
+  - All Playwright objects (Browser, Page, Context, etc.)
+- **Test scenario**: Verifies that when all dependencies return expected values, the service correctly orchestrates the train search flow and returns the expected results
+
+#### Unit Test Characteristics
+
+- ✅ **Fast execution**: Run in milliseconds
+- ✅ **Isolated**: No external dependencies (all mocked)
+- ✅ **No Quarkus context**: Uses plain JUnit 5 + Mockito
+- ✅ **Naming convention**: `*Test.java`
+- ✅ **Coverage**: JaCoCo tracks coverage for unit tests only
+
+#### Running Unit Tests
 
 ```bash
-# Run only unit tests
+# Run all unit tests
 ./mvnw test
 
-# Run unit tests + integration tests
+# Run specific unit test class
+./mvnw test -Dtest=PlaywrightSearchTrainsServiceTest
+
+# Run unit tests with coverage report
+./mvnw clean test
+```
+
+### Test Coverage with JaCoCo
+
+The project uses **JaCoCo** (Java Code Coverage) to measure unit test coverage. Coverage reports are generated automatically when running unit tests.
+
+#### Coverage Configuration
+
+- **Minimum line coverage**: 60%
+- **Minimum branch coverage**: 50%
+- **Scope**: Only unit tests (`src/test/java`), excludes integration tests (`src/it/java`)
+
+#### Viewing Coverage Reports
+
+After running unit tests, coverage reports are generated in:
+
+```
+target/site/jacoco/index.html
+```
+
+**To view the coverage report:**
+
+1. Run unit tests:
+   ```bash
+   ./mvnw clean test
+   ```
+
+2. Open the HTML report:
+   ```bash
+   # On Linux/Mac
+   xdg-open target/site/jacoco/index.html
+   
+   # On Windows
+   start target/site/jacoco/index.html
+   ```
+
+3. Or navigate to `target/site/jacoco/index.html` in your browser
+
+#### Coverage Report Structure
+
+The JaCoCo report provides:
+- **Overall coverage**: Package-level and class-level coverage metrics
+- **Line coverage**: Percentage of lines executed by tests
+- **Branch coverage**: Percentage of branches (if/else, switch) covered
+- **Missing lines**: Highlighted in red, showing untested code
+- **Covered lines**: Highlighted in green
+
+#### Coverage Goals
+
+| Metric | Target | Current |
+|--------|--------|---------|
+| Line Coverage | ≥ 60% | See report |
+| Branch Coverage | ≥ 50% | See report |
+
+**Note**: Coverage thresholds are goals, not enforced. The build will show warnings if coverage is below targets but will not fail. This allows gradual improvement of test coverage.
+
+#### Generating Coverage Report Only
+
+```bash
+# Generate coverage report without running tests
+./mvnw jacoco:report
+
+# Check coverage thresholds
+./mvnw jacoco:check
+```
+
+### Integration Tests (`src/it/java`)
+
+Integration tests verify interactions between layers using real Quarkus context and may interact with external services.
+
+#### Current Integration Tests
+
+**`TrainResourceIT.java`**
+- **Purpose**: Tests REST endpoints with real Quarkus context
+- **What it tests**: HTTP request/response cycle, validation, DTO mapping
+- **Uses**: `@QuarkusTest`, REST Assured, test profiles
+
+**`TrainResourceE2ETest.java`**
+- **Purpose**: End-to-end test of train search endpoint
+- **What it tests**: Complete flow from HTTP request to response
+
+**`TrainResourcePlaywrightRealIT.java`**
+- **Purpose**: Tests with real Playwright execution
+- **What it tests**: Actual browser automation and HTML parsing
+
+**`PlaywrightSearchTrainsServiceIT.java`**
+- **Purpose**: Integration test of Playwright service with real browser
+- **What it tests**: Real Playwright interactions with Renfe website
+
+#### Running Integration Tests
+
+```bash
+# Run all integration tests
+./mvnw integration-test -DskipTests -DskipITs=false
+
+# Run specific integration test
+./mvnw verify -Dit.test=TrainResourceIT -DskipITs=false
+
+# Run both unit and integration tests
+./mvnw verify -DskipITs=false
+```
+
+### Test Execution Commands Summary
+
+```bash
+# Unit tests only (with coverage)
+./mvnw clean test
+
+# Integration tests only (skip unit tests)
+./mvnw integration-test -DskipTests -DskipITs=false
+
+# Both unit and integration tests
 ./mvnw verify -DskipITs=false
 
-# Run only integration tests (without unit tests)
-./mvnw integration-test -DskipTests -DskipITs=false
+# Generate coverage report
+./mvnw jacoco:report
+
+# Check coverage thresholds
+./mvnw jacoco:check
 ```
+
+### Best Practices
+
+1. **Write unit tests first**: Fast feedback during development
+2. **Mock external dependencies**: Keep unit tests isolated and fast
+3. **Use integration tests sparingly**: Only for critical paths and layer interactions
+4. **Maintain coverage**: Aim for at least 60% line coverage in unit tests
+5. **Review coverage reports**: Identify untested code paths regularly
+6. **Keep tests independent**: Each test should run independently
+7. **Use descriptive test names**: Test names should describe what they verify
 
 ## Technologies
 
@@ -262,6 +419,7 @@ src/it/java/com/delard/renfe/navigation/
 - SmallRye OpenAPI
 - Hibernate Validator
 - JBoss Logging
+- JaCoCo 0.8.11 (Code Coverage)
 
 ## License
 
