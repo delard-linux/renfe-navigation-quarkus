@@ -23,13 +23,10 @@ class PlaywrightConfigTest {
         config.getViewportWidth();
         config.getViewportHeight();
         config.getSlowMo();
-        String locale = config.getLocale();
         config.getTimeoutMs();
         config.getNavigationTimeoutMs();
         config.getNetworkIdleTimeoutMs();
         config.getShortTimeoutMs();
-        String renfeSearchUrl = config.getRenfeSearchUrl();
-        String responsesDir = config.getResponsesDir();
         
         // Verify getters return values (may be default, injected, or null in unit tests)
         // In real scenarios with CDI, these will have values from application.properties
