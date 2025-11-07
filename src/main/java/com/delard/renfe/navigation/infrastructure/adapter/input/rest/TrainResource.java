@@ -15,6 +15,7 @@ import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
 import org.eclipse.microprofile.openapi.annotations.Operation;
 import org.eclipse.microprofile.openapi.annotations.parameters.Parameter;
+import org.eclipse.microprofile.openapi.annotations.responses.APIResponse;
 import org.eclipse.microprofile.openapi.annotations.tags.Tag;
 import org.jboss.logging.Logger;
 
@@ -24,7 +25,6 @@ import org.jboss.logging.Logger;
 @ApplicationScoped
 @Path("/")
 @Produces(MediaType.APPLICATION_JSON)
-@Consumes(MediaType.APPLICATION_JSON)
 @Tag(name = "Train Search", description = "Operations for searching train schedules and fares")
 public class TrainResource {
 
@@ -36,6 +36,9 @@ public class TrainResource {
     @GET
     @Path("/trains")
     @Operation(summary = "Search trains", description = "Search for trains between two stations")
+    @APIResponse(responseCode = "200", description = "Successful search with train results")
+    @APIResponse(responseCode = "400", description = "Invalid request parameters")
+    @APIResponse(responseCode = "500", description = "Internal server error")
     public Response getTrains(
             @Parameter(description = "Station origin (e.g., OURENSE)", required = true)
             @QueryParam("origin")
