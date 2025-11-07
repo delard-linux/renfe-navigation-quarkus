@@ -4,7 +4,6 @@ import com.delard.renfe.navigation.domain.model.FareOption;
 import com.delard.renfe.navigation.domain.model.Train;
 import com.delard.renfe.navigation.infrastructure.config.PlaywrightConfig;
 import com.microsoft.playwright.*;
-import com.microsoft.playwright.options.LoadState;
 import com.microsoft.playwright.options.WaitUntilState;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
@@ -82,10 +81,16 @@ public class PlaywrightSearchTrainsService {
                     String jsFormSubmit = buildFormSubmitScript(formData);
                     page.evaluate(jsFormSubmit);
 
-                    LOG.debug("Waiting for server response (network idle)...");
-                    page.waitForLoadState(LoadState.NETWORKIDLE, new Page.WaitForLoadStateOptions()
-                            .setTimeout(config.getNetworkIdleTimeoutMs())
+                    LOG.debug("Waiting for train results to appear...");
+                    // Wait directly for train results instead of NETWORKIDLE (which may timeout on sites with continuous polling)
+                    page.waitForSelector("div.selectedTren[role='listitem']", new Page.WaitForSelectorOptions()
+                            .setTimeout(config.getTimeoutMs())
+                            .setState(com.microsoft.playwright.options.WaitForSelectorState.VISIBLE)
                     );
+                    
+                    LOG.debug("Train results appeared, waiting for content to stabilize...");
+                    // Give the page a moment to fully render all dynamic content
+                    page.waitForTimeout(1000);
 
                     String responseContent = page.content();
                     responseStorageService.saveResponse(responseContent, 200);
@@ -215,8 +220,17 @@ public class PlaywrightSearchTrainsService {
     }
 
     private List<Train> extractResults(Page page) throws InterruptedException {
-        LOG.debug("Waiting for results to load...");
-        page.waitForLoadState(LoadState.NETWORKIDLE, new Page.WaitForLoadStateOptions().setTimeout(config.getNetworkIdleTimeoutMs()));
+        LOG.debug("Waiting for train results to be visible...");
+        
+        // Wait for train results to be visible (skip NETWORKIDLE to avoid timeout on pages with continuous polling)
+        page.waitForSelector("div.selectedTren[role='listitem']", new Page.WaitForSelectorOptions()
+                .setTimeout(config.getTimeoutMs())
+                .setState(com.microsoft.playwright.options.WaitForSelectorState.VISIBLE)
+        );
+        
+        // Wait a moment for content to stabilize
+        page.waitForTimeout(1000);
+        
         String html = page.content();
         List<Train> trains = trainHtmlParser.parseTrainList(html);
         LOG.debugf("[PARSER] Extracted %d trains", trains.size());
