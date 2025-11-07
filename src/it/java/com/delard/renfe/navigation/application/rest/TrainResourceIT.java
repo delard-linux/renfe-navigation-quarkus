@@ -11,12 +11,13 @@ import static io.restassured.RestAssured.given;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.notNullValue;
 
-@QuarkusTest
-@TestProfile(PlaywrightDebugNoHeadlessProfile.class)
 /**
  * Integration tests for train resource.
  * Validates correct responses and common validation errors.
+ * Uses @QuarkusTest to allow test profiles and execution from IDE.
  */
+@QuarkusTest
+@TestProfile(PlaywrightDebugNoHeadlessProfile.class)
 public class TrainResourceIT {
 
     /**

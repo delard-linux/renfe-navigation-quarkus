@@ -33,7 +33,9 @@
 
 ### Integration Tests (`src/it/java`)
 - Integration tests MUST be placed in `src/it/java`
-- Integration tests can use `@QuarkusTest` to test with real Quarkus context
+- Integration tests can use `@QuarkusTest` or `@QuarkusIntegrationTest` depending on the test scenario:
+  - **`@QuarkusTest`**: Use when you need to inject beans directly (`@Inject`), access Quarkus context, or use `@TestProfile`. Tests run in the same JVM with Quarkus context.
+  - **`@QuarkusIntegrationTest`**: Use for end-to-end tests against the packaged application (JAR, native, container). Tests run in a separate process and communicate via HTTP/network. Cannot inject beans directly.
 - Integration tests may interact with real services, databases, or external APIs
 - **MANDATORY naming convention: ALL integration tests MUST use `*IT.java` suffix**
 - **DO NOT use `*ITCase.java`, `*E2ETest.java`, or any other naming pattern**

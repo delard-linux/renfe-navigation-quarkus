@@ -1,37 +1,61 @@
 package com.delard.renfe.navigation.infrastructure.service;
 
-import com.delard.renfe.navigation.support.config.PlaywrightRealProfile;
-import io.quarkus.test.junit.QuarkusTest;
-import io.quarkus.test.junit.TestProfile;
-import jakarta.inject.Inject;
-import org.junit.jupiter.api.Test;
+import java.net.URI;
+
+import io.quarkus.test.common.http.TestHTTPResource;
+import io.quarkus.test.junit.QuarkusIntegrationTest;
+import io.restassured.http.ContentType;
+import io.restassured.response.Response;
 import org.jboss.logging.Logger;
+import org.junit.jupiter.api.Test;
 
-import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static io.restassured.RestAssured.given;
+import static org.hamcrest.CoreMatchers.notNullValue;
+import static org.hamcrest.Matchers.greaterThan;
+import static org.junit.jupiter.api.Assertions.*;
 
-@QuarkusTest
-@TestProfile(PlaywrightRealProfile.class)
+/**
+ * Integration test for PlaywrightSearchTrainsService using the REST endpoint.
+ * Uses @QuarkusIntegrationTest to test against the packaged application.
+ */
+@QuarkusIntegrationTest
 class PlaywrightSearchTrainsServiceIT {
 
     private static final Logger LOG = Logger.getLogger(PlaywrightSearchTrainsServiceIT.class);
 
-    @Inject
-    PlaywrightSearchTrainsService playwrightSearchTrainsService;
+    @TestHTTPResource
+    URI baseUri;
 
     @Test
     void shouldRetrieveOutboundTrainsFromRenfe() {
-        PlaywrightSearchTrainsService.SearchTrainsResult result = playwrightSearchTrainsService.searchTrains(
-            "OURENSE", "MADRID", "2025-12-15", null, 1
-        );
+        System.out.println("🚀 Quarkus test server running at: " + baseUri);
+        Response response = given()
+            .queryParam("origin", "OURENSE")
+            .queryParam("destination", "MADRID")
+            .queryParam("date_out", "2025-12-15")
+            .queryParam("adults", 1)
+        .when()
+            .get("/trains")
+        .then()
+            .statusCode(200)
+            .contentType(ContentType.JSON)
+            .extract()
+            .response();
 
-        LOG.infof("E2E outbound trains count: %d", result.outboundTrains != null ? result.outboundTrains.size() : 0);
-        LOG.debugf("E2E outbound trains detail: %s", result.outboundTrains);
-        LOG.infof("E2E SearchTrainsResult toString: %s", result.toString());
+        String responseBody = response.getBody().asString();
+        LOG.infof("E2E response: %s", responseBody);
 
-        assertNotNull(result);
-        assertNotNull(result.outboundTrains, "Expected outbound trains list to be initialized");
-        assertFalse(result.outboundTrains.isEmpty(), "Expected at least one outbound train in E2E run");
+        // Validate response structure
+        assertNotNull(responseBody);
+        assertFalse(responseBody.isEmpty(), "Response body should not be empty");
+
+        // Validate JSON structure
+        response.then()
+            .body("trains_out", notNullValue())
+            .body("trains_out.size()", greaterThan(0));
+
+        LOG.infof("E2E outbound trains count: %d", 
+            response.jsonPath().getList("trains_out").size());
     }
 }
 
