@@ -27,6 +27,7 @@ class PlaywrightSearchTrainsServiceIT {
 
         LOG.infof("E2E outbound trains count: %d", result.outboundTrains != null ? result.outboundTrains.size() : 0);
         LOG.debugf("E2E outbound trains detail: %s", result.outboundTrains);
+        LOG.infof("E2E SearchTrainsResult toString: %s", result.toString());
 
         assertNotNull(result);
         assertNotNull(result.outboundTrains, "Expected outbound trains list to be initialized");

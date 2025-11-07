@@ -112,9 +112,61 @@ curl "http://localhost:8000/trains?origin=OURENSE&destination=MADRID&date_out=20
 
 ## Requirements
 
-- Java 25+
+- Java 21+
 - Maven 3.8+
-- Configure `JAVA_HOME` pointing to your local JDK 25 installation (you can create it in an unversioned `.env` file).
+- Configure `JAVA_HOME` pointing to your local JDK 21 installation (you can create it in an unversioned `.env` file).
+
+## Environment Variables
+
+The project uses environment variables for configuration. Create a `.env` file in the project root (this file is excluded from version control) to configure these variables.
+
+### Required Environment Variables
+
+#### `JAVA_HOME`
+**Required**: Path to your JDK 21 installation.
+
+**Example:**
+```bash
+# Linux/Mac
+JAVA_HOME=/usr/lib/jvm/java-21-openjdk
+
+# Windows
+JAVA_HOME=C:\Program Files\Java\jdk-21
+```
+
+The Maven wrapper (`./mvnw`) automatically loads this variable from the `.env` file to use the correct JDK version.
+
+### Optional Environment Variables
+
+#### `PLAYWRIGHT_BROWSERS_PATH`
+**Optional**: Custom path for Playwright browser installation.
+
+If not set, Playwright will use the default location:
+- **Linux/Mac**: `~/.cache/ms-playwright`
+- **Windows**: `%USERPROFILE%\AppData\Local\ms-playwright`
+
+**Example:**
+```bash
+# Linux/Mac
+PLAYWRIGHT_BROWSERS_PATH=/custom/path/ms-playwright
+
+# Windows
+PLAYWRIGHT_BROWSERS_PATH=C:\custom\path\ms-playwright
+```
+
+### Example `.env` File
+
+Create a `.env` file in the project root with the following content:
+
+```bash
+# Required: Java 21 installation path
+JAVA_HOME=/usr/lib/jvm/java-21-openjdk
+
+# Optional: Custom Playwright browsers path
+# PLAYWRIGHT_BROWSERS_PATH=/custom/path/ms-playwright
+```
+
+> **Note**: The `.env` file is automatically excluded from version control via `.gitignore`. Never commit sensitive information or local paths to the repository.
 
 ## Execution
 
@@ -159,7 +211,7 @@ quarkus.log.category."com.renfe".level=INFO
 quarkus.swagger-ui.path=/swagger-ui
 ```
 
-> 💡 Create a local `.env` file (excluded from version control) and define `JAVA_HOME=/path/to/your/jdk-25`. The `./mvnw` script will use that variable to run Maven with the correct JDK. If you need to customize Playwright, add variables like `PLAYWRIGHT_BROWSERS_PATH` in the same file.
+> 💡 See the [Environment Variables](#environment-variables) section for detailed configuration instructions.
 
 ## Logs
 
@@ -376,7 +428,7 @@ This will run the integration tests with Playwright, allowing you to observe rea
 ## Technologies
 
 - Quarkus 3.27.0 (LTS)
-- Java 25
+- Java 21
 - RESTEasy Reactive + Jackson
 - SmallRye OpenAPI
 - Hibernate Validator

@@ -39,7 +39,7 @@ fi
 
 JAVA_VERSION=$("$JAVA_CMD" -version 2>&1 | awk -F '"' '/version/ {print $2}')
 JAVA_MAJOR=${JAVA_VERSION%%.*}
-if [ "${JAVA_MAJOR:-0}" -lt 25 ]; then
+if [ "${JAVA_MAJOR:-0}" -lt 21 ]; then
   echo "ERROR: JDK 25 or higher is required. Detected version: $JAVA_VERSION" >&2
   exit 1
 fi

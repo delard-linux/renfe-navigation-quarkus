@@ -169,6 +169,26 @@ Define plugin versions in properties section:
 - Use conventional commit format when possible
 - Be descriptive about what changed and why
 
+## Environment Variables
+
+The project uses environment variables for configuration. These should be documented in the README.md file.
+
+### Required Environment Variables
+- `JAVA_HOME`: Path to JDK 21 installation (required for Maven wrapper)
+
+### Optional Environment Variables
+- `PLAYWRIGHT_BROWSERS_PATH`: Custom path for Playwright browser installation
+
+### Configuration
+- Environment variables are loaded from a `.env` file in the project root
+- The `.env` file is excluded from version control (via `.gitignore`)
+- The Maven wrapper (`./mvnw`) automatically loads variables from `.env`
+- When adding new environment variables:
+  1. Document them in README.md under "Environment Variables" section
+  2. Update `.env.example` if one exists
+  3. Ensure `.gitignore` excludes `.env` files
+  4. Provide clear examples for Linux/Mac and Windows
+
 ## When Creating New Code
 1. Determine if it's unit test or integration test
 2. Place in correct directory (`src/test/java` or `src/it/java`)

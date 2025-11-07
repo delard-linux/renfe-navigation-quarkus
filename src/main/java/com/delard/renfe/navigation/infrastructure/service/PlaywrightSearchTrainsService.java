@@ -1,5 +1,6 @@
 package com.delard.renfe.navigation.infrastructure.service;
 
+import com.delard.renfe.navigation.domain.model.FareOption;
 import com.delard.renfe.navigation.domain.model.Train;
 import com.delard.renfe.navigation.infrastructure.config.PlaywrightConfig;
 import com.microsoft.playwright.*;
@@ -252,11 +253,39 @@ public class PlaywrightSearchTrainsService {
             if (train == null) {
                 return "null";
             }
-            return String.format("%s %s-%s %.2f€",
-                valueOrDefault(train.getTrainId(), "(no-id)"),
+            
+            String serviceType = valueOrDefault(train.getServiceType(), "(no-type)");
+            String timeRange = String.format("%s-%s",
                 valueOrDefault(train.getDepartureTime(), "--"),
-                valueOrDefault(train.getArrivalTime(), "--"),
-                train.getPriceFrom());
+                valueOrDefault(train.getArrivalTime(), "--"));
+            
+            String priceRange = getPriceRangeFromFares(train);
+            
+            return String.format("%s %s %s", serviceType, timeRange, priceRange);
+        }
+        
+        private String getPriceRangeFromFares(Train train) {
+            List<FareOption> fares = train.getFares();
+            if (fares == null || fares.isEmpty()) {
+                // Fallback to priceFrom if no fares available
+                return String.format("%.2f€", train.getPriceFrom());
+            }
+            
+            double minPrice = fares.stream()
+                .mapToDouble(FareOption::getPrice)
+                .min()
+                .orElse(train.getPriceFrom());
+            
+            double maxPrice = fares.stream()
+                .mapToDouble(FareOption::getPrice)
+                .max()
+                .orElse(train.getPriceFrom());
+            
+            if (minPrice == maxPrice) {
+                return String.format("%.2f€", minPrice);
+            } else {
+                return String.format("%.2f€-%.2f€", minPrice, maxPrice);
+            }
         }
 
         private String valueOrDefault(String value, String fallback) {

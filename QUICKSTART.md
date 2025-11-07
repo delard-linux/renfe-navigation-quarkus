@@ -13,7 +13,21 @@
 http://localhost:8000
 ```
 
-> 💡 Before running the commands, create a `.env` file (not versioned) with `JAVA_HOME=/path/to/your/jdk-25` so the wrapper uses the correct JDK.
+> 💡 Before running the commands, create a `.env` file (not versioned) with `JAVA_HOME=/path/to/your/jdk-21` so the wrapper uses the correct JDK. See the [Environment Variables](#environment-variables) section in README.md for details.
+
+## Environment Variables
+
+Create a `.env` file in the project root with:
+
+```bash
+# Required: Java 21 installation path
+JAVA_HOME=/usr/lib/jvm/java-21-openjdk
+
+# Optional: Custom Playwright browsers path
+# PLAYWRIGHT_BROWSERS_PATH=/custom/path/ms-playwright
+```
+
+For detailed information, see the [Environment Variables section in README.md](./README.md#environment-variables).
 
 ## Available Endpoints
 
@@ -101,7 +115,7 @@ quarkus.http.port=8080
 
 ### Error: Java version
 ```bash
-# Requires Java 25+
+# Requires Java 21+
 java -version
 ```
 
