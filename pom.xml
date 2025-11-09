@@ -1,7 +1,8 @@
 <?xml version="1.0"?>
-<project xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd"
-         xmlns="http://maven.apache.org/POM/4.0.0"
-         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+<project
+    xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd"
+    xmlns="http://maven.apache.org/POM/4.0.0"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
     <modelVersion>4.0.0</modelVersion>
     <groupId>com.delard.renfe</groupId>
     <artifactId>renfe-navigation-quarkus</artifactId>
@@ -46,7 +47,7 @@
             <groupId>io.quarkus</groupId>
             <artifactId>quarkus-arc</artifactId>
         </dependency>
-        
+
         <!-- REST API -->
         <dependency>
             <groupId>io.quarkus</groupId>
@@ -56,7 +57,7 @@
             <groupId>io.quarkus</groupId>
             <artifactId>quarkus-rest-jackson</artifactId>
         </dependency>
-        
+
         <!-- OpenAPI -->
         <dependency>
             <groupId>io.quarkus</groupId>
@@ -113,7 +114,8 @@
     </dependencies>
 
     <build>
-        <!-- Configure test source directory to unit (default), build-helper will add integration and e2e -->
+        <!-- Configure test source directory to unit (default), build-helper will add integration
+        and e2e -->
         <testSourceDirectory>src/test/java/unit</testSourceDirectory>
         <plugins>
             <plugin>
@@ -170,7 +172,8 @@
                         <junit.platform.output.capture.stdout>true</junit.platform.output.capture.stdout>
                     </systemPropertyVariables>
                     <!-- Show test display names in console output -->
-                    <statelessTestsetReporter implementation="org.apache.maven.plugin.surefire.extensions.junit5.JUnit5Xml30StatelessReporter">
+                    <statelessTestsetReporter
+                        implementation="org.apache.maven.plugin.surefire.extensions.junit5.JUnit5Xml30StatelessReporter">
                         <disable>false</disable>
                         <version>3.0</version>
                         <usePhrasedFileName>false</usePhrasedFileName>
@@ -179,7 +182,8 @@
                         <usePhrasedTestCaseMethodName>true</usePhrasedTestCaseMethodName>
                     </statelessTestsetReporter>
                     <!-- Show test names in real-time during execution -->
-                    <statelessTestsetInfoReporter implementation="org.apache.maven.plugin.surefire.extensions.junit5.JUnit5StatelessTestsetInfoReporter">
+                    <statelessTestsetInfoReporter
+                        implementation="org.apache.maven.plugin.surefire.extensions.junit5.JUnit5StatelessTestsetInfoReporter">
                         <disable>false</disable>
                         <usePhrasedFileName>false</usePhrasedFileName>
                         <usePhrasedClassNameInRunning>true</usePhrasedClassNameInRunning>
@@ -205,23 +209,23 @@
                 <artifactId>maven-toolchains-plugin</artifactId>
                 <version>${maven-toolchains-plugin.version}</version>
                 <executions>
-                  <execution>
-                    <goals>
-                      <goal>toolchain</goal>
-                    </goals>
-                  </execution>
+                    <execution>
+                        <goals>
+                            <goal>toolchain</goal>
+                        </goals>
+                    </execution>
                 </executions>
                 <configuration>
-                  <toolchains>
-                    <jdk>
-                      <version>21</version>
-                      <vendor>adoptium</vendor>
-                    </jdk>
-                  </toolchains>
+                    <toolchains>
+                        <jdk>
+                            <version>21</version>
+                            <vendor>adoptium</vendor>
+                        </jdk>
+                    </toolchains>
                 </configuration>
-              </plugin>
-              <!-- Add test sources for unit, integration, and e2e -->
-              <plugin>
+            </plugin>
+            <!-- Add test sources for unit, integration, and e2e -->
+            <plugin>
                 <groupId>org.codehaus.mojo</groupId>
                 <artifactId>build-helper-maven-plugin</artifactId>
                 <version>${build-helper-maven-plugin.version}</version>
@@ -273,7 +277,8 @@
                         <java.util.logging.manager>org.jboss.logmanager.LogManager</java.util.logging.manager>
                     </systemPropertyVariables>
                     <!-- Use skipITs property to control e2e tests independently from unit tests -->
-                    <!-- When skipTests is set but skipITs is not, default skipITs to false to allow e2e tests -->
+                    <!-- When skipTests is set but skipITs is not, default skipITs to false to allow
+                    e2e tests -->
                     <skipTests>${skipITs}</skipTests>
                     <skipITs>${skipITs}</skipITs>
                 </configuration>
@@ -310,7 +315,8 @@
                     <excludes>
                         <exclude>**/e2e/**</exclude>
                     </excludes>
-                    <!-- Configuration for check goal (available for both lifecycle and direct execution) -->
+                    <!-- Configuration for check goal (available for both lifecycle and direct
+                    execution) -->
                     <haltOnFailure>false</haltOnFailure>
                     <rules>
                         <rule>
@@ -325,6 +331,31 @@
                                     <counter>BRANCH</counter>
                                     <value>COVEREDRATIO</value>
                                     <minimum>0.80</minimum>
+                                </limit>
+                            </limits>
+                        </rule>
+                        <rule>
+                            <element>BUNDLE</element>
+                            <limits>
+                                <limit>
+                                    <counter>COMPLEXITY</counter>
+                                    <value>COVEREDRATIO</value>
+                                    <minimum>0.60</minimum>
+                                </limit>
+                                <limit>
+                                    <counter>COMPLEXITY</counter>
+                                    <value>TOTALCOUNT</value>
+                                    <maximum>60</maximum>
+                                </limit>
+                            </limits>
+                        </rule>
+                        <rule>
+                            <element>CLASS</element>
+                            <limits>
+                                <limit>
+                                    <counter>COMPLEXITY</counter>
+                                    <value>TOTALCOUNT</value>
+                                    <maximum>15</maximum>
                                 </limit>
                             </limits>
                         </rule>
