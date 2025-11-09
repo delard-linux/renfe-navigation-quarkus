@@ -389,5 +389,401 @@ class TrainHtmlParserTest {
                 .anyMatch(train -> train.isAccessible() || train.isEcoFriendly());
         assertTrue(true, "Accessibility flags check completed");
     }
+
+    @Test
+    void testParseFareCardWithEmptyDataTituloTarifa() {
+        // Covers branch: data-titulo-tarifa exists but is empty (line 197)
+        String html = """
+            <html>
+            <body>
+                <div class="selectedTren" role="listitem" id="tren_i_1">
+                    <h5 aria-hidden="true">08:00</h5>
+                    <h5 aria-hidden="true">12:30</h5>
+                    <div class="planes-opciones">
+                        <div class="seleccion-resumen-bottom card" data-titulo-tarifa="" data-precio-tarifa="45,50">
+                        </div>
+                    </div>
+                </div>
+            </body>
+            </html>
+            """;
+
+        List<Train> trains = parser.parseTrainList(html);
+        assertEquals(1, trains.size());
+        Train train = trains.get(0);
+        assertFalse(train.getFares().isEmpty());
+        FareOption fare = train.getFares().get(0);
+        // Should fallback to "Unknown" when data-titulo-tarifa is empty
+        assertEquals("Unknown", fare.getName());
+    }
+
+    @Test
+    void testParseFareCardWithoutDataTituloTarifaButWithHeader() {
+        // Covers branch: no data-titulo-tarifa, but has header with span[style*='padding-right'] (line 206)
+        String html = """
+            <html>
+            <body>
+                <div class="selectedTren" role="listitem" id="tren_i_1">
+                    <h5 aria-hidden="true">08:00</h5>
+                    <h5 aria-hidden="true">12:30</h5>
+                    <div class="planes-opciones">
+                        <div class="seleccion-resumen-bottom card" data-precio-tarifa="45,50">
+                            <div class="card-header">
+                                <span style="padding-right: 10px">Premium</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </body>
+            </html>
+            """;
+
+        List<Train> trains = parser.parseTrainList(html);
+        assertEquals(1, trains.size());
+        Train train = trains.get(0);
+        assertFalse(train.getFares().isEmpty());
+        FareOption fare = train.getFares().get(0);
+        assertEquals("Premium", fare.getName());
+    }
+
+    @Test
+    void testParseFareCardWithoutNameSpanButWithHeaderText() {
+        // Covers branch: no nameSpan, but header text with regex match (line 215)
+        // The regex captures text before digits/€, so we need text that doesn't start with a digit
+        String html = """
+            <html>
+            <body>
+                <div class="selectedTren" role="listitem" id="tren_i_1">
+                    <h5 aria-hidden="true">08:00</h5>
+                    <h5 aria-hidden="true">12:30</h5>
+                    <div class="planes-opciones">
+                        <div class="seleccion-resumen-bottom card" data-precio-tarifa="45,50">
+                            <div class="card-header">
+                                Premium 45,50 €
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </body>
+            </html>
+            """;
+
+        List<Train> trains = parser.parseTrainList(html);
+        assertEquals(1, trains.size());
+        Train train = trains.get(0);
+        assertFalse(train.getFares().isEmpty());
+        FareOption fare = train.getFares().get(0);
+        // The regex captures text before digits/€, so "Premium" should be extracted
+        // Note: The regex uses non-greedy match, so it might only capture first word
+        assertNotNull(fare.getName());
+        assertFalse(fare.getName().isEmpty());
+    }
+
+    @Test
+    void testParseFareCardWithHeaderOwnText() {
+        // Covers branch: no regex match, but header.ownText() exists (line 225)
+        // When regex doesn't match, it falls back to header.ownText()
+        String html = """
+            <html>
+            <body>
+                <div class="selectedTren" role="listitem" id="tren_i_1">
+                    <h5 aria-hidden="true">08:00</h5>
+                    <h5 aria-hidden="true">12:30</h5>
+                    <div class="planes-opciones">
+                        <div class="seleccion-resumen-bottom card" data-precio-tarifa="45,50">
+                            <div class="card-header">
+                                <span>Some other content</span>
+                                FareName
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </body>
+            </html>
+            """;
+
+        List<Train> trains = parser.parseTrainList(html);
+        assertEquals(1, trains.size());
+        Train train = trains.get(0);
+        assertFalse(train.getFares().isEmpty());
+        FareOption fare = train.getFares().get(0);
+        // Should use header.ownText() which is "FareName" (text not in child elements)
+        // Note: ownText() might return trimmed text, so we just verify it's not empty
+        assertNotNull(fare.getName());
+        assertFalse(fare.getName().isEmpty());
+    }
+
+    @Test
+    void testParseFareCardWithoutHeader() {
+        // Covers branch: no header element (line 205), should fallback to "Unknown"
+        String html = """
+            <html>
+            <body>
+                <div class="selectedTren" role="listitem" id="tren_i_1">
+                    <h5 aria-hidden="true">08:00</h5>
+                    <h5 aria-hidden="true">12:30</h5>
+                    <div class="planes-opciones">
+                        <div class="seleccion-resumen-bottom card" data-precio-tarifa="45,50">
+                        </div>
+                    </div>
+                </div>
+            </body>
+            </html>
+            """;
+
+        List<Train> trains = parser.parseTrainList(html);
+        assertEquals(1, trains.size());
+        Train train = trains.get(0);
+        assertFalse(train.getFares().isEmpty());
+        FareOption fare = train.getFares().get(0);
+        assertEquals("Unknown", fare.getName());
+    }
+
+    @Test
+    void testParseFareCardWithPlanElement() {
+        // Covers branch: planElem != null and planText not empty (line 242, 244)
+        String html = """
+            <html>
+            <body>
+                <div class="selectedTren" role="listitem" id="tren_i_1">
+                    <h5 aria-hidden="true">08:00</h5>
+                    <h5 aria-hidden="true">12:30</h5>
+                    <div class="planes-opciones">
+                        <div class="seleccion-resumen-bottom card" data-titulo-tarifa="Premium" data-precio-tarifa="45,50">
+                            <span class="plan-premium">La más completa</span>
+                        </div>
+                    </div>
+                </div>
+            </body>
+            </html>
+            """;
+
+        List<Train> trains = parser.parseTrainList(html);
+        assertEquals(1, trains.size());
+        Train train = trains.get(0);
+        assertFalse(train.getFares().isEmpty());
+        FareOption fare = train.getFares().get(0);
+        assertEquals("La más completa", fare.getPlan());
+    }
+
+    @Test
+    void testParseFareCardWithEmptyPlanText() {
+        // Covers branch: planElem != null but planText is empty (line 244)
+        String html = """
+            <html>
+            <body>
+                <div class="selectedTren" role="listitem" id="tren_i_1">
+                    <h5 aria-hidden="true">08:00</h5>
+                    <h5 aria-hidden="true">12:30</h5>
+                    <div class="planes-opciones">
+                        <div class="seleccion-resumen-bottom card" data-titulo-tarifa="Premium" data-precio-tarifa="45,50">
+                            <span class="plan-premium">   </span>
+                        </div>
+                    </div>
+                </div>
+            </body>
+            </html>
+            """;
+
+        List<Train> trains = parser.parseTrainList(html);
+        assertEquals(1, trains.size());
+        Train train = trains.get(0);
+        assertFalse(train.getFares().isEmpty());
+        FareOption fare = train.getFares().get(0);
+        // Plan should be null when planText is empty after trim
+        assertNull(fare.getPlan());
+    }
+
+    @Test
+    void testParseFareCardWithoutPrice() {
+        // Covers branch: no data-precio-tarifa attribute (line 250)
+        String html = """
+            <html>
+            <body>
+                <div class="selectedTren" role="listitem" id="tren_i_1">
+                    <h5 aria-hidden="true">08:00</h5>
+                    <h5 aria-hidden="true">12:30</h5>
+                    <div class="planes-opciones">
+                        <div class="seleccion-resumen-bottom card" data-titulo-tarifa="Premium">
+                        </div>
+                    </div>
+                </div>
+            </body>
+            </html>
+            """;
+
+        List<Train> trains = parser.parseTrainList(html);
+        assertEquals(1, trains.size());
+        Train train = trains.get(0);
+        assertFalse(train.getFares().isEmpty());
+        FareOption fare = train.getFares().get(0);
+        // Price should be 0.0 when not provided
+        assertEquals(0.0, fare.getPrice());
+    }
+
+    @Test
+    void testParseFareCardWithoutCode() {
+        // Covers branch: no data-cod-tarifa attribute (line 258)
+        String html = """
+            <html>
+            <body>
+                <div class="selectedTren" role="listitem" id="tren_i_1">
+                    <h5 aria-hidden="true">08:00</h5>
+                    <h5 aria-hidden="true">12:30</h5>
+                    <div class="planes-opciones">
+                        <div class="seleccion-resumen-bottom card" data-titulo-tarifa="Premium" data-precio-tarifa="45,50">
+                        </div>
+                    </div>
+                </div>
+            </body>
+            </html>
+            """;
+
+        List<Train> trains = parser.parseTrainList(html);
+        assertEquals(1, trains.size());
+        Train train = trains.get(0);
+        assertFalse(train.getFares().isEmpty());
+        FareOption fare = train.getFares().get(0);
+        // Code should be null when not provided
+        assertNull(fare.getCode());
+    }
+
+    @Test
+    void testParseFareCardWithoutTpEnlace() {
+        // Covers branch: no data-cod-tpenlacesilencio attribute (line 263)
+        String html = """
+            <html>
+            <body>
+                <div class="selectedTren" role="listitem" id="tren_i_1">
+                    <h5 aria-hidden="true">08:00</h5>
+                    <h5 aria-hidden="true">12:30</h5>
+                    <div class="planes-opciones">
+                        <div class="seleccion-resumen-bottom card" data-titulo-tarifa="Premium" data-precio-tarifa="45,50" data-cod-tarifa="PREMIUM">
+                        </div>
+                    </div>
+                </div>
+            </body>
+            </html>
+            """;
+
+        List<Train> trains = parser.parseTrainList(html);
+        assertEquals(1, trains.size());
+        Train train = trains.get(0);
+        assertFalse(train.getFares().isEmpty());
+        FareOption fare = train.getFares().get(0);
+        // TpEnlace should be null when not provided
+        assertNull(fare.getTpEnlace());
+    }
+
+    @Test
+    void testParseFareCardWithEmptyFeatures() {
+        // Covers branch: featureText.isEmpty() (line 274)
+        String html = """
+            <html>
+            <body>
+                <div class="selectedTren" role="listitem" id="tren_i_1">
+                    <h5 aria-hidden="true">08:00</h5>
+                    <h5 aria-hidden="true">12:30</h5>
+                    <div class="planes-opciones">
+                        <div class="seleccion-resumen-bottom card" data-titulo-tarifa="Premium" data-precio-tarifa="45,50">
+                            <ul class="lista-opciones">
+                                <li>   </li>
+                                <li>WIFI</li>
+                                <li>   </li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </body>
+            </html>
+            """;
+
+        List<Train> trains = parser.parseTrainList(html);
+        assertEquals(1, trains.size());
+        Train train = trains.get(0);
+        assertFalse(train.getFares().isEmpty());
+        FareOption fare = train.getFares().get(0);
+        // Should only add non-empty features
+        assertEquals(1, fare.getFeatures().size());
+        assertTrue(fare.getFeatures().contains("WIFI"));
+    }
+
+    @Test
+    void testParseFareCardWithAllAttributes() {
+        // Covers all positive branches: all attributes present
+        String html = """
+            <html>
+            <body>
+                <div class="selectedTren" role="listitem" id="tren_i_1">
+                    <h5 aria-hidden="true">08:00</h5>
+                    <h5 aria-hidden="true">12:30</h5>
+                    <div class="planes-opciones">
+                        <div class="seleccion-resumen-bottom card" 
+                             data-titulo-tarifa="Premium" 
+                             data-precio-tarifa="45,50" 
+                             data-cod-tarifa="PREMIUM" 
+                             data-cod-tpenlacesilencio="TP1">
+                            <span class="plan-premium">La más completa</span>
+                            <ul class="lista-opciones">
+                                <li>WIFI</li>
+                                <li>Power</li>
+                                <li>Comfort</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </body>
+            </html>
+            """;
+
+        List<Train> trains = parser.parseTrainList(html);
+        assertEquals(1, trains.size());
+        Train train = trains.get(0);
+        assertFalse(train.getFares().isEmpty());
+        FareOption fare = train.getFares().get(0);
+        assertEquals("Premium", fare.getName());
+        assertEquals(45.50, fare.getPrice(), 0.01);
+        assertEquals("PREMIUM", fare.getCode());
+        assertEquals("TP1", fare.getTpEnlace());
+        assertEquals("La más completa", fare.getPlan());
+        assertEquals(3, fare.getFeatures().size());
+        assertTrue(fare.getFeatures().contains("WIFI"));
+        assertTrue(fare.getFeatures().contains("Power"));
+        assertTrue(fare.getFeatures().contains("Comfort"));
+    }
+
+    @Test
+    void testParseFareCardWithDifferentListClasses() {
+        // Covers branch: different list classes (list-group, list-group-flush)
+        String html = """
+            <html>
+            <body>
+                <div class="selectedTren" role="listitem" id="tren_i_1">
+                    <h5 aria-hidden="true">08:00</h5>
+                    <h5 aria-hidden="true">12:30</h5>
+                    <div class="planes-opciones">
+                        <div class="seleccion-resumen-bottom card" data-titulo-tarifa="Basic" data-precio-tarifa="30,00">
+                            <ul class="list-group">
+                                <li>Feature 1</li>
+                            </ul>
+                        </div>
+                        <div class="seleccion-resumen-bottom card" data-titulo-tarifa="Premium" data-precio-tarifa="50,00">
+                            <ul class="list-group-flush">
+                                <li>Feature 2</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </body>
+            </html>
+            """;
+
+        List<Train> trains = parser.parseTrainList(html);
+        assertEquals(1, trains.size());
+        Train train = trains.get(0);
+        assertEquals(2, train.getFares().size());
+        assertEquals(1, train.getFares().get(0).getFeatures().size());
+        assertEquals(1, train.getFares().get(1).getFeatures().size());
+    }
 }
 

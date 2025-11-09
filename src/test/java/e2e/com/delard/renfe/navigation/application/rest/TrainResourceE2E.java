@@ -1,9 +1,6 @@
 package com.delard.renfe.navigation.application.rest;
 
-import com.delard.renfe.navigation.support.config.PlaywrightDebugNoHeadlessProfile;
-
 import io.quarkus.test.junit.QuarkusIntegrationTest;
-import io.quarkus.test.junit.TestProfile;
 import io.restassured.http.ContentType;
 import io.restassured.response.Response;
 import org.junit.jupiter.api.Test;
@@ -17,12 +14,11 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 
 /**
- * Integration tests for train resource.
- * Validates correct responses and common validation errors.
- * Uses @QuarkusTest to allow test profiles and execution from IDE.
+ * E2E tests for train resource.
+ * Uses real configuration from application.properties (headless=true, production-like settings).
+ * Tests run against the packaged application.
  */
 @QuarkusIntegrationTest
-@TestProfile(PlaywrightDebugNoHeadlessProfile.class)
 public class TrainResourceE2E {
     private static final Logger LOG = Logger.getLogger(TrainResourceE2E.class);
     /**

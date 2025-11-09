@@ -182,7 +182,6 @@ class ResponseStorageServiceTest {
     @Test
     void testSaveResponseWithDifferentStatusCodes() {
         // Arrange
-        String content = "test";
         int[] statusCodes = {200, 404, 500, 301, 302};
 
         // Act & Assert

@@ -150,6 +150,8 @@
                 <artifactId>maven-surefire-plugin</artifactId>
                 <version>${surefire-plugin.version}</version>
                 <configuration>
+                    <!-- Use argLine from JaCoCo for code coverage -->
+                    <argLine>${argLine}</argLine>
                     <includes>
                         <!-- Unit tests: *Test.java (sin anotación especial, depurables) -->
                         <include>**/*Test.java</include>
@@ -276,7 +278,7 @@
                     <skipITs>${skipITs}</skipITs>
                 </configuration>
             </plugin>
-            <!-- JaCoCo plugin for unit test coverage -->
+            <!-- JaCoCo plugin for unit and integration test coverage -->
             <plugin>
                 <groupId>org.jacoco</groupId>
                 <artifactId>jacoco-maven-plugin</artifactId>
@@ -304,9 +306,8 @@
                     </execution>
                 </executions>
                 <configuration>
-                    <!-- Only include unit tests, exclude integration and e2e tests -->
+                    <!-- Include unit tests and integration tests, exclude e2e tests -->
                     <excludes>
-                        <exclude>**/integration/**</exclude>
                         <exclude>**/e2e/**</exclude>
                     </excludes>
                     <!-- Configuration for check goal (available for both lifecycle and direct execution) -->
