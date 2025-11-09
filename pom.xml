@@ -113,6 +113,8 @@
     </dependencies>
 
     <build>
+        <!-- Configure test source directory to unit (default), build-helper will add integration and e2e -->
+        <testSourceDirectory>src/test/java/unit</testSourceDirectory>
         <plugins>
             <plugin>
                 <groupId>${quarkus.platform.group-id}</groupId>
@@ -143,10 +145,22 @@
                     </compilerArgs>
                 </configuration>
             </plugin>
+            <!-- Executes Unit testing and Integration test allow debugging (QuarkusTest) -->
             <plugin>
                 <artifactId>maven-surefire-plugin</artifactId>
                 <version>${surefire-plugin.version}</version>
                 <configuration>
+                    <includes>
+                        <!-- Unit tests: *Test.java (sin anotación especial, depurables) -->
+                        <include>**/*Test.java</include>
+                        <!-- Integration tests: *IT.java con @QuarkusTest (depurables) -->
+                        <include>**/*IT.java</include>
+                    </includes>
+                    <excludes>
+                        <!-- Exclude e2e tests (handled by Failsafe): *E2E.java y *ITCase.java -->
+                        <exclude>**/*E2E.java</exclude>
+                        <exclude>**/*ITCase.java</exclude>
+                    </excludes>
                     <systemPropertyVariables>
                         <java.util.logging.manager>org.jboss.logmanager.LogManager</java.util.logging.manager>
                         <maven.home>${maven.home}</maven.home>
@@ -204,57 +218,60 @@
                   </toolchains>
                 </configuration>
               </plugin>
-              <!-- Add IT sources -->
+              <!-- Add test sources for unit, integration, and e2e -->
               <plugin>
                 <groupId>org.codehaus.mojo</groupId>
                 <artifactId>build-helper-maven-plugin</artifactId>
                 <version>${build-helper-maven-plugin.version}</version>
                 <executions>
                     <execution>
-                        <id>add-it-source</id>
+                        <id>add-test-sources</id>
                         <phase>generate-test-sources</phase>
                         <goals>
                             <goal>add-test-source</goal>
                         </goals>
                         <configuration>
                             <sources>
-                                <source>src/it/java</source>
+                                <source>src/test/java/unit</source>
+                                <source>src/test/java/integration</source>
+                                <source>src/test/java/e2e</source>
                             </sources>
                         </configuration>
                     </execution>
                 </executions>
             </plugin>
-            <!-- Failsafe plugin for integration tests execution -->
+            <!-- Executes E2E (@QuarkusIntegrationTest) -->
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-failsafe-plugin</artifactId>
                 <version>${failsafe-plugin.version}</version>
                 <executions>
                     <execution>
-                        <id>integration-tests</id>
-                        <phase>integration-test</phase>
+                        <id>e2e-tests</id>
                         <goals>
                             <goal>integration-test</goal>
-                        </goals>
-                    </execution>
-                    <execution>
-                        <id>verify-tests</id>
-                        <phase>verify</phase>
-                        <goals>
                             <goal>verify</goal>
                         </goals>
                     </execution>
                 </executions>
                 <configuration>
-                    <testSourceDirectory>src/it/java</testSourceDirectory>
                     <includes>
-                        <include>**/*IT.java</include>
+                        <!-- E2E tests: *E2E.java con @QuarkusIntegrationTest (no depurables) -->
+                        <include>**/*E2E.java</include>
+                        <!-- E2E tests: *ITCase.java con @QuarkusIntegrationTest (no depurables) -->
+                        <include>**/*ITCase.java</include>
                     </includes>
+                    <excludes>
+                        <!-- Exclude unit tests (handled by Surefire): *Test.java -->
+                        <exclude>**/*Test.java</exclude>
+                        <!-- Exclude integration tests (handled by Surefire): *IT.java -->
+                        <exclude>**/*IT.java</exclude>
+                    </excludes>
                     <systemPropertyVariables>
                         <java.util.logging.manager>org.jboss.logmanager.LogManager</java.util.logging.manager>
                     </systemPropertyVariables>
-                    <!-- Use skipITs property to control IT tests independently from unit tests -->
-                    <!-- When skipTests is set but skipITs is not, default skipITs to false to allow IT tests -->
+                    <!-- Use skipITs property to control e2e tests independently from unit tests -->
+                    <!-- When skipTests is set but skipITs is not, default skipITs to false to allow e2e tests -->
                     <skipTests>${skipITs}</skipTests>
                     <skipITs>${skipITs}</skipITs>
                 </configuration>
@@ -287,9 +304,10 @@
                     </execution>
                 </executions>
                 <configuration>
-                    <!-- Only include unit tests, exclude integration tests -->
+                    <!-- Only include unit tests, exclude integration and e2e tests -->
                     <excludes>
-                        <exclude>**/it/**</exclude>
+                        <exclude>**/integration/**</exclude>
+                        <exclude>**/e2e/**</exclude>
                     </excludes>
                     <!-- Configuration for check goal (available for both lifecycle and direct execution) -->
                     <haltOnFailure>false</haltOnFailure>

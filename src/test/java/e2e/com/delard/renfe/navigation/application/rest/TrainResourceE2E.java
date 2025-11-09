@@ -1,25 +1,30 @@
 package com.delard.renfe.navigation.application.rest;
 
 import com.delard.renfe.navigation.support.config.PlaywrightDebugNoHeadlessProfile;
-import io.quarkus.test.junit.QuarkusTest;
+
+import io.quarkus.test.junit.QuarkusIntegrationTest;
 import io.quarkus.test.junit.TestProfile;
 import io.restassured.http.ContentType;
 import io.restassured.response.Response;
 import org.junit.jupiter.api.Test;
+import org.jboss.logging.Logger;
 
 import static io.restassured.RestAssured.given;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.notNullValue;
+import static org.hamcrest.Matchers.greaterThan;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 
 /**
  * Integration tests for train resource.
  * Validates correct responses and common validation errors.
  * Uses @QuarkusTest to allow test profiles and execution from IDE.
  */
-@QuarkusTest
+@QuarkusIntegrationTest
 @TestProfile(PlaywrightDebugNoHeadlessProfile.class)
-public class TrainResourceIT {
-
+public class TrainResourceE2E {
+    private static final Logger LOG = Logger.getLogger(TrainResourceE2E.class);
     /**
      * Validates that `/trains` returns 200 and JSON with expected basic fields
      * when valid parameters are provided for an outbound search.
@@ -113,7 +118,7 @@ public class TrainResourceIT {
      */
     @Test
     public void testGetTrainsWithFormattedOutput() {
-        Response resp = given()
+        given()
             .queryParam("origin", "OURENSE")
             .queryParam("destination", "MADRID")
             .queryParam("date_out", "2025-12-01")
@@ -125,14 +130,37 @@ public class TrainResourceIT {
             .body("trains_out", notNullValue())
         .extract().response();
 
-        // Pretty print the JSON response for human verification in test logs
-        try {
-            String pretty = resp.prettyPrint();
-            System.out.println("\n===== TRAIN SEARCH RESPONSE (pretty) =====\n" + pretty + "\n========================================\n");
-        } catch (Exception e) {
-            System.out.println("Could not pretty-print response: " + e.getMessage());
-            System.out.println(resp.asString());
-        }
+    }
+
+    @Test
+    void shouldRetrieveOutboundTrainsFromRenfe() {
+        Response response = given()
+            .queryParam("origin", "OURENSE")
+            .queryParam("destination", "MADRID")
+            .queryParam("date_out", "2025-12-15")
+            .queryParam("adults", 1)
+        .when()
+            .get("/trains")
+        .then()
+            .statusCode(200)
+            .contentType(ContentType.JSON)
+            .extract()
+            .response();
+
+        String responseBody = response.getBody().asString();
+        LOG.infof("E2E response: %s", responseBody);
+
+        // Validate response structure
+        assertNotNull(responseBody);
+        assertFalse(responseBody.isEmpty(), "Response body should not be empty");
+
+        // Validate JSON structure
+        response.then()
+            .body("trains_out", notNullValue())
+            .body("trains_out.size()", greaterThan(0));
+
+        LOG.infof("E2E outbound trains count: %d", 
+            response.jsonPath().getList("trains_out").size());
     }
 }
 

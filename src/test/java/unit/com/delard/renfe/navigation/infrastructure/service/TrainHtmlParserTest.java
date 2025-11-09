@@ -259,11 +259,14 @@ class TrainHtmlParserTest {
 
     /**
      * Helper method to load HTML content from test resources
+     * Resources are located in src/test/resources/unit/resources/mock-data/
      */
     private String loadHtmlFromResources(String resourceName) throws IOException {
-        InputStream inputStream = getClass().getClassLoader().getResourceAsStream(resourceName);
+        // Resources are in unit/resources/mock-data/ directory
+        String resourcePath = "unit/resources/mock-data/" + resourceName;
+        InputStream inputStream = getClass().getClassLoader().getResourceAsStream(resourcePath);
         if (inputStream == null) {
-            throw new IOException("Resource not found: " + resourceName);
+            throw new IOException("Resource not found: " + resourcePath);
         }
         return new String(inputStream.readAllBytes(), StandardCharsets.UTF_8);
     }

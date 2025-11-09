@@ -1,13 +1,13 @@
 package com.delard.renfe.navigation.infrastructure.service;
 
-import java.net.URI;
-
-import io.quarkus.test.common.http.TestHTTPResource;
-import io.quarkus.test.junit.QuarkusIntegrationTest;
+import io.quarkus.test.junit.QuarkusTest;
+import io.quarkus.test.junit.TestProfile;
 import io.restassured.http.ContentType;
 import io.restassured.response.Response;
 import org.jboss.logging.Logger;
 import org.junit.jupiter.api.Test;
+
+import com.delard.renfe.navigation.support.config.PlaywrightDebugNoHeadlessProfile;
 
 import static io.restassured.RestAssured.given;
 import static org.hamcrest.CoreMatchers.notNullValue;
@@ -16,19 +16,17 @@ import static org.junit.jupiter.api.Assertions.*;
 
 /**
  * Integration test for PlaywrightSearchTrainsService using the REST endpoint.
- * Uses @QuarkusIntegrationTest to test against the packaged application.
+ * Uses @QuarkusTest to allow IDE debugging (runs in same JVM).
+ * For production-like testing, use @QuarkusIntegrationTest instead.
  */
-@QuarkusIntegrationTest
+@QuarkusTest
+@TestProfile(PlaywrightDebugNoHeadlessProfile.class)
 class PlaywrightSearchTrainsServiceIT {
 
     private static final Logger LOG = Logger.getLogger(PlaywrightSearchTrainsServiceIT.class);
 
-    @TestHTTPResource
-    URI baseUri;
-
     @Test
     void shouldRetrieveOutboundTrainsFromRenfe() {
-        System.out.println("🚀 Quarkus test server running at: " + baseUri);
         Response response = given()
             .queryParam("origin", "OURENSE")
             .queryParam("destination", "MADRID")
