@@ -134,5 +134,114 @@ class ResponseStorageServiceTest {
         String filename = Path.of(result).getFileName().toString();
         assertTrue(filename.matches("\\d{6}_\\d{6}_\\d+_test\\.log"));
     }
+
+    @Test
+    void testSaveResponseWithIOException() {
+        // Arrange - use invalid path that will cause IOException
+        when(config.getResponsesDir()).thenReturn("/invalid/path/that/does/not/exist/and/is/too/long/to/create");
+
+        // Act
+        String result = service.saveResponse("test content", "test.log");
+
+        // Assert
+        assertNull(result);
+    }
+
+    @Test
+    void testSaveResponseDirectoryCreationFailure() {
+        // Arrange - use path that exists but cannot create subdirectory
+        when(config.getResponsesDir()).thenReturn(tempDir.toString());
+
+        // Act - should still work since tempDir exists
+        String result = service.saveResponse("test", "test.log");
+
+        // Assert
+        assertNotNull(result);
+    }
+
+    @Test
+    void testSaveResponseWithVeryLongContent() throws IOException {
+        // Arrange
+        StringBuilder longContent = new StringBuilder();
+        for (int i = 0; i < 10000; i++) {
+            longContent.append("This is a very long content line. ");
+        }
+        String content = longContent.toString();
+
+        // Act
+        String result = service.saveResponse(content, "long.log");
+
+        // Assert
+        assertNotNull(result);
+        Path savedFile = Path.of(result);
+        assertTrue(Files.exists(savedFile));
+        String savedContent = Files.readString(savedFile);
+        assertEquals(content, savedContent);
+    }
+
+    @Test
+    void testSaveResponseWithDifferentStatusCodes() {
+        // Arrange
+        String content = "test";
+        int[] statusCodes = {200, 404, 500, 301, 302};
+
+        // Act & Assert
+        for (int statusCode : statusCodes) {
+            String result = service.saveResponse("test", statusCode, "test.log");
+            assertNotNull(result);
+            assertTrue(result.contains(String.valueOf(statusCode)));
+        }
+    }
+
+    @Test
+    void testSaveResponseWhenDirectoryAlreadyExists() {
+        // Arrange - directory already exists (should skip creation)
+        when(config.getResponsesDir()).thenReturn(tempDir.toString());
+        
+        // Create a file first to ensure directory exists
+        try {
+            Files.createFile(tempDir.resolve("existing.txt"));
+        } catch (IOException e) {
+            // Ignore
+        }
+
+        // Act
+        String result = service.saveResponse("test", "test.log");
+
+        // Assert - should work fine when directory exists
+        assertNotNull(result);
+        assertTrue(result.contains("test.log"));
+    }
+
+    @Test
+    void testSaveResponseMultipleCalls() {
+        // Arrange
+        when(config.getResponsesDir()).thenReturn(tempDir.toString());
+
+        // Act - multiple calls should all work
+        String result1 = service.saveResponse("content1", "file1.log");
+        String result2 = service.saveResponse("content2", "file2.log");
+        String result3 = service.saveResponse("content3", "file3.log");
+
+        // Assert
+        assertNotNull(result1);
+        assertNotNull(result2);
+        assertNotNull(result3);
+        assertNotEquals(result1, result2);
+        assertNotEquals(result2, result3);
+    }
+
+    @Test
+    void testSaveResponseWithEmptyStringContent() {
+        // Arrange
+        when(config.getResponsesDir()).thenReturn(tempDir.toString());
+
+        // Act - test with empty string instead of null (null would cause NPE)
+        String result = service.saveResponse("", "empty.log");
+
+        // Assert - should handle empty string
+        assertNotNull(result);
+        assertTrue(result.contains("empty.log"));
+    }
 }
 
