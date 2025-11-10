@@ -1,5 +1,6 @@
 package com.delard.renfe.navigation.application.service;
 
+import com.delard.renfe.navigation.application.exception.ValidationException;
 import com.delard.renfe.navigation.domain.model.Train;
 import com.delard.renfe.navigation.domain.model.TrainsResponse;
 import com.delard.renfe.navigation.domain.port.input.SearchTrainsUseCase;
@@ -28,6 +29,9 @@ public class SearchTrainsService implements SearchTrainsUseCase {
                                        String dateReturn, int adults) {
         Instant startTime = Instant.now();
 
+        // Validate required parameters
+        validateRequiredFields(origin, destination, dateOut, adults);
+
         LOG.debugf("[REQUEST] Starting search: %s -> %s, Outbound: %s, Return: %s, Passengers: %d",
                 origin, destination, dateOut, dateReturn, adults);
 
@@ -53,6 +57,33 @@ public class SearchTrainsService implements SearchTrainsUseCase {
             LOG.errorf(e, "[ERROR] Search failed after %.2fs: %s",
                     elapsed.toMillis() / 1000.0, e.getMessage());
             throw new RuntimeException("Error searching trains: " + e.getMessage(), e);
+        }
+    }
+
+    /**
+     * Validates required and optional fields for train search
+     *
+     * @param origin      Station origin (required)
+     * @param destination Station destination (required)
+     * @param dateOut     Outbound date (required)
+     * @param adults      Number of adult passengers (required, must be > 1)
+     * @throws ValidationException if validation fails
+     */
+    private void validateRequiredFields(String origin, String destination, String dateOut, int adults) {
+        if (origin == null || origin.isBlank()) {
+            throw new ValidationException("Origin is required");
+        }
+
+        if (destination == null || destination.isBlank()) {
+            throw new ValidationException("Destination is required");
+        }
+
+        if (dateOut == null || dateOut.isBlank()) {
+            throw new ValidationException("Date out is required");
+        }
+
+        if (adults <= 1) {
+            throw new ValidationException("Adults must be greater than 1");
         }
     }
 }

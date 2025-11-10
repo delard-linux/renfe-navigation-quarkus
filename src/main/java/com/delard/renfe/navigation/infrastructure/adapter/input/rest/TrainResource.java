@@ -1,5 +1,6 @@
 package com.delard.renfe.navigation.infrastructure.adapter.input.rest;
 
+import com.delard.renfe.navigation.application.exception.ValidationException;
 import com.delard.renfe.navigation.domain.model.TrainsResponse;
 import com.delard.renfe.navigation.domain.port.input.SearchTrainsUseCase;
 import com.delard.renfe.navigation.infrastructure.adapter.input.rest.dto.TrainsResponseDTO;
@@ -9,6 +10,7 @@ import jakarta.inject.Inject;
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Pattern;
 import jakarta.ws.rs.*;
 import jakarta.ws.rs.core.MediaType;
@@ -61,12 +63,12 @@ public class TrainResource {
             @Pattern(regexp = "\\d{4}-\\d{2}-\\d{2}", message = "Date must be in format YYYY-MM-DD")
             String dateReturn,
 
-            @Parameter(description = "Number of adult passengers (1-8)")
+            @Parameter(description = "Number of adult passengers (required, must be greater than 1, max 8)", required = true)
             @QueryParam("adults")
-            @DefaultValue("1")
-            @Min(value = 1, message = "Adults must be at least 1")
+            @NotNull(message = "Adults is required")
+            @Min(value = 2, message = "Adults must be greater than 1")
             @Max(value = 8, message = "Adults must be at most 8")
-            int adults) {
+            Integer adults) {
 
         try {
             LOG.infof("REST Request - GET /trains: %s -> %s, dateOut: %s, dateReturn: %s, adults: %d",
@@ -79,6 +81,11 @@ public class TrainResource {
 
             return Response.ok(responseDTO).build();
 
+        } catch (ValidationException e) {
+            LOG.warnf("Validation error in /trains request: %s", e.getMessage());
+            return Response.status(Response.Status.BAD_REQUEST)
+                    .entity(new ErrorResponse(e.getMessage()))
+                    .build();
         } catch (Exception e) {
             LOG.errorf(e, "Error processing /trains request");
             return Response.status(Response.Status.INTERNAL_SERVER_ERROR)

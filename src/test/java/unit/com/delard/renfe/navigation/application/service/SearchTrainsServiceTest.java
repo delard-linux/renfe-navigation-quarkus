@@ -1,5 +1,6 @@
 package com.delard.renfe.navigation.application.service;
 
+import com.delard.renfe.navigation.application.exception.ValidationException;
 import com.delard.renfe.navigation.domain.model.Train;
 import com.delard.renfe.navigation.domain.model.TrainsResponse;
 import com.delard.renfe.navigation.domain.port.output.TrainScraperPort;
@@ -18,7 +19,6 @@ import java.util.List;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;
-import static org.mockito.Mockito.lenient;
 
 /**
  * Unit tests for SearchTrainsService
@@ -61,7 +61,7 @@ class SearchTrainsServiceTest {
         String destination = REAL_DESTINATION;
         String dateOut = REAL_DATE_OUT;
         String dateReturn = REAL_DATE_RETURN;
-        int adults = 1;
+        int adults = 2;
 
         Train trainOut1 = createTrain("T123", "AVE", "08:00", "10:00", "2h", 25.0);
         Train trainOut2 = createTrain("T456", "ALVIA", "12:00", "14:00", "2h", 30.0);
@@ -97,7 +97,7 @@ class SearchTrainsServiceTest {
         String destination = REAL_DESTINATION;
         String dateOut = REAL_DATE_OUT;
         String dateReturn = null;
-        int adults = 1;
+        int adults = 2;
 
         Train trainOut1 = createTrain("T123", "AVE", "08:00", "10:00", "2h", 25.0);
         List<Train> trainsOut = Arrays.asList(trainOut1);
@@ -128,7 +128,7 @@ class SearchTrainsServiceTest {
         String destination = REAL_DESTINATION;
         String dateOut = REAL_DATE_OUT;
         String dateReturn = REAL_DATE_RETURN;
-        int adults = 1;
+        int adults = 2;
 
         Train trainOut1 = createTrain("T123", "AVE", "08:00", "10:00", "2h", 25.0);
         List<Train> trainsOut = Arrays.asList(trainOut1);
@@ -153,7 +153,7 @@ class SearchTrainsServiceTest {
         String destination = REAL_DESTINATION;
         String dateOut = REAL_DATE_OUT;
         String dateReturn = null;
-        int adults = 1;
+        int adults = 2;
 
         List<Train> trainsOut = new ArrayList<>();
         List<List<Train>> scraperResult = Arrays.asList(trainsOut);
@@ -176,7 +176,7 @@ class SearchTrainsServiceTest {
         String destination = REAL_DESTINATION;
         String dateOut = REAL_DATE_OUT;
         String dateReturn = REAL_DATE_RETURN;
-        int adults = 1;
+        int adults = 2;
         String errorMessage = "Scraping failed";
 
         when(trainScraperPort.scrapeTrains(origin, destination, dateOut, dateReturn, adults))
@@ -194,7 +194,7 @@ class SearchTrainsServiceTest {
     }
 
     @Test
-    @DisplayName("Should handle different number of adults correctly (1, 3, 5 adults)")
+    @DisplayName("Should handle different number of adults correctly (2, 3, 5 adults)")
     void shouldHandleDifferentNumberOfAdultsCorrectly() {
         String origin = REAL_ORIGIN;
         String destination = REAL_DESTINATION;
@@ -208,14 +208,14 @@ class SearchTrainsServiceTest {
         when(trainScraperPort.scrapeTrains(eq(origin), eq(destination), eq(dateOut), eq(dateReturn), anyInt()))
                 .thenReturn(scraperResult);
 
-        TrainsResponse result1 = service.searchTrains(origin, destination, dateOut, dateReturn, 1);
+        TrainsResponse result1 = service.searchTrains(origin, destination, dateOut, dateReturn, 2);
         TrainsResponse result2 = service.searchTrains(origin, destination, dateOut, dateReturn, 3);
         TrainsResponse result3 = service.searchTrains(origin, destination, dateOut, dateReturn, 5);
 
         assertNotNull(result1);
         assertNotNull(result2);
         assertNotNull(result3);
-        assertEquals(1, result1.getAdults());
+        assertEquals(2, result1.getAdults());
         assertEquals(3, result2.getAdults());
         assertEquals(5, result3.getAdults());
 
@@ -223,23 +223,37 @@ class SearchTrainsServiceTest {
     }
 
     @Test
-    @DisplayName("Should handle null input values gracefully")
+    @DisplayName("Should throw ValidationException when input values are null or invalid")
     void shouldHandleNullInputValuesGracefully() {
-        Train trainOut1 = createTrain("T123", "AVE", "08:00", "10:00", "2h", 25.0);
-        List<Train> trainsOut = Arrays.asList(trainOut1);
-        List<List<Train>> scraperResult = Arrays.asList(trainsOut);
+        // Test null origin
+        ValidationException exception1 = assertThrows(ValidationException.class, () -> {
+            service.searchTrains(null, REAL_DESTINATION, REAL_DATE_OUT, null, 2);
+        });
+        assertEquals("Origin is required", exception1.getMessage());
 
-        lenient().when(trainScraperPort.scrapeTrains(any(), any(), any(), any(), anyInt()))
-                .thenReturn(scraperResult);
+        // Test null destination
+        ValidationException exception2 = assertThrows(ValidationException.class, () -> {
+            service.searchTrains(REAL_ORIGIN, null, REAL_DATE_OUT, null, 2);
+        });
+        assertEquals("Destination is required", exception2.getMessage());
 
-        TrainsResponse result = service.searchTrains(null, null, null, null, 0);
+        // Test null dateOut
+        ValidationException exception3 = assertThrows(ValidationException.class, () -> {
+            service.searchTrains(REAL_ORIGIN, REAL_DESTINATION, null, null, 2);
+        });
+        assertEquals("Date out is required", exception3.getMessage());
 
-        assertNotNull(result);
-        assertNull(result.getOrigin());
-        assertNull(result.getDestination());
-        assertNull(result.getDateOut());
-        assertNull(result.getDateReturn());
-        assertEquals(0, result.getAdults());
+        // Test adults <= 1
+        ValidationException exception4 = assertThrows(ValidationException.class, () -> {
+            service.searchTrains(REAL_ORIGIN, REAL_DESTINATION, REAL_DATE_OUT, null, 1);
+        });
+        assertEquals("Adults must be greater than 1", exception4.getMessage());
+
+        // Test adults = 0
+        ValidationException exception5 = assertThrows(ValidationException.class, () -> {
+            service.searchTrains(REAL_ORIGIN, REAL_DESTINATION, REAL_DATE_OUT, null, 0);
+        });
+        assertEquals("Adults must be greater than 1", exception5.getMessage());
     }
 
     @Test
@@ -249,7 +263,7 @@ class SearchTrainsServiceTest {
         String destination = REAL_DESTINATION;
         String dateOut = REAL_DATE_OUT;
         String dateReturn = null;
-        int adults = 1;
+        int adults = 2;
 
         Train trainOut1 = createTrain("T123", "AVE", "08:00", "10:00", "2h", 25.0);
         List<Train> trainsOut = Arrays.asList(trainOut1);
@@ -274,7 +288,7 @@ class SearchTrainsServiceTest {
         String destination = REAL_DESTINATION;
         String dateOut = REAL_DATE_OUT;
         String dateReturn = null;
-        int adults = 1;
+        int adults = 2;
 
         // Simulate scraper returning a list with null first element
         List<List<Train>> scraperResult = new ArrayList<>();
@@ -297,7 +311,7 @@ class SearchTrainsServiceTest {
         String destination = REAL_DESTINATION;
         String dateOut = REAL_DATE_OUT;
         String dateReturn = REAL_DATE_RETURN;
-        int adults = 1;
+        int adults = 2;
 
         Train trainOut1 = createTrain("T123", "AVE", "08:00", "10:00", "2h", 25.0);
         List<Train> trainsOut = Arrays.asList(trainOut1);
