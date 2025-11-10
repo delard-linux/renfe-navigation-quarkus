@@ -1,6 +1,8 @@
 package com.delard.renfe.navigation.infrastructure.service;
 
+import com.delard.renfe.navigation.support.config.PlaywrightIntegrationTestProfile;
 import io.quarkus.test.junit.QuarkusTest;
+import io.quarkus.test.junit.TestProfile;
 import jakarta.inject.Inject;
 import org.jboss.logging.Logger;
 import org.junit.jupiter.api.Test;
@@ -14,9 +16,19 @@ import static org.junit.jupiter.api.Assertions.*;
  * Integration test for PlaywrightSearchTrainsService.
  * Tests the service directly without going through REST endpoints.
  * Uses @QuarkusTest to allow IDE debugging (runs in same JVM).
- * Uses real configuration from application.properties (headless=true, production-like settings).
+ * 
+ * Configuration is loaded from src/test/resources/application-integration.properties
+ * via the PlaywrightIntegrationTestProfile.
+ * You can modify Playwright settings (headless mode, slow-mo, timeouts) in that file
+ * to debug tests or adjust execution speed.
+ * 
+ * Debug tips:
+ * - Set playwright.headless=false to see the browser window
+ * - Set playwright.slow-mo=5000 to slow down execution for observation
+ * - Increase timeouts if pages load slowly during debugging
  */
 @QuarkusTest
+@TestProfile(PlaywrightIntegrationTestProfile.class)
 class PlaywrightSearchTrainsServiceIT {
 
     private static final Logger LOG = Logger.getLogger(PlaywrightSearchTrainsServiceIT.class);
