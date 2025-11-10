@@ -1,0 +1,10 @@
+{
+    "git.blame.editorDecoration.enabled": true,
+    "java.configuration.updateBuildConfiguration": "disabled",
+    "java.test.config": {
+        "vmArgs": [
+            "-Djava.util.logging.manager=org.jboss.logmanager.LogManager"
+        ]
+    },
+    "java.debug.settings.vmArgs": "-Djava.util.logging.manager=org.jboss.logmanager.LogManager"
+}

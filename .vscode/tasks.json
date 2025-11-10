@@ -1,0 +1,57 @@
+{
+    "version": "2.0.0",
+    "tasks": [
+        {
+            "label": "maven: test IT",
+            "type": "shell",
+            "command": "./mvnw",
+            "args": [
+                "failsafe:integration-test",
+                "-DskipTests",
+                "-DskipITs=false",
+                "-Dit.test=${input:testClass}"
+            ],
+            "problemMatcher": [],
+            "presentation": {
+                "reveal": "always",
+                "panel": "dedicated"
+            }
+        },
+        {
+            "label": "maven: debug IT",
+            "type": "shell",
+            "command": "./mvnw",
+            "args": [
+                "failsafe:integration-test",
+                "-DskipTests",
+                "-DskipITs=false",
+                "-Dit.test=${input:testClass}",
+                "-Dmaven.failsafe.debug"
+            ],
+            "isBackground": true,
+            "problemMatcher": {
+                "pattern": {
+                    "regexp": "^Listening for transport dt_socket at address: (\\d+)$"
+                },
+                "background": {
+                    "activeOnStart": true,
+                    "beginsPattern": "^.*Listening for transport.*$",
+                    "endsPattern": "^.*Listening for transport dt_socket at address: (\\d+).*$"
+                }
+            },
+            "presentation": {
+                "reveal": "always",
+                "panel": "dedicated"
+            }
+        }
+    ],
+    "inputs": [
+        {
+            "id": "testClass",
+            "description": "Test class name (e.g., PlaywrightSearchTrainsServiceIT)",
+            "default": "PlaywrightSearchTrainsServiceIT",
+            "type": "promptString"
+        }
+    ]
+}
+
