@@ -36,7 +36,6 @@ public class PlaywrightSearchTrainsService {
                                            String dateReturn, int adults) {
         LOG.debugf("Starting Chromium browser");
 
-        // TODO: what happens if there are multiple stations with the same string?
         Map<String, String> originStation = renfeCommonService.findStation(origin);
         Map<String, String> destStation = renfeCommonService.findStation(destination);
 
