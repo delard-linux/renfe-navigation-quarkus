@@ -5,6 +5,9 @@ import jakarta.inject.Inject;
 import org.jboss.logging.Logger;
 import org.junit.jupiter.api.Test;
 
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
+
 import static org.junit.jupiter.api.Assertions.*;
 
 /**
@@ -21,16 +24,40 @@ class PlaywrightSearchTrainsServiceIT {
     @Inject
     PlaywrightSearchTrainsService playwrightSearchTrainsService;
 
+    /**
+     * Calculates the outbound date (1 month from today)
+     *
+     * @return Outbound date in format YYYY-MM-DD
+     */
+    private String calculateOutboundDate() {
+        LocalDate today = LocalDate.now();
+        LocalDate outboundDate = today.plusMonths(1);
+        return outboundDate.format(DateTimeFormatter.ISO_LOCAL_DATE);
+    }
+
+    /**
+     * Calculates the return date (3 days after the outbound date)
+     *
+     * @param outboundDate Outbound date in format YYYY-MM-DD
+     * @return Return date in format YYYY-MM-DD
+     */
+    private String calculateReturnDate(String outboundDate) {
+        LocalDate outbound = LocalDate.parse(outboundDate);
+        LocalDate returnDate = outbound.plusDays(3);
+        return returnDate.format(DateTimeFormatter.ISO_LOCAL_DATE);
+    }
+
     @Test
     void shouldRetrieveOutboundTrainsFromRenfe() {
         // Test direct service call with null return date
         // Covers branch: dateReturn == null (line 52)
+        String dateOut = calculateOutboundDate();
         PlaywrightSearchTrainsService.SearchTrainsResult result = playwrightSearchTrainsService.searchTrains(
             "OURENSE",
             "MADRID",
-            "2025-12-15",
+            dateOut,
             null,
-            1
+            2
         );
 
         LOG.infof("IT result: %s", result);
@@ -55,12 +82,13 @@ class PlaywrightSearchTrainsServiceIT {
     void shouldRetrieveOutboundTrainsWithEmptyReturnDate() {
         // Test with empty string return date
         // Covers branch: dateReturn != null && dateReturn.isEmpty() (line 52)
+        String dateOut = calculateOutboundDate();
         PlaywrightSearchTrainsService.SearchTrainsResult result = playwrightSearchTrainsService.searchTrains(
             "BARCELONA",
             "VALENCIA",
-            "2025-12-10",
+            dateOut,
             "",
-            1
+            2
         );
 
         LOG.infof("IT result with empty return date: %s", result);
@@ -80,12 +108,14 @@ class PlaywrightSearchTrainsServiceIT {
         // - dateReturn != null && !dateReturn.isEmpty() (line 52)
         // - !dateReturnFormatted.isEmpty() && !trainsOut.isEmpty() (line 102)
         // - vueltaTab.count() > 0 (line 106)
+        String dateOut = calculateOutboundDate();
+        String dateReturn = calculateReturnDate(dateOut);
         PlaywrightSearchTrainsService.SearchTrainsResult result = playwrightSearchTrainsService.searchTrains(
             "OURENSE",
             "MADRID",
-            "2025-12-15",
-            "2025-12-20",
-            1
+            dateOut,
+            dateReturn,
+            2
         );
 
         LOG.infof("IT result with return: %s", result);
@@ -113,13 +143,14 @@ class PlaywrightSearchTrainsServiceIT {
         // Test with invalid return date format
         // Covers branch: formatDate catch block in RenfeCommonService (line 104)
         // The invalid date will be passed through as-is by formatDate
+        String dateOut = calculateOutboundDate();
         try {
             PlaywrightSearchTrainsService.SearchTrainsResult result = playwrightSearchTrainsService.searchTrains(
                 "BARCELONA",
                 "VALENCIA",
-                "2025-12-10",
+                dateOut,
                 "invalid-date-format",
-                1
+                2
             );
 
             LOG.infof("IT result with invalid return date: %s", result);
@@ -145,13 +176,14 @@ class PlaywrightSearchTrainsServiceIT {
         // - Generic station fallback (line 84-91)
         
         // Test with exact match station (covers exact match branch)
+        String dateOut1 = calculateOutboundDate();
         try {
             PlaywrightSearchTrainsService.SearchTrainsResult result1 = playwrightSearchTrainsService.searchTrains(
                 "MADRID",
                 "BARCELONA",
-                "2025-12-10",
+                dateOut1,
                 null,
-                1
+                2
             );
             assertNotNull(result1);
             assertNotNull(result1.outboundTrains);
@@ -161,13 +193,14 @@ class PlaywrightSearchTrainsServiceIT {
         }
 
         // Test with partial match station (covers partial match branch)
+        String dateOut2 = calculateOutboundDate();
         try {
             PlaywrightSearchTrainsService.SearchTrainsResult result2 = playwrightSearchTrainsService.searchTrains(
                 "MAD",  // Partial match
                 "BCN",  // Partial match
-                "2025-12-10",
+                dateOut2,
                 null,
-                1
+                2
             );
             assertNotNull(result2);
             assertNotNull(result2.outboundTrains);
@@ -177,13 +210,14 @@ class PlaywrightSearchTrainsServiceIT {
         }
 
         // Test with unknown station (should use generic fallback)
+        String dateOut3 = calculateOutboundDate();
         try {
             PlaywrightSearchTrainsService.SearchTrainsResult result3 = playwrightSearchTrainsService.searchTrains(
                 "UNKNOWNSTATION123",
                 "ANOTHERUNKNOWN456",
-                "2025-12-10",
+                dateOut3,
                 null,
-                1
+                2
             );
             assertNotNull(result3);
             // Even with unknown stations, the service should attempt the search
@@ -204,12 +238,13 @@ class PlaywrightSearchTrainsServiceIT {
         // - getPriceRangeFromFares: minPrice == maxPrice (line 298)
         // - valueOrDefault: value == null || value.isBlank() (line 306)
         
+        String dateOut = calculateOutboundDate();
         PlaywrightSearchTrainsService.SearchTrainsResult result = playwrightSearchTrainsService.searchTrains(
             "OURENSE",
             "MADRID",
-            "2025-12-15",
+            dateOut,
             null,
-            1
+            2
         );
 
         assertNotNull(result);

@@ -129,6 +129,13 @@
                         <goals>
                             <goal>build</goal>
                             <goal>generate-code</goal>
+                        </goals>
+                    </execution>
+                    <!-- Generate test code after build-helper adds test sources -->
+                    <execution>
+                        <id>generate-test-code</id>
+                        <phase>generate-test-sources</phase>
+                        <goals>
                             <goal>generate-code-tests</goal>
                         </goals>
                     </execution>
