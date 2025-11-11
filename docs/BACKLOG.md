@@ -23,8 +23,9 @@
 
 ## Next
 
-- falla con busquedas de ida y vuelta
 - test de servicio trenes de playwright con ida y vuelta y que cuente mas de un tren en la respuesta
+- falla con busquedas de ida y vuelta
+- Los EXAMPLES.md fallan por timeout ahora
 - Manejar la validationException que es una Runtime no declarada en los servicios.. puede saltar en un REST o en un MCP
 - renfe.responses-dir=target/responses
 - Support multiple passenger types (not only adults)

@@ -1,9 +1,7 @@
 package com.delard.renfe.navigation.infrastructure.adapter.output;
 
 import com.delard.renfe.navigation.domain.port.output.CachePort;
-import jakarta.enterprise.context.ApplicationScoped;
-import jakarta.inject.Inject;
-import org.eclipse.microprofile.config.inject.ConfigProperty;
+import jakarta.enterprise.inject.Vetoed;
 import org.jboss.logging.Logger;
 
 import java.time.Instant;
@@ -14,21 +12,30 @@ import java.util.concurrent.ConcurrentHashMap;
 /**
  * Local in-memory cache adapter implementation
  * Uses ConcurrentHashMap for thread-safe operations
+ * 
+ * This class is @Vetoed to prevent it from being a CDI bean directly.
+ * It should only be used through CacheProducer.produceCachePort()
  */
-@ApplicationScoped
+@Vetoed
 public class LocalCacheAdapter implements CachePort {
 
     private static final Logger LOG = Logger.getLogger(LocalCacheAdapter.class);
 
-    @Inject
-    @ConfigProperty(name = "renfe.stations-cache-enabled", defaultValue = "true")
-    boolean cacheEnabled;
-
-    @Inject
-    @ConfigProperty(name = "renfe.stations-cache-ttl-seconds", defaultValue = "3600")
-    long defaultTtlSeconds;
+    private final boolean cacheEnabled;
+    private final long defaultTtlSeconds;
 
     private final Map<String, CacheEntry> cache = new ConcurrentHashMap<>();
+
+    /**
+     * Constructor for LocalCacheAdapter
+     * 
+     * @param cacheEnabled Whether cache is enabled
+     * @param defaultTtlSeconds Default TTL in seconds
+     */
+    public LocalCacheAdapter(boolean cacheEnabled, long defaultTtlSeconds) {
+        this.cacheEnabled = cacheEnabled;
+        this.defaultTtlSeconds = defaultTtlSeconds;
+    }
 
     @Override
     public <T> Optional<T> get(String key, Class<T> valueType) {

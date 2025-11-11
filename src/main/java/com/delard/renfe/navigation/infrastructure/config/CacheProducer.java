@@ -28,7 +28,12 @@ public class CacheProducer {
     String cacheType;
 
     @Inject
-    LocalCacheAdapter localCacheAdapter;
+    @ConfigProperty(name = "renfe.stations-cache-enabled", defaultValue = "true")
+    boolean cacheEnabled;
+
+    @Inject
+    @ConfigProperty(name = "renfe.stations-cache-ttl-seconds", defaultValue = "3600")
+    long defaultTtlSeconds;
 
     // Future: RedisCacheAdapter redisCacheAdapter;
 
@@ -45,16 +50,16 @@ public class CacheProducer {
         switch (cacheType.toLowerCase()) {
             case "local":
                 LOG.debugf("Using LocalCacheAdapter for cache");
-                return localCacheAdapter;
+                return new LocalCacheAdapter(cacheEnabled, defaultTtlSeconds);
             
             case "redis":
                 // return redisCacheAdapter;
                 LOG.warnf("Redis cache adapter not yet implemented, falling back to local cache");
-                return localCacheAdapter;
+                return new LocalCacheAdapter(cacheEnabled, defaultTtlSeconds);
             
             default:
                 LOG.warnf("Unknown cache type '%s', using local cache as fallback", cacheType);
-                return localCacheAdapter;
+                return new LocalCacheAdapter(cacheEnabled, defaultTtlSeconds);
         }
     }
 }

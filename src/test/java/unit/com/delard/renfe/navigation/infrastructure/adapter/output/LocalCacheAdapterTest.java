@@ -20,16 +20,8 @@ class LocalCacheAdapterTest {
 
     @BeforeEach
     void setUp() {
-        localCacheAdapter = new LocalCacheAdapter();
-        
-        // Enable cache for testing using reflection
-        try {
-            java.lang.reflect.Field field = LocalCacheAdapter.class.getDeclaredField("cacheEnabled");
-            field.setAccessible(true);
-            field.set(localCacheAdapter, true);
-        } catch (Exception e) {
-            fail("Failed to enable cache for testing: " + e.getMessage());
-        }
+        // Create adapter with cache enabled and default TTL of 3600 seconds
+        localCacheAdapter = new LocalCacheAdapter(true, 3600L);
     }
 
     @Test
@@ -97,16 +89,11 @@ class LocalCacheAdapterTest {
 
     @Test
     void testCacheDisabled() {
-        try {
-            java.lang.reflect.Field field = LocalCacheAdapter.class.getDeclaredField("cacheEnabled");
-            field.setAccessible(true);
-            field.set(localCacheAdapter, false);
-        } catch (Exception e) {
-            fail("Failed to disable cache for testing: " + e.getMessage());
-        }
+        // Create a new adapter with cache disabled
+        LocalCacheAdapter disabledCache = new LocalCacheAdapter(false, 3600L);
 
-        localCacheAdapter.put("test:key", "value", 60);
-        Optional<String> result = localCacheAdapter.get("test:key", String.class);
+        disabledCache.put("test:key", "value", 60);
+        Optional<String> result = disabledCache.get("test:key", String.class);
 
         assertFalse(result.isPresent(), "Cache should not return values when disabled");
     }
