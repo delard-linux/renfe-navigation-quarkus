@@ -13,8 +13,9 @@
 - data/estacionesEstaticas.js en properties, se carga y se valida, busqueda de estación por criterio
 
 ## Next
+- Reorganizar el md de test y vincular los reports de prj, surefire y coverage
 - la carga de estaciones en una cache, 
-- meter el report jacoco y surefire en el vinculo de TEST
+- renfe.responses-dir=target/responses
 - Add remaining validations (stations, dates, passengers)
 - Support multiple passenger types (not only adults)
 - Option to skip integration tests during build to speed up CI
