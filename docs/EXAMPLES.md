@@ -1,5 +1,7 @@
 # API Usage Examples
 
+[← Back to README](../README.md)
+
 ## 1. Simple train search (outbound only)
 
 ```bash
@@ -50,15 +52,15 @@ curl -s "http://localhost:8000/trains?origin=OURENSE&destination=MADRID&date_out
       "currency": "EUR",
       "fares": [
         {
-          "name": "Básico",
+          "name": "Basic",
           "price": 45.50,
           "currency": "EUR",
           "code": "BAS",
           "tp_enlace": "12345-BAS",
-          "features": ["Cancelación con cargo", "Cambio con cargo"]
+          "features": ["Cancellation fee", "Change fee"]
         }
       ],
-      "badges": ["Rápido", "WiFi"],
+      "badges": ["Fast", "WiFi"],
       "accessible": true,
       "eco_friendly": true
     }
@@ -67,12 +69,9 @@ curl -s "http://localhost:8000/trains?origin=OURENSE&destination=MADRID&date_out
 }
 ```
 
-## Access Swagger UI
+## Swagger/OpenAPI
 
-Open in browser: http://localhost:8000/swagger-ui
+- Swagger UI: http://localhost:8000/swagger-ui
+- OpenAPI: http://localhost:8000/openapi
 
-## View OpenAPI Specification
 
-```bash
-curl http://localhost:8000/openapi
-```

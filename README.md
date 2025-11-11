@@ -1,40 +1,15 @@
 # Renfe Navigation Quarkus
 
-REST API microservice developed with Quarkus for Renfe train search, implemented using hexagonal architecture.
+REST API microservice built with Quarkus to search Renfe trains, following Hexagonal Architecture.
+
+Helpful links:
+- Architecture details: [docs/ARCHITECTURE.md](./docs/ARCHITECTURE.md)
+- API usage examples: [docs/EXAMPLES.md](./docs/EXAMPLES.md)
+- Testing and debugging: [docs/TEST.md](./docs/TEST.md)
+- Backlog / next steps: [docs/BACKLOG.md](./docs/BACKLOG.md)
 
 ## Architecture
-
-The project follows hexagonal architecture (Ports & Adapters) with the following structure:
-
-```
-src/main/java/com/renfe/navigation/
-├── domain/                          # Domain layer (core)
-│   ├── model/                       # Domain entities
-│   │   ├── Train.java
-│   │   ├── FareOption.java
-│   │   └── TrainsResponse.java
-│   └── port/                        # Ports (interfaces)
-│       ├── input/                   # Input ports (use cases)
-│       │   └── SearchTrainsUseCase.java
-│       └── output/                  # Output ports
-│           └── TrainScraperPort.java
-├── application/                     # Application layer
-│   └── service/                     # Use case implementation
-│       └── SearchTrainsService.java
-└── infrastructure/                  # Infrastructure layer (adapters)
-    └── adapter/
-        ├── input/                   # Input adapters
-        │   └── rest/                # REST API
-        │       ├── TrainResource.java
-        │       ├── dto/             # DTOs for the API
-        │       │   ├── TrainDTO.java
-        │       │   ├── FareOptionDTO.java
-        │       │   └── TrainsResponseDTO.java
-        │       └── mapper/          # Domain <-> DTO Mappers
-        │           └── TrainMapper.java
-        └── output/                  # Output adapters
-            └── TrainScraperAdapter.java
-```
+See [docs/ARCHITECTURE.md](./docs/ARCHITECTURE.md) for the layer diagram, data flow, and principles.
 
 ## Features
 
@@ -47,50 +22,20 @@ src/main/java/com/renfe/navigation/
 - ✅ DTOs separated from domain
 - ✅ CORS enabled
 
-## Playwright Installation on Windows
+## Quick Start
 
-To run E2E tests that use Playwright, first make sure you have Java and Maven installed.
-
-### Required Maven Dependencies
-
-Before installing Playwright, make sure your `pom.xml` includes the following dependencies:
-
-#### Playwright Dependency
-
-```xml
-<!-- Playwright for Web Scraping -->
-<dependency>
-    <groupId>com.microsoft.playwright</groupId>
-    <artifactId>playwright</artifactId>
-    <version>1.56.0</version>
-</dependency>
-```
-
-#### exec-maven-plugin
-
-```xml
-<plugin>
-    <groupId>org.codehaus.mojo</groupId>
-    <artifactId>exec-maven-plugin</artifactId>
-    <version>3.3.0</version>
-</plugin>
-```
-
-### Install Playwright (browser download)
-
-Run the following Maven command to download Playwright browsers:
-
-#### Bash
 ```bash
-./mvnw org.codehaus.mojo:exec-maven-plugin:3.3.0:java -e -Dexec.mainClass=com.microsoft.playwright.CLI -Dexec.args="install --with-deps"
+# 1. Build the project
+./mvnw clean package -DskipTests
+
+# 2. Run in development mode (hot reload)
+./mvnw quarkus:dev
+
+# 3. Access the application
+http://localhost:8000
 ```
 
-#### PowerShell
-```powershell
-./mvnw --% org.codehaus.mojo:exec-maven-plugin:3.3.0:java -e -Dexec.mainClass=com.microsoft.playwright.CLI -Dexec.args="install --with-deps"
-```
-
-This will download the necessary browsers (Chromium, Firefox, WebKit) and their system dependencies to `%USERPROFILE%\AppData\Local\ms-playwright`.
+Playwright installation and all test instructions have moved to [docs/TEST.md](./docs/TEST.md).
 
 ## Endpoints
 
@@ -230,200 +175,7 @@ The following adapter is created but pending implementation:
 Currently it returns empty/placeholder responses to allow architecture startup and testing.
 
 ## Testing
-
-The project follows a clear separation between **unit tests** (fast, isolated) and **integration tests** (slower, real interactions).
-
-### Test Structure
-
-```
-src/test/java/com/delard/renfe/navigation/     # Unit Tests (Maven Surefire)
-├── infrastructure/service/                     # Unit tests with mocks
-│   └── PlaywrightSearchTrainsServiceTest.java
-
-src/it/java/com/delard/renfe/navigation/      # Integration Tests (Maven Failsafe)
-├── application/rest/                           # Integration tests (REST resources)
-│   └── TrainResourceIT.java                    # All REST endpoint integration tests
-├── infrastructure/service/                     # Integration tests (services)
-│   └── PlaywrightSearchTrainsServiceIT.java
-├── support/config/                             # Execution profiles and shared configuration
-│   ├── PlaywrightDebugNoHeadlessProfile.java
-│   └── PlaywrightRealProfile.java
-└── support/stub/                               # Stubs and test doubles for external ports
-    └── StubTrainScraperAdapter.java
-```
-
-### Unit Tests (`src/test/java`)
-
-Unit tests are fast, isolated tests that use mocks to test individual components without external dependencies.
-
-#### Current Unit Tests
-
-**`PlaywrightSearchTrainsServiceTest.java`**
-- **Purpose**: Tests the `PlaywrightSearchTrainsService` class in isolation
-- **What it tests**:
-  - Train search orchestration logic
-  - Interaction with mocked dependencies (Playwright, parsers, storage)
-  - Form data building and submission
-  - Result extraction and transformation
-- **Mocked dependencies**:
-  - `PlaywrightConfig` - Configuration settings
-  - `RenfeCommonService` - Station lookup and date formatting
-  - `TrainHtmlParser` - HTML parsing logic
-  - `ResponseStorageService` - Response storage
-  - `PlaywrightFactory` - Playwright instance creation
-  - All Playwright objects (Browser, Page, Context, etc.)
-- **Test scenario**: Verifies that when all dependencies return expected values, the service correctly orchestrates the train search flow and returns the expected results
-
-#### Unit Test Characteristics
-
-- ✅ **Fast execution**: Run in milliseconds
-- ✅ **Isolated**: No external dependencies (all mocked)
-- ✅ **No Quarkus context**: Uses plain JUnit 5 + Mockito
-- ✅ **Naming convention**: `*Test.java`
-- ✅ **Coverage**: JaCoCo tracks coverage for unit tests only
-
-#### Running Unit Tests
-
-```bash
-# Run all unit tests
-./mvnw test
-
-# Run specific unit test class
-./mvnw test -Dtest=PlaywrightSearchTrainsServiceTest
-
-# Run unit tests with coverage report
-./mvnw clean test
-```
-
-### Test Coverage with JaCoCo
-
-The project uses **JaCoCo** (Java Code Coverage) to measure unit test coverage. Coverage reports are generated automatically when running unit tests.
-
-#### Coverage Configuration
-
-- **Minimum line coverage**: 60%
-- **Minimum branch coverage**: 50%
-- **Scope**: Only unit tests (`src/test/java`), excludes integration tests (`src/it/java`)
-
-#### Viewing Coverage Reports
-
-After running unit tests, coverage reports are generated in:
-
-```
-target/site/jacoco/index.html
-```
-
-**To view the coverage report:**
-
-1. Run unit tests:
-   ```bash
-   ./mvnw clean test
-   ```
-
-2. Open the HTML report:
-   ```bash
-   # On Linux/Mac
-   xdg-open target/site/jacoco/index.html
-   
-   # On Windows
-   start target/site/jacoco/index.html
-   ```
-
-3. Or navigate to `target/site/jacoco/index.html` in your browser
-
-#### Coverage Report Structure
-
-The JaCoCo report provides:
-- **Overall coverage**: Package-level and class-level coverage metrics
-- **Line coverage**: Percentage of lines executed by tests
-- **Branch coverage**: Percentage of branches (if/else, switch) covered
-- **Missing lines**: Highlighted in red, showing untested code
-- **Covered lines**: Highlighted in green
-
-#### Coverage Goals
-
-| Metric | Target | Current |
-|--------|--------|---------|
-| Line Coverage | ≥ 60% | See report |
-| Branch Coverage | ≥ 50% | See report |
-
-**Note**: Coverage thresholds are goals, not enforced. The build will show warnings if coverage is below targets but will not fail. This allows gradual improvement of test coverage.
-
-#### Generating Coverage Report Only
-
-```bash
-# Generate coverage report without running tests
-./mvnw jacoco:report
-
-# Check coverage thresholds
-./mvnw jacoco:check
-```
-
-### Integration Tests (`src/it/java`)
-
-Integration tests verify interactions between layers using real Quarkus context and may interact with external services.
-
-#### Current Integration Tests
-
-**`TrainResourceIT.java`**
-- **Purpose**: Comprehensive integration tests for REST endpoints with real Quarkus context
-- **What it tests**: 
-  - HTTP request/response cycle
-  - Request validation (Bean Validation)
-  - DTO mapping and response structure
-  - Error handling (400 errors for invalid inputs)
-  - Debug output with formatted JSON responses
-- **Test cases**: 7 tests covering valid requests, return dates, validation errors, edge cases, and debug output
-- **Uses**: `@QuarkusTest`, REST Assured, test profiles
-
-**`PlaywrightSearchTrainsServiceIT.java`**
-- **Purpose**: Integration test of Playwright service with real browser
-- **What it tests**: Real Playwright interactions with Renfe website
-
-#### Running Integration Tests
-
-To run integration tests that use Playwright with real browser automation, use one of the following Maven commands according to your terminal:
-
-**Bash:**
-```bash
-./mvnw verify -Dit.test="com.delard.renfe.navigation.application.rest.TrainResourceIT" -DskipITs=false
-```
-
-This will run the integration tests with Playwright, allowing you to observe real browser automation on the Renfe website.
-
-
-```bash
-# Run all integration tests
-./mvnw integration-test -DskipTests -DskipITs=false
-
-### Test Execution Commands Summary
-
-```bash
-# Unit tests only (with coverage)
-./mvnw clean test
-
-# Integration tests only (skip unit tests)
-./mvnw integration-test -DskipTests -DskipITs=false
-
-# Both unit and integration tests
-./mvnw verify -DskipITs=false
-
-# Generate coverage report
-./mvnw jacoco:report
-
-# Check coverage thresholds
-./mvnw jacoco:check
-```
-
-### Best Practices
-
-1. **Write unit tests first**: Fast feedback during development
-2. **Mock external dependencies**: Keep unit tests isolated and fast
-3. **Use integration tests sparingly**: Only for critical paths and layer interactions
-4. **Maintain coverage**: Aim for at least 60% line coverage in unit tests
-5. **Review coverage reports**: Identify untested code paths regularly
-6. **Keep tests independent**: Each test should run independently
-7. **Use descriptive test names**: Test names should describe what they verify
+See [docs/TEST.md](./docs/TEST.md) for commands, structure, and VS Code debug instructions for `@QuarkusTest`.
 
 ## Technologies
 
