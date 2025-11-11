@@ -1,5 +1,6 @@
 package com.delard.renfe.navigation.infrastructure.service;
 
+import com.delard.renfe.navigation.domain.port.output.CachePort;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.annotation.PostConstruct;
@@ -17,6 +18,7 @@ import java.time.Duration;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 /**
  * Service for loading station data from URL or file
@@ -38,8 +40,17 @@ public class StationLoaderService {
     @ConfigProperty(name = "renfe.stations-timeout", defaultValue = "3")
     int stationsTimeoutSeconds;
 
+    @Inject
+    @ConfigProperty(name = "renfe.stations-cache-ttl-seconds", defaultValue = "3600")
+    long cacheTtlSeconds;
+
+    @Inject
+    CachePort cachePort;
+
     private final ObjectMapper objectMapper;
     private HttpClient httpClient;
+    
+    private static final String CACHE_KEY_STATIONS = "stations:all";
 
     public StationLoaderService() {
         this.objectMapper = new ObjectMapper();
@@ -54,16 +65,30 @@ public class StationLoaderService {
 
     /**
      * Load stations from Renfe URL, fallback to local file if URL fails
+     * Results are cached to improve performance
      *
      * @return List of station maps
      */
     public List<Map<String, Object>> loadStations() {
+        // Try to get from cache first
+        if (cachePort.isEnabled()) {
+            @SuppressWarnings("unchecked")
+            Optional<List<Map<String, Object>>> cachedStations = 
+                (Optional<List<Map<String, Object>>>) (Optional<?>) cachePort.get(CACHE_KEY_STATIONS, List.class);
+            if (cachedStations.isPresent()) {
+                LOG.debugf("Stations loaded from cache");
+                return cachedStations.get();
+            }
+        }
+
+        // Cache miss or cache disabled, load from source
+        List<Map<String, Object>> stations;
         try {
             LOG.debugf("Attempting to load stations from URL: %s", renfeStationsUrl);
-            return loadFromUrl();
+            stations = loadFromUrl();
         } catch (Exception e) {
             LOG.warnf(e, "Failed to load stations from URL, falling back to local file: %s", e.getMessage());
-            List<Map<String, Object>> stations = loadFromFile();
+            stations = loadFromFile();
             if (!stations.isEmpty()) {
                 LOG.warnf(
                     "[WARNING] Stations loaded from local file (%s) instead of URL. " +
@@ -73,8 +98,15 @@ public class StationLoaderService {
                     stations.size()
                 );
             }
-            return stations;
         }
+
+        // Cache the result if cache is enabled and we have stations
+        if (cachePort.isEnabled() && !stations.isEmpty()) {
+            cachePort.put(CACHE_KEY_STATIONS, stations, cacheTtlSeconds);
+            LOG.debugf("Stations cached with TTL: %d seconds", cacheTtlSeconds);
+        }
+
+        return stations;
     }
 
     /**
