@@ -194,7 +194,7 @@ class SearchTrainsServiceTest {
     }
 
     @Test
-    @DisplayName("Should handle different number of adults correctly (2, 3, 5 adults)")
+    @DisplayName("Should handle different number of adults correctly (1, 2, 3, 5 adults)")
     void shouldHandleDifferentNumberOfAdultsCorrectly() {
         String origin = REAL_ORIGIN;
         String destination = REAL_DESTINATION;
@@ -208,18 +208,21 @@ class SearchTrainsServiceTest {
         when(trainScraperPort.scrapeTrains(eq(origin), eq(destination), eq(dateOut), eq(dateReturn), anyInt()))
                 .thenReturn(scraperResult);
 
-        TrainsResponse result1 = service.searchTrains(origin, destination, dateOut, dateReturn, 2);
-        TrainsResponse result2 = service.searchTrains(origin, destination, dateOut, dateReturn, 3);
-        TrainsResponse result3 = service.searchTrains(origin, destination, dateOut, dateReturn, 5);
+        TrainsResponse result1 = service.searchTrains(origin, destination, dateOut, dateReturn, 1);
+        TrainsResponse result2 = service.searchTrains(origin, destination, dateOut, dateReturn, 2);
+        TrainsResponse result3 = service.searchTrains(origin, destination, dateOut, dateReturn, 3);
+        TrainsResponse result4 = service.searchTrains(origin, destination, dateOut, dateReturn, 5);
 
         assertNotNull(result1);
         assertNotNull(result2);
         assertNotNull(result3);
-        assertEquals(2, result1.getAdults());
-        assertEquals(3, result2.getAdults());
-        assertEquals(5, result3.getAdults());
+        assertNotNull(result4);
+        assertEquals(1, result1.getAdults());
+        assertEquals(2, result2.getAdults());
+        assertEquals(3, result3.getAdults());
+        assertEquals(5, result4.getAdults());
 
-        verify(trainScraperPort, times(3)).scrapeTrains(eq(origin), eq(destination), eq(dateOut), eq(dateReturn), anyInt());
+        verify(trainScraperPort, times(4)).scrapeTrains(eq(origin), eq(destination), eq(dateOut), eq(dateReturn), anyInt());
     }
 
     @Test
@@ -243,17 +246,17 @@ class SearchTrainsServiceTest {
         });
         assertEquals("Date out is required", exception3.getMessage());
 
-        // Test adults <= 1
-        ValidationException exception4 = assertThrows(ValidationException.class, () -> {
-            service.searchTrains(REAL_ORIGIN, REAL_DESTINATION, REAL_DATE_OUT, null, 1);
-        });
-        assertEquals("Adults must be greater than 1", exception4.getMessage());
-
         // Test adults = 0
-        ValidationException exception5 = assertThrows(ValidationException.class, () -> {
+        ValidationException exception4 = assertThrows(ValidationException.class, () -> {
             service.searchTrains(REAL_ORIGIN, REAL_DESTINATION, REAL_DATE_OUT, null, 0);
         });
-        assertEquals("Adults must be greater than 1", exception5.getMessage());
+        assertEquals("Adults must be greater than 0", exception4.getMessage());
+
+        // Test adults < 0
+        ValidationException exception5 = assertThrows(ValidationException.class, () -> {
+            service.searchTrains(REAL_ORIGIN, REAL_DESTINATION, REAL_DATE_OUT, null, -1);
+        });
+        assertEquals("Adults must be greater than 0", exception5.getMessage());
     }
 
     @Test

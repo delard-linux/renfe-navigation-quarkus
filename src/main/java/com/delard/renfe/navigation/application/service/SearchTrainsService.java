@@ -66,7 +66,7 @@ public class SearchTrainsService implements SearchTrainsUseCase {
      * @param origin      Station origin (required)
      * @param destination Station destination (required)
      * @param dateOut     Outbound date (required)
-     * @param adults      Number of adult passengers (required, must be > 1)
+     * @param adults      Number of adult passengers (required, must be > 0)
      * @throws ValidationException if validation fails
      */
     private void validateRequiredFields(String origin, String destination, String dateOut, int adults) {
@@ -82,8 +82,8 @@ public class SearchTrainsService implements SearchTrainsUseCase {
             throw new ValidationException("Date out is required");
         }
 
-        if (adults <= 1) {
-            throw new ValidationException("Adults must be greater than 1");
+        if (adults <= 0) {
+            throw new ValidationException("Adults must be greater than 0");
         }
     }
 }

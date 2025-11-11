@@ -63,10 +63,10 @@ public class TrainResource {
             @Pattern(regexp = "\\d{4}-\\d{2}-\\d{2}", message = "Date must be in format YYYY-MM-DD")
             String dateReturn,
 
-            @Parameter(description = "Number of adult passengers (required, must be greater than 1, max 8)", required = true)
+            @Parameter(description = "Number of adult passengers (required, must be greater than 0, max 8)", required = true)
             @QueryParam("adults")
             @NotNull(message = "Adults is required")
-            @Min(value = 2, message = "Adults must be greater than 1")
+            @Min(value = 1, message = "Adults must be greater than 0")
             @Max(value = 8, message = "Adults must be at most 8")
             Integer adults) {
 
