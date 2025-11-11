@@ -17,6 +17,7 @@
 - Option to skip integration tests during build to speed up CI
 - Clarify behavior when multiple stations match the same string
 - Refactor stations JSON: service design and file location
+- MCP endpoint instead REST
 - Add spec-kit
 - SonarQube integration
 - Linting integration
