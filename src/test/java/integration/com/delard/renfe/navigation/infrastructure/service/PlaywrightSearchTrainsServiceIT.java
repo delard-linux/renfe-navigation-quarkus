@@ -67,6 +67,10 @@ class PlaywrightSearchTrainsServiceIT {
         PlaywrightSearchTrainsService.SearchTrainsResult result = playwrightSearchTrainsService.searchTrains(
             "OURENSE",
             "MADRID",
+            "OURENSE",  // originDesgEstacion
+            "MADRID",   // destinationDesgEstacion
+            "0071,OURENSE,null",  // originClave
+            "0071,MADRID,null",   // destinationClave
             dateOut,
             null,
             2
@@ -98,6 +102,10 @@ class PlaywrightSearchTrainsServiceIT {
         PlaywrightSearchTrainsService.SearchTrainsResult result = playwrightSearchTrainsService.searchTrains(
             "BARCELONA",
             "VALENCIA",
+            "BARCELONA",  // originDesgEstacion
+            "VALENCIA",   // destinationDesgEstacion
+            "0071,BARCELONA,null",  // originClave
+            "0071,VALENCIA,null",   // destinationClave
             dateOut,
             "",
             2
@@ -125,6 +133,10 @@ class PlaywrightSearchTrainsServiceIT {
         PlaywrightSearchTrainsService.SearchTrainsResult result = playwrightSearchTrainsService.searchTrains(
             "OURENSE",
             "MADRID",
+            "OURENSE",  // originDesgEstacion
+            "MADRID",   // destinationDesgEstacion
+            "0071,OURENSE,null",  // originClave
+            "0071,MADRID,null",   // destinationClave
             dateOut,
             dateReturn,
             2
@@ -153,15 +165,19 @@ class PlaywrightSearchTrainsServiceIT {
     @Test
     void shouldHandleInvalidReturnDate() {
         // Test with invalid return date format
-        // Covers branch: formatDate catch block in RenfeCommonService (line 104)
-        // The invalid date will be passed through as-is by formatDate
+        // Note: Date validation and formatting are now handled in the application layer (SearchTrainsService)
+        // This test verifies that invalid dates are rejected before reaching the scraper
         String dateOut = calculateOutboundDate();
         try {
             PlaywrightSearchTrainsService.SearchTrainsResult result = playwrightSearchTrainsService.searchTrains(
                 "BARCELONA",
                 "VALENCIA",
+                "BARCELONA",  // originDesgEstacion
+                "VALENCIA",   // destinationDesgEstacion
+                "0071,BARCELONA,null",  // originClave
+                "0071,VALENCIA,null",   // destinationClave
                 dateOut,
-                "invalid-date-format",
+                "invalid-date-format",  // Invalid format - should be rejected by application layer
                 2
             );
 
@@ -169,12 +185,11 @@ class PlaywrightSearchTrainsServiceIT {
 
             assertNotNull(result, "SearchTrainsResult should not be null");
             assertNotNull(result.outboundTrains, "Outbound trains list should not be null");
-            // Even with invalid return date, outbound should work
-            // Return trains will be null because dateReturnFormatted will be invalid
+            // Return trains will be null because invalid date format is rejected
             assertNull(result.returnTrains, "Return trains should be null when return date is invalid");
         } catch (Exception e) {
-            // If the search fails due to invalid date, that's also acceptable
-            // The important thing is that formatDate handled the exception
+            // If the search fails due to invalid date, that's expected
+            // Date validation happens in SearchTrainsService before calling the scraper
             LOG.warnf("Search failed with invalid date (expected): %s", e.getMessage());
         }
     }
@@ -193,6 +208,10 @@ class PlaywrightSearchTrainsServiceIT {
             PlaywrightSearchTrainsService.SearchTrainsResult result1 = playwrightSearchTrainsService.searchTrains(
                 "MADRID",
                 "BARCELONA",
+                "MADRID",   // originDesgEstacion
+                "BARCELONA",  // destinationDesgEstacion
+                "0071,MADRID,null",   // originClave
+                "0071,BARCELONA,null",  // destinationClave
                 dateOut1,
                 null,
                 2
@@ -210,6 +229,10 @@ class PlaywrightSearchTrainsServiceIT {
             PlaywrightSearchTrainsService.SearchTrainsResult result2 = playwrightSearchTrainsService.searchTrains(
                 "MAD",  // Partial match
                 "BCN",  // Partial match
+                "MAD",  // originDesgEstacion
+                "BCN",  // destinationDesgEstacion
+                "0071,MAD,null",  // originClave
+                "0071,BCN,null",  // destinationClave
                 dateOut2,
                 null,
                 2
@@ -227,6 +250,10 @@ class PlaywrightSearchTrainsServiceIT {
             PlaywrightSearchTrainsService.SearchTrainsResult result3 = playwrightSearchTrainsService.searchTrains(
                 "UNKNOWNSTATION123",
                 "ANOTHERUNKNOWN456",
+                "UNKNOWNSTATION123",  // originDesgEstacion
+                "ANOTHERUNKNOWN456",  // destinationDesgEstacion
+                "0071,UNKNO,null",  // originClave (truncated to 5 chars)
+                "0071,ANOTH,null",  // destinationClave (truncated to 5 chars)
                 dateOut3,
                 null,
                 2
@@ -254,6 +281,10 @@ class PlaywrightSearchTrainsServiceIT {
         PlaywrightSearchTrainsService.SearchTrainsResult result = playwrightSearchTrainsService.searchTrains(
             "OURENSE",
             "MADRID",
+            "OURENSE",  // originDesgEstacion
+            "MADRID",   // destinationDesgEstacion
+            "0071,OURENSE,null",  // originClave
+            "0071,MADRID,null",   // destinationClave
             dateOut,
             null,
             2

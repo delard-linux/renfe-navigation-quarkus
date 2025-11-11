@@ -26,9 +26,6 @@ class PlaywrightSearchTrainsServiceTest {
     private PlaywrightConfig config;
 
     @Mock
-    private RenfeCommonService renfeCommonService;
-
-    @Mock
     private TrainHtmlParser trainHtmlParser;
 
     @Mock
@@ -76,35 +73,24 @@ class PlaywrightSearchTrainsServiceTest {
     }
 
     @Test
-    void testSearchTrainsResultToStringWithNullLists() {
-        // Arrange
-        PlaywrightSearchTrainsService.SearchTrainsResult result =
+    void testSearchTrainsResultToStringWithNullOrEmptyLists() {
+        // Test null lists
+        PlaywrightSearchTrainsService.SearchTrainsResult resultNull =
                 new PlaywrightSearchTrainsService.SearchTrainsResult(null, null);
+        String toStringNull = resultNull.toString();
+        assertNotNull(toStringNull);
+        assertTrue(toStringNull.contains("outboundTrains="));
+        assertTrue(toStringNull.contains("returnTrains="));
+        assertTrue(toStringNull.contains("[]"));
 
-        // Act
-        String toString = result.toString();
-
-        // Assert
-        assertNotNull(toString);
-        assertTrue(toString.contains("outboundTrains="));
-        assertTrue(toString.contains("returnTrains="));
-        assertTrue(toString.contains("[]"));
-    }
-
-    @Test
-    void testSearchTrainsResultToStringWithEmptyLists() {
-        // Arrange
-        PlaywrightSearchTrainsService.SearchTrainsResult result =
+        // Test empty lists
+        PlaywrightSearchTrainsService.SearchTrainsResult resultEmpty =
                 new PlaywrightSearchTrainsService.SearchTrainsResult(new ArrayList<>(), new ArrayList<>());
-
-        // Act
-        String toString = result.toString();
-
-        // Assert
-        assertNotNull(toString);
-        assertTrue(toString.contains("outboundTrains="));
-        assertTrue(toString.contains("returnTrains="));
-        assertTrue(toString.contains("[]"));
+        String toStringEmpty = resultEmpty.toString();
+        assertNotNull(toStringEmpty);
+        assertTrue(toStringEmpty.contains("outboundTrains="));
+        assertTrue(toStringEmpty.contains("returnTrains="));
+        assertTrue(toStringEmpty.contains("[]"));
     }
 
     @Test
@@ -142,42 +128,31 @@ class PlaywrightSearchTrainsServiceTest {
     }
 
     @Test
-    void testSearchTrainsResultToStringWithTrainWithoutServiceType() {
-        // Arrange
-        Train train = new Train();
-        train.setDepartureTime("08:00");
-        train.setArrivalTime("12:30");
-        train.setPriceFrom(45.50);
-        List<Train> trains = Arrays.asList(train);
-        PlaywrightSearchTrainsService.SearchTrainsResult result =
-                new PlaywrightSearchTrainsService.SearchTrainsResult(trains, null);
+    void testSearchTrainsResultToStringWithTrainMissingFields() {
+        // Test without service type
+        Train train1 = new Train();
+        train1.setDepartureTime("08:00");
+        train1.setArrivalTime("12:30");
+        train1.setPriceFrom(45.50);
+        List<Train> trains1 = Arrays.asList(train1);
+        PlaywrightSearchTrainsService.SearchTrainsResult result1 =
+                new PlaywrightSearchTrainsService.SearchTrainsResult(trains1, null);
+        String toString1 = result1.toString();
+        assertNotNull(toString1);
+        assertTrue(toString1.contains("(no-type)"));
+        assertTrue(toString1.contains("08:00-12:30"));
 
-        // Act
-        String toString = result.toString();
-
-        // Assert
-        assertNotNull(toString);
-        assertTrue(toString.contains("(no-type)"));
-        assertTrue(toString.contains("08:00-12:30"));
-    }
-
-    @Test
-    void testSearchTrainsResultToStringWithTrainWithoutTimes() {
-        // Arrange
-        Train train = new Train();
-        train.setServiceType("AVE");
-        train.setPriceFrom(45.50);
-        List<Train> trains = Arrays.asList(train);
-        PlaywrightSearchTrainsService.SearchTrainsResult result =
-                new PlaywrightSearchTrainsService.SearchTrainsResult(trains, null);
-
-        // Act
-        String toString = result.toString();
-
-        // Assert
-        assertNotNull(toString);
-        assertTrue(toString.contains("AVE"));
-        assertTrue(toString.contains("--"));
+        // Test without times
+        Train train2 = new Train();
+        train2.setServiceType("AVE");
+        train2.setPriceFrom(45.50);
+        List<Train> trains2 = Arrays.asList(train2);
+        PlaywrightSearchTrainsService.SearchTrainsResult result2 =
+                new PlaywrightSearchTrainsService.SearchTrainsResult(trains2, null);
+        String toString2 = result2.toString();
+        assertNotNull(toString2);
+        assertTrue(toString2.contains("AVE"));
+        assertTrue(toString2.contains("--"));
     }
 
     @Test
@@ -221,80 +196,56 @@ class PlaywrightSearchTrainsServiceTest {
     }
 
     @Test
-    void testSearchTrainsResultToStringWithTrainWithEmptyFares() {
-        // Arrange
-        Train train = new Train("TRAIN123", "AVE", "08:00", "12:30", "4h 30m", 45.50);
-        train.setFares(new ArrayList<>());
-        List<Train> trains = Arrays.asList(train);
-        PlaywrightSearchTrainsService.SearchTrainsResult result =
-                new PlaywrightSearchTrainsService.SearchTrainsResult(trains, null);
+    void testSearchTrainsResultToStringWithTrainWithEmptyOrNullFares() {
+        Train train1 = new Train("TRAIN123", "AVE", "08:00", "12:30", "4h 30m", 45.50);
+        train1.setFares(new ArrayList<>());
+        List<Train> trains1 = Arrays.asList(train1);
+        PlaywrightSearchTrainsService.SearchTrainsResult result1 =
+                new PlaywrightSearchTrainsService.SearchTrainsResult(trains1, null);
+        String toString1 = result1.toString();
+        assertNotNull(toString1);
+        assertTrue(toString1.contains("AVE"));
+        assertTrue(toString1.contains("45.50€")); // Should fallback to priceFrom
 
-        // Act
-        String toString = result.toString();
-
-        // Assert
-        assertNotNull(toString);
-        assertTrue(toString.contains("AVE"));
-        assertTrue(toString.contains("45.50€")); // Should fallback to priceFrom
+        Train train2 = new Train("TRAIN456", "ALVIA", "10:00", "15:30", "5h 30m", 67.80);
+        train2.setFares(null);
+        List<Train> trains2 = Arrays.asList(train2);
+        PlaywrightSearchTrainsService.SearchTrainsResult result2 =
+                new PlaywrightSearchTrainsService.SearchTrainsResult(trains2, null);
+        String toString2 = result2.toString();
+        assertNotNull(toString2);
+        assertTrue(toString2.contains("ALVIA"));
+        assertTrue(toString2.contains("67.80€")); // Should fallback to priceFrom
     }
 
     @Test
-    void testSearchTrainsResultToStringWithTrainWithNullFares() {
-        // Arrange
-        Train train = new Train("TRAIN123", "AVE", "08:00", "12:30", "4h 30m", 45.50);
-        train.setFares(null);
-        List<Train> trains = Arrays.asList(train);
-        PlaywrightSearchTrainsService.SearchTrainsResult result =
-                new PlaywrightSearchTrainsService.SearchTrainsResult(trains, null);
+    void testSearchTrainsResultToStringWithTrainWithBlankFields() {
+        // Test with blank service type
+        Train train1 = new Train();
+        train1.setServiceType("   ");
+        train1.setDepartureTime("08:00");
+        train1.setArrivalTime("12:30");
+        train1.setPriceFrom(45.50);
+        List<Train> trains1 = Arrays.asList(train1);
+        PlaywrightSearchTrainsService.SearchTrainsResult result1 =
+                new PlaywrightSearchTrainsService.SearchTrainsResult(trains1, null);
+        String toString1 = result1.toString();
+        assertNotNull(toString1);
+        assertTrue(toString1.contains("(no-type)"));
 
-        // Act
-        String toString = result.toString();
-
-        // Assert
-        assertNotNull(toString);
-        assertTrue(toString.contains("AVE"));
-        assertTrue(toString.contains("45.50€")); // Should fallback to priceFrom
-    }
-
-    @Test
-    void testSearchTrainsResultToStringWithTrainWithBlankServiceType() {
-        // Arrange
-        Train train = new Train();
-        train.setServiceType("   ");
-        train.setDepartureTime("08:00");
-        train.setArrivalTime("12:30");
-        train.setPriceFrom(45.50);
-        List<Train> trains = Arrays.asList(train);
-        PlaywrightSearchTrainsService.SearchTrainsResult result =
-                new PlaywrightSearchTrainsService.SearchTrainsResult(trains, null);
-
-        // Act
-        String toString = result.toString();
-
-        // Assert
-        assertNotNull(toString);
-        assertTrue(toString.contains("(no-type)"));
-    }
-
-    @Test
-    void testSearchTrainsResultToStringWithTrainWithBlankTimes() {
-        // Arrange
-        Train train = new Train();
-        train.setServiceType("AVE");
-        train.setDepartureTime("   ");
-        train.setArrivalTime("   ");
-        train.setPriceFrom(45.50);
-        List<Train> trains = Arrays.asList(train);
-        PlaywrightSearchTrainsService.SearchTrainsResult result =
-                new PlaywrightSearchTrainsService.SearchTrainsResult(trains, null);
-
-        // Act
-        String toString = result.toString();
-
-        // Assert
-        assertNotNull(toString);
-        assertTrue(toString.contains("AVE"));
-        assertTrue(toString.contains("--"));
+        // Test with blank times
+        Train train2 = new Train();
+        train2.setServiceType("AVE");
+        train2.setDepartureTime("   ");
+        train2.setArrivalTime("   ");
+        train2.setPriceFrom(45.50);
+        List<Train> trains2 = Arrays.asList(train2);
+        PlaywrightSearchTrainsService.SearchTrainsResult result2 =
+                new PlaywrightSearchTrainsService.SearchTrainsResult(trains2, null);
+        String toString2 = result2.toString();
+        assertNotNull(toString2);
+        assertTrue(toString2.contains("AVE"));
+        assertTrue(toString2.contains("--"));
     }
 }
 

@@ -21,9 +21,6 @@ public class PlaywrightSearchTrainsService {
     PlaywrightConfig config;
 
     @Inject
-    RenfeCommonService renfeCommonService;
-
-    @Inject
     TrainHtmlParser trainHtmlParser;
 
     @Inject
@@ -32,32 +29,25 @@ public class PlaywrightSearchTrainsService {
     @Inject
     PlaywrightFactory playwrightFactory;
 
-    public SearchTrainsResult searchTrains(String origin, String destination, String dateOut,
-                                           String dateReturn, int adults) {
+    public SearchTrainsResult searchTrains(String origin, String destination,
+                                           String originDesgEstacion, String destinationDesgEstacion,
+                                           String originClave, String destinationClave,
+                                           String dateOut, String dateReturn, int adults) {
         LOG.debugf("Starting Chromium browser");
 
-        Map<String, String> originStation = renfeCommonService.findStation(origin);
-        Map<String, String> destStation = renfeCommonService.findStation(destination);
+        LOG.debugf("Origin: %s (desgEstacion: %s, clave: %s)", origin, originDesgEstacion, originClave);
+        LOG.debugf("Destination: %s (desgEstacion: %s, clave: %s)", destination, destinationDesgEstacion, destinationClave);
 
-        LOG.debugf("Origin: %s - Key: %s",
-                originStation.getOrDefault("desgEstacion", origin),
-                originStation.getOrDefault("clave", ""));
-        LOG.debugf("Destination: %s - Key: %s",
-                destStation.getOrDefault("desgEstacion", destination),
-                destStation.getOrDefault("clave", ""));
-
-        String dateOutFormatted = renfeCommonService.formatDate(dateOut);
-        String dateReturnFormatted = "";
-        if (dateReturn != null && !dateReturn.isEmpty()) {
-            dateReturnFormatted = renfeCommonService.formatDate(dateReturn);
-        }
+        // Dates are already formatted in application layer (dd/MM/yyyy format)
+        String dateReturnFormatted = (dateReturn != null && !dateReturn.isEmpty()) ? dateReturn : "";
 
         Map<String, String> formData = buildFormData(
-                originStation, destStation, dateOutFormatted, dateReturnFormatted, adults
+                originDesgEstacion, destinationDesgEstacion, originClave, destinationClave,
+                dateOut, dateReturnFormatted, adults
         );
 
         LOG.debugf("Search parameters: %s -> %s",
-                dateOutFormatted,
+                dateOut,
                 dateReturnFormatted.isEmpty() ? "One way only" : dateReturnFormatted
         );
 
@@ -98,7 +88,7 @@ public class PlaywrightSearchTrainsService {
                     List<Train> trainsOut = extractResults(page);
 
                     List<Train> trainsRet = null;
-                    if (!dateReturnFormatted.isEmpty() && !trainsOut.isEmpty()) {
+                    if (dateReturn != null && !dateReturn.isEmpty() && !trainsOut.isEmpty()) {
                         try {
                             LOG.debug("Finding return results");
                             Locator vueltaTab = page.locator("[id*='vuelta'], [class*='vuelta'], a:has-text('Vuelta')");
@@ -138,8 +128,10 @@ public class PlaywrightSearchTrainsService {
         );
     }
 
-    private Map<String, String> buildFormData(Map<String, String> originStation,
-                                              Map<String, String> destStation,
+    private Map<String, String> buildFormData(String originDesgEstacion,
+                                              String destinationDesgEstacion,
+                                              String originClave,
+                                              String destinationClave,
                                               String dateOutFormatted,
                                               String dateReturnFormatted,
                                               int adults) {
@@ -147,10 +139,10 @@ public class PlaywrightSearchTrainsService {
         formData.put("tipoBusqueda", "autocomplete");
         formData.put("currenLocation", "menuBusqueda");
         formData.put("vengoderenfecom", "SI");
-        formData.put("desOrigen", originStation.getOrDefault("desgEstacion", ""));
-        formData.put("desDestino", destStation.getOrDefault("desgEstacion", ""));
-        formData.put("cdgoOrigen", originStation.getOrDefault("clave", ""));
-        formData.put("cdgoDestino", destStation.getOrDefault("clave", ""));
+        formData.put("desOrigen", originDesgEstacion != null ? originDesgEstacion : "");
+        formData.put("desDestino", destinationDesgEstacion != null ? destinationDesgEstacion : "");
+        formData.put("cdgoOrigen", originClave != null ? originClave : "");
+        formData.put("cdgoDestino", destinationClave != null ? destinationClave : "");
         formData.put("idiomaBusqueda", "ES");
         formData.put("FechaIdaSel", dateOutFormatted);
         formData.put("FechaVueltaSel", dateReturnFormatted);

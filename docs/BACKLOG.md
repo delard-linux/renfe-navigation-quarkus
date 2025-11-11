@@ -12,13 +12,14 @@
 - Refactor stations JSON: service design and file location
 - data/estacionesEstaticas.js en properties, se carga y se valida, busqueda de estación por criterio
 - Reorganizar el md de test y vincular los reports de prj, surefire y coverage
-- la carga de la estructura de estaciones en una cache para no ir a buscarlo cada vez y parsear el JSON
+- La carga de la estructura de estaciones en una cache para no ir a buscarlo cada vez y parsear el JSON
 - Error de adultos + de 1
-- meter el search de estaciones del servicio desde arriba a playwright,  para que al servicio le lleguen estaciones correctas y tenga menos código , con gestion de errores y validaciones
+- Meter el search de estaciones del servicio desde arriba a playwright,  para que al servicio le lleguen estaciones correctas y tenga menos código , con gestion de errores y validaciones. El servicio de playwright se tiene que limpiar y tambien el test ya que no tiene sentido tanto test ya que la mayoría de las validaciones se hacen en la capa superior
+- Add remaining validations (stations, dates, passengers)
+- Clarify behavior when multiple stations match the same string
 
 ## Current pending
 
-el servicio de playwright se tiene que limpiar y tambien el test ya que no tiene sentido tanto test ya que la mayoría de las validaciones se hacen en la capa superior
 
 ## Next
 
@@ -26,10 +27,8 @@ el servicio de playwright se tiene que limpiar y tambien el test ya que no tiene
 - test de servicio trenes de playwright con ida y vuelta y que cuente mas de un tren en la respuesta
 - Manejar la validationException que es una Runtime no declarada en los servicios.. puede saltar en un REST o en un MCP
 - renfe.responses-dir=target/responses
-- Add remaining validations (stations, dates, passengers)
 - Support multiple passenger types (not only adults)
 - Option to skip integration tests during build to speed up CI
-- Clarify behavior when multiple stations match the same string
 - MCP endpoint instead REST
 - Add spec-kit
 - SonarQube integration

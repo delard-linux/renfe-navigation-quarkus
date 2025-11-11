@@ -23,14 +23,18 @@ public class TrainScraperAdapter implements TrainScraperPort {
     PlaywrightSearchTrainsService playwrightSearchTrainsService;
 
     @Override
-    public List<List<Train>> scrapeTrains(String origin, String destination, String dateOut,
-                                          String dateReturn, int adults) {
+    public List<List<Train>> scrapeTrains(String origin, String destination,
+                                          String originDesgEstacion, String destinationDesgEstacion,
+                                          String originClave, String destinationClave,
+                                          String dateOut, String dateReturn, int adults) {
         LOG.debugf("Scraping trains: %s -> %s, dateOut: %s, dateReturn: %s, adults: %d",
                 origin, destination, dateOut, dateReturn, adults);
 
         try {
             PlaywrightSearchTrainsService.SearchTrainsResult result =
-                playwrightSearchTrainsService.searchTrains(origin, destination, dateOut, dateReturn, adults);
+                playwrightSearchTrainsService.searchTrains(
+                        origin, destination, originDesgEstacion, destinationDesgEstacion,
+                        originClave, destinationClave, dateOut, dateReturn, adults);
 
             List<Train> trainsOut = result.outboundTrains != null ? result.outboundTrains : new ArrayList<>();
             List<Train> trainsReturn = result.returnTrains;

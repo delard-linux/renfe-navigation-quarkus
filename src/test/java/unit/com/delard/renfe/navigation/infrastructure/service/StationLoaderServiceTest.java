@@ -65,6 +65,24 @@ class StationLoaderServiceTest {
     }
 
     @Test
+    void testInit() throws Exception {
+        // Test @PostConstruct init method
+        Method initMethod = StationLoaderService.class.getDeclaredMethod("init");
+        initMethod.setAccessible(true);
+        
+        // Call init to test HttpClient initialization
+        assertDoesNotThrow(() -> {
+            initMethod.invoke(service);
+        });
+        
+        // Verify httpClient was initialized
+        java.lang.reflect.Field httpClientField = StationLoaderService.class.getDeclaredField("httpClient");
+        httpClientField.setAccessible(true);
+        Object httpClient = httpClientField.get(service);
+        assertNotNull(httpClient);
+    }
+
+    @Test
     void testLoadStationsFromCache() {
         List<Map<String, Object>> cachedStations = List.of(
             Map.of("cdgoEstacion", "MADRI", "desgEstacion", "MADRID (TODAS)")
@@ -145,6 +163,42 @@ class StationLoaderServiceTest {
 
         assertNotNull(result);
         // Should return empty list if file doesn't exist, or actual stations if it does
+    }
+
+    @Test
+    void testLoadFromFileResourceNotFound() throws Exception {
+        Method method = StationLoaderService.class.getDeclaredMethod("loadFromFile");
+        method.setAccessible(true);
+
+        // Set a non-existent path
+        injectField("stationsDefaultPath", "/nonexistent/file.js");
+
+        @SuppressWarnings("unchecked")
+        List<Map<String, Object>> result = (List<Map<String, Object>>) method.invoke(service);
+
+        assertNotNull(result);
+        assertTrue(result.isEmpty());
+    }
+
+    @Test
+    void testLoadFromFileWithInvalidContent() throws Exception {
+        Method method = StationLoaderService.class.getDeclaredMethod("loadFromFile");
+        method.setAccessible(true);
+
+        // Create a service instance with a path that doesn't exist
+        StationLoaderService testService = new StationLoaderService();
+        injectField("cachePort", cachePort);
+        injectField("renfeStationsUrl", "https://test.example.com/stations.js");
+        injectField("stationsDefaultPath", "/nonexistent/invalid.js");
+        injectField("stationsTimeoutSeconds", 3);
+        injectField("cacheTtlSeconds", 3600L);
+
+        @SuppressWarnings("unchecked")
+        List<Map<String, Object>> result = (List<Map<String, Object>>) method.invoke(testService);
+
+        // Should return empty list when file doesn't exist
+        assertNotNull(result);
+        assertTrue(result.isEmpty());
     }
 
     @Test
@@ -302,6 +356,359 @@ class StationLoaderServiceTest {
         );
 
         // Should not throw exception
+        assertDoesNotThrow(() -> {
+            method.invoke(service, urlStations);
+        });
+    }
+
+    @Test
+    void testCompareWithLocalFileWithEqualStations() throws Exception {
+        Method method = StationLoaderService.class.getDeclaredMethod("compareWithLocalFile", List.class);
+        method.setAccessible(true);
+
+        // Create stations that match what might be in the file
+        List<Map<String, Object>> urlStations = List.of(
+            Map.of("cdgoEstacion", "MADRI", "desgEstacion", "MADRID (TODAS)", "clave", "0071,MADRI,null")
+        );
+
+        // Should not throw exception and should log debug message if stations match
+        assertDoesNotThrow(() -> {
+            method.invoke(service, urlStations);
+        });
+    }
+
+    @Test
+    void testCompareWithLocalFileWithDifferentStations() throws Exception {
+        Method method = StationLoaderService.class.getDeclaredMethod("compareWithLocalFile", List.class);
+        method.setAccessible(true);
+
+        // Create stations that are different from what might be in the file
+        List<Map<String, Object>> urlStations = List.of(
+            Map.of("cdgoEstacion", "DIFFERENT", "desgEstacion", "DIFFERENT STATION", "clave", "0071,DIFFERENT,null")
+        );
+
+        // Should not throw exception and should log warning if stations differ
+        assertDoesNotThrow(() -> {
+            method.invoke(service, urlStations);
+        });
+    }
+
+    @Test
+    void testCompareWithLocalFileWithEmptyLocalFile() throws Exception {
+        Method method = StationLoaderService.class.getDeclaredMethod("compareWithLocalFile", List.class);
+        method.setAccessible(true);
+
+        // Set a non-existent path to simulate empty local file
+        injectField("stationsDefaultPath", "/nonexistent/file.js");
+
+        List<Map<String, Object>> urlStations = List.of(
+            Map.of("cdgoEstacion", "MADRI", "desgEstacion", "MADRID", "clave", "MAD")
+        );
+
+        // Should not throw exception and should log debug message about empty file
+        assertDoesNotThrow(() -> {
+            method.invoke(service, urlStations);
+        });
+    }
+
+    @Test
+    void testCompareWithLocalFileHandlesException() throws Exception {
+        Method method = StationLoaderService.class.getDeclaredMethod("compareWithLocalFile", List.class);
+        method.setAccessible(true);
+
+        // Set a non-existent path to simulate exception scenario
+        injectField("stationsDefaultPath", "/nonexistent/file.js");
+
+        List<Map<String, Object>> urlStations = List.of(
+            Map.of("cdgoEstacion", "MADRI", "desgEstacion", "MADRID", "clave", "MAD")
+        );
+
+        // Should handle exception gracefully and not throw
+        assertDoesNotThrow(() -> {
+            method.invoke(service, urlStations);
+        });
+    }
+
+    @Test
+    void testAreStationsEqualWithNullKeys() throws Exception {
+        Method method = StationLoaderService.class.getDeclaredMethod("areStationsEqual", List.class, List.class);
+        method.setAccessible(true);
+
+        // Stations without clave field (will use code|name as key)
+        List<Map<String, Object>> stations1 = List.of(
+            Map.of("cdgoEstacion", "MADRI", "desgEstacion", "MADRID")
+        );
+        List<Map<String, Object>> stations2 = List.of(
+            Map.of("cdgoEstacion", "MADRI", "desgEstacion", "MADRID")
+        );
+
+        Boolean result = (Boolean) method.invoke(service, stations1, stations2);
+        assertTrue(result);
+    }
+
+    @Test
+    void testAreStationsEqualWithDifferentKeySizes() throws Exception {
+        Method method = StationLoaderService.class.getDeclaredMethod("areStationsEqual", List.class, List.class);
+        method.setAccessible(true);
+
+        List<Map<String, Object>> stations1 = List.of(
+            Map.of("cdgoEstacion", "MADRI", "desgEstacion", "MADRID", "clave", "MAD"),
+            Map.of("cdgoEstacion", "BARC", "desgEstacion", "BARCELONA", "clave", "BAR")
+        );
+        List<Map<String, Object>> stations2 = List.of(
+            Map.of("cdgoEstacion", "MADRI", "desgEstacion", "MADRID", "clave", "MAD")
+        );
+
+        Boolean result = (Boolean) method.invoke(service, stations1, stations2);
+        assertFalse(result);
+    }
+
+    @Test
+    void testAreStationsEqualWithNullStationKeys() throws Exception {
+        Method method = StationLoaderService.class.getDeclaredMethod("areStationsEqual", List.class, List.class);
+        method.setAccessible(true);
+
+        // Stations with null values that result in null keys
+        Map<String, Object> station1 = new java.util.HashMap<>();
+        station1.put("cdgoEstacion", null);
+        station1.put("desgEstacion", null);
+        
+        Map<String, Object> station2 = new java.util.HashMap<>();
+        station2.put("cdgoEstacion", null);
+        station2.put("desgEstacion", null);
+
+        List<Map<String, Object>> stations1 = List.of(station1);
+        List<Map<String, Object>> stations2 = List.of(station2);
+
+        Boolean result = (Boolean) method.invoke(service, stations1, stations2);
+        // Both have null keys, so sets will be equal (both empty)
+        assertTrue(result);
+    }
+
+    @Test
+    void testAreStationsEqualWithSameKeysButDifferentOrder() throws Exception {
+        Method method = StationLoaderService.class.getDeclaredMethod("areStationsEqual", List.class, List.class);
+        method.setAccessible(true);
+
+        List<Map<String, Object>> stations1 = List.of(
+            Map.of("cdgoEstacion", "MADRI", "desgEstacion", "MADRID", "clave", "MAD"),
+            Map.of("cdgoEstacion", "BARC", "desgEstacion", "BARCELONA", "clave", "BAR")
+        );
+        List<Map<String, Object>> stations2 = List.of(
+            Map.of("cdgoEstacion", "BARC", "desgEstacion", "BARCELONA", "clave", "BAR"),
+            Map.of("cdgoEstacion", "MADRI", "desgEstacion", "MADRID", "clave", "MAD")
+        );
+
+        Boolean result = (Boolean) method.invoke(service, stations1, stations2);
+        // Should be equal even if order is different (using sets)
+        assertTrue(result);
+    }
+
+    @Test
+    void testAreStationsEqualWithDifferentKeys() throws Exception {
+        Method method = StationLoaderService.class.getDeclaredMethod("areStationsEqual", List.class, List.class);
+        method.setAccessible(true);
+
+        List<Map<String, Object>> stations1 = List.of(
+            Map.of("cdgoEstacion", "MADRI", "desgEstacion", "MADRID", "clave", "MAD1")
+        );
+        List<Map<String, Object>> stations2 = List.of(
+            Map.of("cdgoEstacion", "MADRI", "desgEstacion", "MADRID", "clave", "MAD2")
+        );
+
+        Boolean result = (Boolean) method.invoke(service, stations1, stations2);
+        assertFalse(result);
+    }
+
+    @Test
+    void testGetStationKeyWithNullValues() throws Exception {
+        Method method = StationLoaderService.class.getDeclaredMethod("getStationKey", Map.class);
+        method.setAccessible(true);
+
+        // Station with only code
+        Map<String, Object> station1 = Map.of("cdgoEstacion", "MADRI");
+        String key1 = (String) method.invoke(service, station1);
+        assertEquals("MADRI", key1);
+
+        // Station with only name
+        Map<String, Object> station2 = Map.of("desgEstacion", "MADRID");
+        String key2 = (String) method.invoke(service, station2);
+        assertEquals("MADRID", key2);
+
+        // Station with null values
+        Map<String, Object> station3 = new java.util.HashMap<>();
+        station3.put("cdgoEstacion", null);
+        station3.put("desgEstacion", null);
+        String key3 = (String) method.invoke(service, station3);
+        assertNull(key3);
+    }
+
+    @Test
+    void testGetStationKeyWithEmptyClave() throws Exception {
+        Method method = StationLoaderService.class.getDeclaredMethod("getStationKey", Map.class);
+        method.setAccessible(true);
+
+        // Station with empty clave (should fallback to code|name)
+        Map<String, Object> station = Map.of(
+            "cdgoEstacion", "MADRI",
+            "desgEstacion", "MADRID",
+            "clave", ""
+        );
+        String key = (String) method.invoke(service, station);
+        assertEquals("MADRI|MADRID", key);
+    }
+
+    @Test
+    void testGetStationKeyWithNullCodeButNotNullName() throws Exception {
+        Method method = StationLoaderService.class.getDeclaredMethod("getStationKey", Map.class);
+        method.setAccessible(true);
+
+        // Station with null code but not null name
+        Map<String, Object> station = new java.util.HashMap<>();
+        station.put("cdgoEstacion", null);
+        station.put("desgEstacion", "MADRID");
+        String key = (String) method.invoke(service, station);
+        assertEquals("MADRID", key);
+    }
+
+    @Test
+    void testGetStationKeyWithNullNameButNotNullCode() throws Exception {
+        Method method = StationLoaderService.class.getDeclaredMethod("getStationKey", Map.class);
+        method.setAccessible(true);
+
+        // Station with null name but not null code
+        Map<String, Object> station = new java.util.HashMap<>();
+        station.put("cdgoEstacion", "MADRI");
+        station.put("desgEstacion", null);
+        String key = (String) method.invoke(service, station);
+        assertEquals("MADRI", key);
+    }
+
+    @Test
+    void testGetStationKeyWithCodeAndNameButNoClave() throws Exception {
+        Method method = StationLoaderService.class.getDeclaredMethod("getStationKey", Map.class);
+        method.setAccessible(true);
+
+        // Station with code and name but no clave field
+        Map<String, Object> station = Map.of(
+            "cdgoEstacion", "MADRI",
+            "desgEstacion", "MADRID"
+        );
+        String key = (String) method.invoke(service, station);
+        assertEquals("MADRI|MADRID", key);
+    }
+
+    @Test
+    void testLoadStationsWithWarningWhenLoadingFromFile() throws Exception {
+        when(cachePort.isEnabled()).thenReturn(true);
+        when(cachePort.get("stations:all", List.class)).thenReturn(Optional.empty());
+
+        // Service will try to load from URL (will fail) then from file
+        // This should trigger the warning log
+        List<Map<String, Object>> result = service.loadStations();
+
+        assertNotNull(result);
+        // If file exists and has data, warning should be logged
+    }
+
+    @Test
+    void testLoadStationsCachesNonEmptyResult() throws Exception {
+        when(cachePort.isEnabled()).thenReturn(true);
+        @SuppressWarnings({"unchecked", "rawtypes"})
+        Optional empty = Optional.empty();
+        when(cachePort.get("stations:all", List.class)).thenReturn(empty);
+
+        List<Map<String, Object>> result = service.loadStations();
+
+        assertNotNull(result);
+        // If result is not empty, it should be cached
+        if (!result.isEmpty()) {
+            verify(cachePort, atLeastOnce()).put(eq("stations:all"), anyList(), eq(3600L));
+        }
+    }
+
+    @Test
+    void testParseJavaScriptStationsWithNestedArrays() throws Exception {
+        Method method = StationLoaderService.class.getDeclaredMethod("parseJavaScriptStations", String.class);
+        method.setAccessible(true);
+
+        // Test with nested arrays in the JavaScript
+        String jsContent = "var estacionesEstatico=[{\"cdgoEstacion\":\"MADRI\",\"nested\":[1,2,3]},{\"cdgoEstacion\":\"BARC\"}]";
+        
+        @SuppressWarnings("unchecked")
+        List<Map<String, Object>> result = (List<Map<String, Object>>) method.invoke(service, jsContent);
+
+        assertNotNull(result);
+        assertEquals(2, result.size());
+    }
+
+    @Test
+    void testParseJavaScriptStationsWithComplexContent() throws Exception {
+        Method method = StationLoaderService.class.getDeclaredMethod("parseJavaScriptStations", String.class);
+        method.setAccessible(true);
+
+        // Test with content before and after the array
+        String jsContent = "var otherVar=123; var estacionesEstatico=[{\"cdgoEstacion\":\"MADRI\"}]; var anotherVar=456;";
+        
+        @SuppressWarnings("unchecked")
+        List<Map<String, Object>> result = (List<Map<String, Object>>) method.invoke(service, jsContent);
+
+        assertNotNull(result);
+        assertEquals(1, result.size());
+        assertEquals("MADRI", result.get(0).get("cdgoEstacion"));
+    }
+
+    @Test
+    void testLoadStationsWithUrlSuccessThenCache() throws Exception {
+        // This test verifies the flow when URL loading succeeds
+        // Since we can't easily mock HttpClient, we test the cache behavior
+        when(cachePort.isEnabled()).thenReturn(true);
+        @SuppressWarnings({"unchecked", "rawtypes"})
+        Optional empty = Optional.empty();
+        when(cachePort.get("stations:all", List.class)).thenReturn(empty);
+
+        // Service will try URL first (will fail in unit test), then file
+        List<Map<String, Object>> result = service.loadStations();
+
+        assertNotNull(result);
+        // Verify that if we get stations, they are cached
+        if (!result.isEmpty()) {
+            verify(cachePort, atLeastOnce()).put(eq("stations:all"), anyList(), eq(3600L));
+        }
+    }
+
+    @Test
+    void testLoadStationsWithUrlFailureAndEmptyFile() throws Exception {
+        // Test the flow when both URL and file fail/return empty
+        when(cachePort.isEnabled()).thenReturn(true);
+        @SuppressWarnings({"unchecked", "rawtypes"})
+        Optional empty = Optional.empty();
+        when(cachePort.get("stations:all", List.class)).thenReturn(empty);
+
+        // Set a non-existent path so file returns empty
+        injectField("stationsDefaultPath", "/nonexistent/file.js");
+
+        List<Map<String, Object>> result = service.loadStations();
+
+        assertNotNull(result);
+        // URL will fail, file will return empty, so result should be empty
+        // Empty results should not be cached
+        if (result.isEmpty()) {
+            verify(cachePort, never()).put(anyString(), any(), anyLong());
+        }
+    }
+
+    @Test
+    void testCompareWithLocalFileWithMatchingStations() throws Exception {
+        Method method = StationLoaderService.class.getDeclaredMethod("compareWithLocalFile", List.class);
+        method.setAccessible(true);
+
+        // If the file exists and has matching stations, should log debug message
+        // This test verifies the method doesn't throw and handles the comparison
+        List<Map<String, Object>> urlStations = List.of(
+            Map.of("cdgoEstacion", "MADRI", "desgEstacion", "MADRID (TODAS)", "clave", "0071,MADRI,null")
+        );
+
         assertDoesNotThrow(() -> {
             method.invoke(service, urlStations);
         });

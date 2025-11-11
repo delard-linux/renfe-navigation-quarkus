@@ -52,17 +52,22 @@ public class SearchTrainsService implements SearchTrainsUseCase {
                 ? validateAndFormatDate(dateReturn, "dateReturn") 
                 : null;
 
-        // Validate stations exist and are unique, get real station names
+        // Validate stations exist and are unique, get station data
         StationValidationResult stationValidation = validateStations(origin, destination);
         String realOrigin = stationValidation.getOriginStationName();
         String realDestination = stationValidation.getDestinationStationName();
+        String originDesgEstacion = stationValidation.getOriginDesgEstacion();
+        String destinationDesgEstacion = stationValidation.getDestinationDesgEstacion();
+        String originClave = stationValidation.getOriginClave();
+        String destinationClave = stationValidation.getDestinationClave();
 
         LOG.debugf("[REQUEST] Starting search: %s -> %s, Outbound: %s, Return: %s, Passengers: %d",
                 realOrigin, realDestination, formattedDateOut, formattedDateReturn, adults);
 
         try {
             List<List<Train>> result = trainScraperPort.scrapeTrains(
-                    realOrigin, realDestination, formattedDateOut, formattedDateReturn, adults);
+                    realOrigin, realDestination, originDesgEstacion, destinationDesgEstacion,
+                    originClave, destinationClave, formattedDateOut, formattedDateReturn, adults);
 
             List<Train> trainsOut = result.get(0);
             List<Train> trainsReturn = result.size() > 1 ? result.get(1) : null;
@@ -156,29 +161,29 @@ public class SearchTrainsService implements SearchTrainsUseCase {
 
     /**
      * Validates that origin and destination stations exist and are unique
-     * Returns the real station names (desgEstacionPlano) to use in the search
+     * Returns the station data needed for form submission
      *
      * @param origin      Station origin name (search text)
      * @param destination Station destination name (search text)
-     * @return StationValidationResult with real station names
+     * @return StationValidationResult with station data (name, desgEstacion, clave)
      * @throws ValidationException if validation fails
      */
     private StationValidationResult validateStations(String origin, String destination) {
-        String realOrigin = validateStation(origin, "origin");
-        String realDestination = validateStation(destination, "destination");
-        return new StationValidationResult(realOrigin, realDestination);
+        StationData originData = validateStation(origin, "origin");
+        StationData destinationData = validateStation(destination, "destination");
+        return new StationValidationResult(originData, destinationData);
     }
 
     /**
      * Validates that a station exists and is unique
-     * Returns the real station name (desgEstacionPlano) to use in the search
+     * Returns the station data needed for form submission
      *
      * @param stationName Station name to validate (search text)
      * @param fieldName   Field name for error messages ("origin" or "destination")
-     * @return Real station name (desgEstacionPlano) to use in the search
+     * @return StationData with stationNamePlano, desgEstacion, and clave
      * @throws ValidationException if validation fails
      */
-    private String validateStation(String stationName, String fieldName) {
+    private StationData validateStation(String stationName, String fieldName) {
         try {
             List<Station> matchingStations = getStationsUseCase.searchStations(stationName);
 
@@ -204,7 +209,7 @@ public class SearchTrainsService implements SearchTrainsUseCase {
                 );
             }
 
-            // Exactly one station found - return the real station name (desgEstacionPlano)
+            // Exactly one station found - extract all needed data
             Station foundStation = matchingStations.get(0);
             String realStationName = foundStation.getStationNamePlano();
             if (realStationName == null || realStationName.isBlank()) {
@@ -215,8 +220,17 @@ public class SearchTrainsService implements SearchTrainsUseCase {
                     realStationName = stationName;
                 }
             }
-            LOG.debugf("Validated %s station: %s (search text: %s)", fieldName, realStationName, stationName);
-            return realStationName;
+            
+            String desgEstacion = foundStation.getStationName() != null && !foundStation.getStationName().isBlank()
+                    ? foundStation.getStationName()
+                    : realStationName;
+            String clave = foundStation.getKey() != null && !foundStation.getKey().isBlank()
+                    ? foundStation.getKey()
+                    : "";
+            
+            LOG.debugf("Validated %s station: %s (desgEstacion: %s, clave: %s, search text: %s)", 
+                    fieldName, realStationName, desgEstacion, clave, stationName);
+            return new StationData(realStationName, desgEstacion, clave);
 
         } catch (ValidationException e) {
             // Re-throw validation exceptions as-is
@@ -230,23 +244,66 @@ public class SearchTrainsService implements SearchTrainsUseCase {
     }
 
     /**
-     * Result of station validation containing the real station names to use
+     * Station data needed for form submission
+     */
+    private static class StationData {
+        private final String stationNamePlano;
+        private final String desgEstacion;
+        private final String clave;
+
+        StationData(String stationNamePlano, String desgEstacion, String clave) {
+            this.stationNamePlano = stationNamePlano;
+            this.desgEstacion = desgEstacion;
+            this.clave = clave;
+        }
+
+        String getStationNamePlano() {
+            return stationNamePlano;
+        }
+
+        String getDesgEstacion() {
+            return desgEstacion;
+        }
+
+        String getClave() {
+            return clave;
+        }
+    }
+
+    /**
+     * Result of station validation containing the station data to use
      */
     private static class StationValidationResult {
-        private final String originStationName;
-        private final String destinationStationName;
+        private final StationData originData;
+        private final StationData destinationData;
 
-        StationValidationResult(String originStationName, String destinationStationName) {
-            this.originStationName = originStationName;
-            this.destinationStationName = destinationStationName;
+        StationValidationResult(StationData originData, StationData destinationData) {
+            this.originData = originData;
+            this.destinationData = destinationData;
         }
 
         String getOriginStationName() {
-            return originStationName;
+            return originData.getStationNamePlano();
         }
 
         String getDestinationStationName() {
-            return destinationStationName;
+            return destinationData.getStationNamePlano();
+        }
+
+        String getOriginDesgEstacion() {
+            return originData.getDesgEstacion();
+        }
+
+        String getDestinationDesgEstacion() {
+            return destinationData.getDesgEstacion();
+        }
+
+        String getOriginClave() {
+            return originData.getClave();
+        }
+
+        String getDestinationClave() {
+            return destinationData.getClave();
         }
     }
 }
