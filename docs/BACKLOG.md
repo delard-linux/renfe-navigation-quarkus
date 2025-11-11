@@ -17,9 +17,10 @@
 
 ## Next
 
+- falla con busquedas de ida y vuelta
+- test de servicio trenes de playwright con ida y vuelta y que cuente mas de un tren en la respuesta
 - carga de estaciones cuando da mas de un resultado, controlar errores
 - meter el search de estaciones del servicio desde arriba a playwright,  para que al servicio le lleguen estaciones correctas y tenga menos código , con gestion de errores
-- test de servicio trenes de playwright con ida y vuelta y que cuente mas de un tren en la respuesta
 - renfe.responses-dir=target/responses
 - Add remaining validations (stations, dates, passengers)
 - Support multiple passenger types (not only adults)
