@@ -1,5 +1,6 @@
 package com.delard.renfe.navigation.application.service;
 
+import com.delard.renfe.navigation.application.exception.ValidationException;
 import com.delard.renfe.navigation.domain.model.Station;
 import com.delard.renfe.navigation.domain.port.output.StationRepository;
 import org.junit.jupiter.api.BeforeEach;
@@ -126,31 +127,71 @@ class GetStationsServiceTest {
 
     @Test
     void testSearchStationsWithNullText() {
-        List<Station> result = getStationsService.searchStations(null);
+        ValidationException exception = assertThrows(ValidationException.class, () -> {
+            getStationsService.searchStations(null);
+        });
 
-        assertNotNull(result);
-        assertTrue(result.isEmpty());
-        
+        assertEquals("Search text is required", exception.getMessage());
         verify(stationRepository, never()).searchStations(anyString());
     }
 
     @Test
     void testSearchStationsWithBlankText() {
-        List<Station> result = getStationsService.searchStations("   ");
+        ValidationException exception = assertThrows(ValidationException.class, () -> {
+            getStationsService.searchStations("   ");
+        });
 
-        assertNotNull(result);
-        assertTrue(result.isEmpty());
-        
+        assertEquals("Search text is required", exception.getMessage());
         verify(stationRepository, never()).searchStations(anyString());
     }
 
     @Test
     void testSearchStationsWithEmptyText() {
-        List<Station> result = getStationsService.searchStations("");
+        ValidationException exception = assertThrows(ValidationException.class, () -> {
+            getStationsService.searchStations("");
+        });
+
+        assertEquals("Search text is required", exception.getMessage());
+        verify(stationRepository, never()).searchStations(anyString());
+    }
+
+    @Test
+    void testSearchStationsWithLessThanThreeCharacters() {
+        ValidationException exception1 = assertThrows(ValidationException.class, () -> {
+            getStationsService.searchStations("AB");
+        });
+        assertEquals("Search text must have at least 3 characters", exception1.getMessage());
+        verify(stationRepository, never()).searchStations(anyString());
+
+        ValidationException exception2 = assertThrows(ValidationException.class, () -> {
+            getStationsService.searchStations("A");
+        });
+        assertEquals("Search text must have at least 3 characters", exception2.getMessage());
+        verify(stationRepository, never()).searchStations(anyString());
+    }
+
+    @Test
+    void testSearchStationsWithExactlyThreeCharacters() {
+        Station station1 = new Station("MADRI", "0071", 1, null,
+                "MADRID (TODAS)", null, "0071,MADRI,null", "MADRID (TODAS)");
+        List<Station> matchingStations = Arrays.asList(station1);
+
+        when(stationRepository.searchStations("MAD")).thenReturn(matchingStations);
+
+        List<Station> result = getStationsService.searchStations("MAD");
 
         assertNotNull(result);
-        assertTrue(result.isEmpty());
-        
+        assertEquals(1, result.size());
+        verify(stationRepository, times(1)).searchStations("MAD");
+    }
+
+    @Test
+    void testSearchStationsWithWhitespaceTrimmed() {
+        ValidationException exception = assertThrows(ValidationException.class, () -> {
+            getStationsService.searchStations("  AB  ");
+        });
+
+        assertEquals("Search text must have at least 3 characters", exception.getMessage());
         verify(stationRepository, never()).searchStations(anyString());
     }
 

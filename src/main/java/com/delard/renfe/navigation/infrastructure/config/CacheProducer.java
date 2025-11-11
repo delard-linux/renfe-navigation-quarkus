@@ -48,7 +48,6 @@ public class CacheProducer {
                 return localCacheAdapter;
             
             case "redis":
-                // TODO: Implement RedisCacheAdapter
                 // return redisCacheAdapter;
                 LOG.warnf("Redis cache adapter not yet implemented, falling back to local cache");
                 return localCacheAdapter;

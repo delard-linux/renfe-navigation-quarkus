@@ -1,5 +1,6 @@
 package com.delard.renfe.navigation.application.service;
 
+import com.delard.renfe.navigation.application.exception.ValidationException;
 import com.delard.renfe.navigation.domain.model.Station;
 import com.delard.renfe.navigation.domain.port.input.GetStationsUseCase;
 import com.delard.renfe.navigation.domain.port.output.StationRepository;
@@ -42,10 +43,8 @@ public class GetStationsService implements GetStationsUseCase {
     public List<Station> searchStations(String searchText) {
         LOG.debugf("[REQUEST] Searching stations with text: %s", searchText);
         
-        if (searchText == null || searchText.isBlank()) {
-            LOG.warn("[WARN] Empty search text provided, returning empty list");
-            return List.of();
-        }
+        // Validate search text
+        validateSearchText(searchText);
         
         try {
             List<Station> stations = stationRepository.searchStations(searchText);
@@ -55,9 +54,28 @@ public class GetStationsService implements GetStationsUseCase {
             }
             LOG.debugf("[SUCCESS] Found %d stations matching '%s'", stations.size(), searchText);
             return stations;
+        } catch (ValidationException e) {
+            // Re-throw validation exceptions as-is
+            throw e;
         } catch (Exception e) {
             LOG.errorf(e, "[ERROR] Failed to search stations: %s", e.getMessage());
             throw new RuntimeException("Error searching stations: " + e.getMessage(), e);
+        }
+    }
+
+    /**
+     * Validates the search text parameter
+     *
+     * @param searchText Search text to validate
+     * @throws ValidationException if validation fails
+     */
+    private void validateSearchText(String searchText) {
+        if (searchText == null || searchText.isBlank()) {
+            throw new ValidationException("Search text is required");
+        }
+
+        if (searchText.trim().length() < 3) {
+            throw new ValidationException("Search text must have at least 3 characters");
         }
     }
 }
