@@ -84,6 +84,25 @@ public class PlaywrightSearchTrainsService {
                     // Give the page a moment to fully render all dynamic content
                     page.waitForTimeout(1000);
 
+                    // Accept cookies if the banner appears
+                    try {
+                        Locator acceptCookiesButton = page.locator("#onetrust-accept-btn-handler");
+                        // Wait for the button to appear with a short timeout
+                        acceptCookiesButton.waitFor(new Locator.WaitForOptions()
+                                .setTimeout(config.getShortTimeoutMs())
+                                .setState(com.microsoft.playwright.options.WaitForSelectorState.VISIBLE));
+                        
+                        if (acceptCookiesButton.isVisible()) {
+                            LOG.debug("Cookie banner detected, clicking 'Accept all cookies' button");
+                            acceptCookiesButton.click();
+                            // Wait a moment for the cookie banner to close
+                            page.waitForTimeout(500);
+                        }
+                    } catch (Exception e) {
+                        // Cookie banner may not appear, continue normally
+                        LOG.debugf("Cookie banner not found or already dismissed: %s", e.getMessage());
+                    }
+
                     String responseContent = page.content();
                     responseStorageService.saveResponse(responseContent, 200);
 
