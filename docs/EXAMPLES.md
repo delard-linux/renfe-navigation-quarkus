@@ -2,34 +2,35 @@
 
 [← Back to README](../README.md)
 
+
+Start server dev mode
+
+```bash
+./mvnw quarkus:dev
+```
+
 ## 1. Simple train search (outbound only)
 
 ```bash
-curl -X GET "http://localhost:8000/trains?origin=OURENSE&destination=MADRID&date_out=2025-12-15&adults=1"
+curl -X GET "http://localhost:8999/trains?origin=MADRID+%28TODAS%29&destination=BARCELONA+%28TODAS%29&date_out=2025-12-15&adults=1"
 ```
 
 ## 2. Search with outbound and return
 
 ```bash
-curl -X GET "http://localhost:8000/trains?origin=BARCELONA&destination=VALENCIA&date_out=2025-12-20&date_return=2025-12-27&adults=2"
+curl -X GET "http://localhost:8999/trains?origin=BARCELONA+%28TODAS%29&destination=VALENCIA+%28TODAS%29&date_out=2025-12-20&date_return=2025-12-27&adults=2"
 ```
 
 ## 3. Search with multiple passengers
 
 ```bash
-curl -X GET "http://localhost:8000/trains?origin=MADRID&destination=SEVILLA&date_out=2025-11-25&adults=4"
-```
-
-## 4. With PowerShell (Windows)
-
-```powershell
-Invoke-RestMethod -Uri "http://localhost:8000/trains?origin=OURENSE&destination=MADRID&date_out=2025-12-15&adults=1" -Method Get
+curl -X GET "http://localhost:8999/trains?origin=MADRID+%28TODAS%29&destination=SEVILLA&date_out=2025-11-25&adults=4"
 ```
 
 ## 5. With JSON formatting (using jq)
 
 ```bash
-curl -s "http://localhost:8000/trains?origin=OURENSE&destination=MADRID&date_out=2025-12-15&adults=1" | jq
+curl -s "http://localhost:8999/trains?origin=OURENSE&destination=MADRID+%28TODAS%29&date_out=2025-12-15&adults=1" | jq
 ```
 
 ## Example Response
@@ -71,7 +72,7 @@ curl -s "http://localhost:8000/trains?origin=OURENSE&destination=MADRID&date_out
 
 ## Swagger/OpenAPI
 
-- Swagger UI: http://localhost:8000/swagger-ui
-- OpenAPI: http://localhost:8000/openapi
+- Swagger UI: http://localhost:8999/swagger-ui
+- OpenAPI: http://localhost:8999/openapi
 
 

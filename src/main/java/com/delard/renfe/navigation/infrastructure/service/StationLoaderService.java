@@ -144,16 +144,26 @@ public class StationLoaderService {
      */
     private List<Map<String, Object>> parseJavaScriptStations(String content) throws Exception {
         // Extract the estacionesEstatico array from JavaScript
+        // Try different variations: with and without spaces
         int startIndex = content.indexOf("var estacionesEstatico=[");
+        if (startIndex == -1) {
+            startIndex = content.indexOf("var estacionesEstatico = [");
+        }
         if (startIndex == -1) {
             throw new RuntimeException("Could not find estacionesEstatico array in JavaScript");
         }
 
-        startIndex += "var estacionesEstatico=".length();
-        int bracketCount = 0;
-        int endIndex = startIndex;
+        // Find the opening bracket after "var estacionesEstatico"
+        int bracketStart = content.indexOf('[', startIndex);
+        if (bracketStart == -1) {
+            throw new RuntimeException("Could not find opening bracket for estacionesEstatico array");
+        }
 
-        for (int i = startIndex; i < content.length(); i++) {
+        // Find the matching closing bracket
+        int bracketCount = 0;
+        int endIndex = bracketStart;
+
+        for (int i = bracketStart; i < content.length(); i++) {
             char c = content.charAt(i);
             if (c == '[') {
                 bracketCount++;
@@ -166,11 +176,15 @@ public class StationLoaderService {
             }
         }
 
-        String jsonArray = content.substring(startIndex, endIndex);
+        if (bracketCount != 0) {
+            throw new RuntimeException("Could not find matching closing bracket for estacionesEstatico array");
+        }
+
+        String jsonArray = content.substring(bracketStart, endIndex);
         
         List<Map<String, Object>> stations = objectMapper.readValue(jsonArray, new TypeReference<List<Map<String, Object>>>() {});
         
-        LOG.debugf("Parsed %d stations from URL", stations.size());
+        LOG.debugf("Parsed %d stations from JavaScript", stations.size());
         return stations;
     }
 

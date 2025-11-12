@@ -51,6 +51,10 @@ public class PlaywrightSearchTrainsService {
                 dateReturnFormatted.isEmpty() ? "One way only" : dateReturnFormatted
         );
 
+        // Log equivalent curl command for debugging
+        String curlCommand = buildCurlCommand(formData);
+        LOG.debugf("Equivalent curl command: %s", curlCommand);
+
         try (Playwright playwright = playwrightFactory.create()) {
             Browser browser = createBrowser(playwright);
             try {
@@ -61,14 +65,13 @@ public class PlaywrightSearchTrainsService {
 
                 Page page = context.newPage();
                 try {
-                    LOG.debugf("Navigating to %s", config.getRenfeSearchUrl());
-                    page.navigate(config.getRenfeSearchUrl(), new Page.NavigateOptions()
+                    // Build URL with query string parameters
+                    String urlWithQueryString = buildUrlWithQueryString(formData);
+                    LOG.debugf("Navigating to %s", urlWithQueryString);
+                    page.navigate(urlWithQueryString, new Page.NavigateOptions()
                             .setWaitUntil(WaitUntilState.DOMCONTENTLOADED)
                             .setTimeout(config.getNavigationTimeoutMs())
                     );
-
-                    String jsFormSubmit = buildFormSubmitScript(formData);
-                    page.evaluate(jsFormSubmit);
 
                     LOG.debug("Waiting for train results to appear...");
                     // Wait directly for train results instead of NETWORKIDLE (which may timeout on sites with continuous polling)
@@ -148,7 +151,7 @@ public class PlaywrightSearchTrainsService {
         formData.put("FechaVueltaSel", dateReturnFormatted);
         formData.put("_fechaIdaVisual", dateOutFormatted);
         formData.put("_fechaVueltaVisual", dateReturnFormatted);
-        formData.put("minPriceDeparture", "false");
+        formData.put("minPriceDeparture", "10");
         formData.put("minPriceReturn", "false");
         formData.put("adultos_", String.valueOf(adults));
         formData.put("ninos_", "0");
@@ -159,55 +162,75 @@ public class PlaywrightSearchTrainsService {
         formData.put("conMascota", "false");
         formData.put("conBicicleta", "false");
         formData.put("asistencia", "false");
-        formData.put("franjaHoraI", "");
-        formData.put("franjaHoraV", "");
+        formData.put("franjaHoraI", "00:00");
+        formData.put("franjaHoraV", "00:00");
         formData.put("Idioma", "es");
         formData.put("Pais", "ES");
         return formData;
     }
 
-    private String buildFormSubmitScript(Map<String, String> formData) {
-        StringBuilder sb = new StringBuilder();
-        sb.append("const form = document.createElement('form');");
-        sb.append("form.method = 'POST';");
-        sb.append("form.action = '").append(config.getRenfeSearchUrl()).append("';");
-        sb.append("const params = ").append(mapToJsonString(formData)).append(";");
-        sb.append("for (const [key, value] of Object.entries(params)) {");
-        sb.append("  const input = document.createElement('input');");
-        sb.append("  input.type = 'hidden';");
-        sb.append("  input.name = key;");
-        sb.append("  input.value = value;");
-        sb.append("  form.appendChild(input);");
-        sb.append("}");
-        sb.append("document.body.appendChild(form);");
-        sb.append("form.submit();");
-        return sb.toString();
-    }
-
-    private String mapToJsonString(Map<String, String> map) {
-        StringBuilder sb = new StringBuilder();
-        sb.append("{");
+    /**
+     * Builds a URL with query string parameters from form data.
+     *
+     * @param formData The form data to convert to query string
+     * @return The complete URL with query string parameters
+     */
+    private String buildUrlWithQueryString(Map<String, String> formData) {
+        StringBuilder url = new StringBuilder(config.getRenfeSearchUrl());
+        
+        // Check if URL already has query parameters
+        boolean hasQueryParams = url.indexOf("?") != -1;
+        String separator = hasQueryParams ? "&" : "?";
+        
         boolean first = true;
-        for (Map.Entry<String, String> entry : map.entrySet()) {
-            if (!first) {
-                sb.append(",");
+        for (Map.Entry<String, String> entry : formData.entrySet()) {
+            if (first) {
+                url.append(separator);
+                first = false;
+            } else {
+                url.append("&");
             }
-            sb.append("'").append(entry.getKey()).append("':'").append(escapeJsonString(entry.getValue())).append("'");
-            first = false;
+            url.append(escapeUrlParameter(entry.getKey()))
+               .append("=")
+               .append(escapeUrlParameter(entry.getValue()));
         }
-        sb.append("}");
-        return sb.toString();
+        
+        return url.toString();
     }
 
-    private String escapeJsonString(String str) {
+    /**
+     * Builds an equivalent curl command for the query string parameters.
+     * This is useful for debugging and understanding what request is being made.
+     *
+     * @param formData The form data to convert to curl command with query string
+     * @return A curl command string equivalent to the GET request with query string
+     */
+    private String buildCurlCommand(Map<String, String> formData) {
+        String urlWithQueryString = buildUrlWithQueryString(formData);
+        return "curl '" + urlWithQueryString + "'";
+    }
+
+    /**
+     * Escapes a string for use in URL parameters.
+     *
+     * @param str The string to escape
+     * @return The escaped string
+     */
+    private String escapeUrlParameter(String str) {
         if (str == null) {
             return "";
         }
-        return str.replace("\\", "\\\\")
-                .replace("\"", "\\\"")
-                .replace("'", "\\'")
-                .replace("\n", "\\n")
-                .replace("\r", "\\r");
+        try {
+            // Use URLEncoder to properly encode URL parameters
+            return java.net.URLEncoder.encode(str, "UTF-8");
+        } catch (java.io.UnsupportedEncodingException e) {
+            // Fallback to manual escaping if UTF-8 is not supported (should never happen)
+            return str.replace(" ", "%20")
+                    .replace("&", "%26")
+                    .replace("=", "%3D")
+                    .replace("'", "%27")
+                    .replace("\"", "%22");
+        }
     }
 
     private List<Train> extractResults(Page page) throws InterruptedException {

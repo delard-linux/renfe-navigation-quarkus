@@ -38,26 +38,27 @@ class PlaywrightSearchTrainsServiceIT {
     PlaywrightSearchTrainsService playwrightSearchTrainsService;
 
     /**
-     * Calculates the outbound date (1 month from today)
+     * Calculates the outbound date (2 months from today)
      *
-     * @return Outbound date in format YYYY-MM-DD
+     * @return Outbound date in format dd/MM/yyyy
      */
     private String calculateOutboundDate() {
         LocalDate today = LocalDate.now();
-        LocalDate outboundDate = today.plusMonths(1);
-        return outboundDate.format(DateTimeFormatter.ISO_LOCAL_DATE);
+        LocalDate outboundDate = today.plusMonths(2);
+        return outboundDate.format(DateTimeFormatter.ofPattern("dd/MM/yyyy"));
     }
 
     /**
      * Calculates the return date (3 days after the outbound date)
      *
-     * @param outboundDate Outbound date in format YYYY-MM-DD
-     * @return Return date in format YYYY-MM-DD
+     * @param outboundDate Outbound date in format dd/MM/yyyy
+     * @return Return date in format dd/MM/yyyy
      */
     private String calculateReturnDate(String outboundDate) {
-        LocalDate outbound = LocalDate.parse(outboundDate);
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy");
+        LocalDate outbound = LocalDate.parse(outboundDate, formatter);
         LocalDate returnDate = outbound.plusDays(3);
-        return returnDate.format(DateTimeFormatter.ISO_LOCAL_DATE);
+        return returnDate.format(formatter);
     }
 
     @Test
@@ -65,15 +66,15 @@ class PlaywrightSearchTrainsServiceIT {
         // Test Madrid to Ourense one-way trip
         String dateOut = calculateOutboundDate();
         PlaywrightSearchTrainsService.SearchTrainsResult result = playwrightSearchTrainsService.searchTrains(
-            "MADRID",
-            "OURENSE",
-            "MADRID",   // originDesgEstacion
-            "OURENSE",  // destinationDesgEstacion
-            "0071,MADRID,null",   // originClave
-            "0071,OURENSE,null",  // destinationClave
+            "MADRID (TODAS)",
+            "BARCELONA (TODAS)",
+            "MADRID (TODAS)",   // originDesgEstacion
+            "BARCELONA (TODAS)",  // destinationDesgEstacion
+            "0071,MADRI,null",   // originClave
+            "0071,BARCE,null",  // destinationClave
             dateOut,
             null,
-            2
+            1
         );
 
         LOG.infof("IT result: %s", result);
