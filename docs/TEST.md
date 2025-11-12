@@ -268,6 +268,42 @@ playwright.timeout-navigation-ms=60000
 playwright.timeout-networkidle-ms=60000
 ```
 
+#### Override Playwright Configuration via Maven System Properties
+
+You can override `playwright.headless` and `playwright.slow-mo` via Maven system properties (`-D`) without modifying the properties file. This is useful for local debugging without affecting CI/CD pipeline execution.
+
+**System properties have higher priority than the properties file**, so they will override the default values.
+
+##### Examples
+
+**Run with visible browser and slow motion (for debugging):**
+```bash
+./mvnw test -Dtest=PlaywrightSearchTrainsServiceIT \
+  -Dplaywright.headless=false -Dplaywright.slow-mo=4000
+```
+
+**Run with headless mode and no delay (for fast execution):**
+```bash
+./mvnw test -Dtest=PlaywrightSearchTrainsServiceIT \
+  -Dplaywright.headless=true -Dplaywright.slow-mo=0
+```
+
+**Run with visible browser but fast execution:**
+```bash
+./mvnw test -Dtest=PlaywrightSearchTrainsServiceIT \
+  -Dplaywright.headless=false -Dplaywright.slow-mo=0
+```
+
+**Run without overrides (uses values from application-integration.properties):**
+```bash
+./mvnw test -Dtest=PlaywrightSearchTrainsServiceIT
+```
+
+**Note**: The values in `application-integration.properties` are used as defaults when system properties are not provided. This allows you to:
+- Keep default values optimized for CI/CD in the properties file
+- Override them locally for debugging without committing changes
+- Share the same test configuration across the team
+
 ### E2E Tests
 
 - Run against packaged application
@@ -339,9 +375,10 @@ Generate coverage report:
 
 1. **Run unit tests frequently** - They're fast and provide quick feedback
 2. **Use integration tests for debugging** - They allow IDE debugging with `@QuarkusTest`
-3. **Configure Playwright in properties** - Adjust headless/slow-mo settings for debugging
-4. **Check coverage regularly** - Ensure tests cover critical code paths
-5. **Use specific test runs** - Run only what you need during development
+3. **Override Playwright config via `-D` flags** - Use `-Dplaywright.headless=false -Dplaywright.slow-mo=4000` for local debugging without modifying properties files
+4. **Configure Playwright in properties** - Set default values in `application-integration.properties` for CI/CD
+5. **Check coverage regularly** - Ensure tests cover critical code paths
+6. **Use specific test runs** - Run only what you need during development
 
 ## Troubleshooting
 

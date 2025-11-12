@@ -150,7 +150,7 @@ quarkus.http.port=8000
 
 # Log level
 quarkus.log.level=INFO
-quarkus.log.category."com.renfe".level=INFO
+quarkus.log.category."com.delard.renfe".level=INFO
 
 # OpenAPI
 quarkus.swagger-ui.path=/swagger-ui
