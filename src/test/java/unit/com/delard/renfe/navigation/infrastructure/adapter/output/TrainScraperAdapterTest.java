@@ -52,7 +52,7 @@ class TrainScraperAdapterTest {
         String destinationClave = "0071,MADRID,null";
         String dateOut = "01/12/2025";
         String dateReturn = "05/12/2025";
-        int adults = 2;
+        String adults = "2";
 
         Train trainOut1 = createTrain("T123", "AVE", "08:00", "10:00", "2h", 25.0);
         Train trainOut2 = createTrain("T456", "ALVIA", "12:00", "14:00", "2h", 30.0);
@@ -98,7 +98,7 @@ class TrainScraperAdapterTest {
         String destinationClave = "0071,MADRID,null";
         String dateOut = "01/12/2025";
         String dateReturn = null;
-        int adults = 1;
+        String adults = "1";
 
         Train trainOut1 = createTrain("T123", "AVE", "08:00", "10:00", "2h", 25.0);
         List<Train> trainsOut = Arrays.asList(trainOut1);
@@ -138,7 +138,7 @@ class TrainScraperAdapterTest {
         String destinationClave = "0071,MADRID,null";
         String dateOut = "01/12/2025";
         String dateReturn = null;
-        int adults = 1;
+        String adults = "1";
 
         PlaywrightSearchTrainsService.SearchTrainsResult result =
             new PlaywrightSearchTrainsService.SearchTrainsResult(null, null);
@@ -170,7 +170,7 @@ class TrainScraperAdapterTest {
         String destinationClave = "0071,MADRID,null";
         String dateOut = "01/12/2025";
         String dateReturn = null;
-        int adults = 1;
+        String adults = "1";
 
         List<Train> emptyTrainsOut = new ArrayList<>();
         PlaywrightSearchTrainsService.SearchTrainsResult result =
@@ -202,7 +202,7 @@ class TrainScraperAdapterTest {
         String destinationClave = "0071,MADRID,null";
         String dateOut = "01/12/2025";
         String dateReturn = "05/12/2025";
-        int adults = 1;
+        String adults = "1";
 
         Train trainOut1 = createTrain("T123", "AVE", "08:00", "10:00", "2h", 25.0);
         List<Train> trainsOut = Arrays.asList(trainOut1);
@@ -238,7 +238,7 @@ class TrainScraperAdapterTest {
         String destinationClave = "0071,MADRID,null";
         String dateOut = "01/12/2025";
         String dateReturn = "05/12/2025";
-        int adults = 2;
+        String adults = "2";
         String errorMessage = "Scraping failed";
 
         when(playwrightSearchTrainsService.searchTrains(origin, destination,
@@ -284,21 +284,21 @@ class TrainScraperAdapterTest {
         when(playwrightSearchTrainsService.searchTrains(eq(origin), eq(destination),
                 eq(originDesgEstacion), eq(destinationDesgEstacion),
                 eq(originClave), eq(destinationClave),
-                eq(dateOut), eq(dateReturn), anyInt()))
+                eq(dateOut), eq(dateReturn), anyString()))
                 .thenReturn(result);
 
         List<List<Train>> result1 = adapter.scrapeTrains(origin, destination,
                 originDesgEstacion, destinationDesgEstacion,
                 originClave, destinationClave,
-                dateOut, dateReturn, 1);
+                dateOut, dateReturn, "1");
         List<List<Train>> result2 = adapter.scrapeTrains(origin, destination,
                 originDesgEstacion, destinationDesgEstacion,
                 originClave, destinationClave,
-                dateOut, dateReturn, 3);
+                dateOut, dateReturn, "3");
         List<List<Train>> result3 = adapter.scrapeTrains(origin, destination,
                 originDesgEstacion, destinationDesgEstacion,
                 originClave, destinationClave,
-                dateOut, dateReturn, 5);
+                dateOut, dateReturn, "5");
 
         assertNotNull(result1);
         assertNotNull(result2);
@@ -310,7 +310,7 @@ class TrainScraperAdapterTest {
         verify(playwrightSearchTrainsService, times(3)).searchTrains(eq(origin), eq(destination),
                 eq(originDesgEstacion), eq(destinationDesgEstacion),
                 eq(originClave), eq(destinationClave),
-                eq(dateOut), eq(dateReturn), anyInt());
+                eq(dateOut), eq(dateReturn), anyString());
     }
 
     @Test
@@ -321,10 +321,10 @@ class TrainScraperAdapterTest {
         PlaywrightSearchTrainsService.SearchTrainsResult result =
             new PlaywrightSearchTrainsService.SearchTrainsResult(trainsOut, null);
 
-        lenient().when(playwrightSearchTrainsService.searchTrains(any(), any(), any(), any(), any(), any(), any(), any(), anyInt()))
+        lenient().when(playwrightSearchTrainsService.searchTrains(any(), any(), any(), any(), any(), any(), any(), any(), anyString()))
                 .thenReturn(result);
 
-        List<List<Train>> scraperResult = adapter.scrapeTrains(null, null, null, null, null, null, null, null, 0);
+        List<List<Train>> scraperResult = adapter.scrapeTrains(null, null, null, null, null, null, null, null, "0");
 
         assertNotNull(scraperResult);
         assertEquals(1, scraperResult.size());

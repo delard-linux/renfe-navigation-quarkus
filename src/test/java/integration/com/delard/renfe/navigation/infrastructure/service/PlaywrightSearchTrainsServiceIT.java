@@ -74,7 +74,7 @@ class PlaywrightSearchTrainsServiceIT {
             "0071,BARCE,null",  // destinationClave
             dateOut,
             null,
-            1
+            "1"
         );
 
         LOG.infof("IT result: %s", result);
@@ -110,7 +110,7 @@ class PlaywrightSearchTrainsServiceIT {
             "0071,VALENCIA,null",   // destinationClave
             dateOut,
             "",
-            2
+            "2"
         );
 
         LOG.infof("IT result with empty return date: %s", result);
@@ -142,7 +142,7 @@ class PlaywrightSearchTrainsServiceIT {
             "0071,MADRID,null",   // destinationClave
             dateOut,
             dateReturn,
-            2
+            "2"
         );
 
         LOG.infof("IT result with return: %s", result);
@@ -182,7 +182,7 @@ class PlaywrightSearchTrainsServiceIT {
                 "0071,VALENCIA,null",   // destinationClave
                 dateOut,
                 "invalid-date-format",  // Invalid format - should be rejected by application layer
-                2
+                "2"
             );
 
             LOG.infof("IT result with invalid return date: %s", result);
@@ -219,7 +219,7 @@ class PlaywrightSearchTrainsServiceIT {
                 "0071,BARCELONA,null",  // destinationClave
                 dateOut1,
                 null,
-                2
+                "2"
             );
             assertNotNull(result1);
             assertNotNull(result1.outboundTrains);
@@ -240,7 +240,7 @@ class PlaywrightSearchTrainsServiceIT {
                 "0071,BCN,null",  // destinationClave
                 dateOut2,
                 null,
-                2
+                "2"
             );
             assertNotNull(result2);
             assertNotNull(result2.outboundTrains);
@@ -261,7 +261,7 @@ class PlaywrightSearchTrainsServiceIT {
                 "0071,ANOTH,null",  // destinationClave (truncated to 5 chars)
                 dateOut3,
                 null,
-                2
+                "2"
             );
             assertNotNull(result3);
             // Even with unknown stations, the service should attempt the search
@@ -293,7 +293,7 @@ class PlaywrightSearchTrainsServiceIT {
             "0071,MADRID,null",   // destinationClave
             dateOut,
             null,
-            2
+            "2"
         );
 
         assertNotNull(result);

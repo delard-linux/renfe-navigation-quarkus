@@ -23,15 +23,15 @@
 - Los EXAMPLES.md fallan por timeout ahora
 - Aceptar las cookies en el resultado de los trenes
 - Permitir la configuración de headless y slow-mo por parametros maven
+- Numero de adultos tiene que ser string
 
 ## Current pending
 
-- Numero de adultos tiene que ser string
 - MCP endpoint instead REST
 
 ## Next
 
-
+- Revisar tests de IT deshabilitados de PlaywrightSearchTrainsServiceIT
 - Manejar la validationException que es una Runtime no declarada en los servicios.. puede saltar en un REST o en un MCP
 - renfe.responses-dir=target/responses
 - Support multiple passenger types (not only adults)

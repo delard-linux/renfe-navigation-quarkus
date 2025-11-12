@@ -19,7 +19,7 @@ public class TrainsResponseDTO {
     @JsonProperty("date_return")
     private String dateReturn;
 
-    private int adults;
+    private String adults;
 
     @JsonProperty("trains_out")
     private List<TrainDTO> trainsOut;
@@ -63,11 +63,11 @@ public class TrainsResponseDTO {
         this.dateReturn = dateReturn;
     }
 
-    public int getAdults() {
+    public String getAdults() {
         return adults;
     }
 
-    public void setAdults(int adults) {
+    public void setAdults(String adults) {
         this.adults = adults;
     }
 

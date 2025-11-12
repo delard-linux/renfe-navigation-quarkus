@@ -48,7 +48,7 @@ Searches for trains between two stations.
 - `destination` (required): Destination station (e.g., "MADRID")
 - `date_out` (required): Outbound date in YYYY-MM-DD format
 - `date_return` (optional): Return date in YYYY-MM-DD format
-- `adults` (optional, default=1): Number of adult passengers (1-8)
+- `adults` (optional, default="1"): Number of adult passengers as string (1-8)
 
 **Example:**
 ```bash

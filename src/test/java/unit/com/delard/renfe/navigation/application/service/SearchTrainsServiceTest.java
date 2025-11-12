@@ -94,7 +94,7 @@ class SearchTrainsServiceTest {
         String destination = REAL_DESTINATION;
         String dateOut = REAL_DATE_OUT;
         String dateReturn = REAL_DATE_RETURN;
-        int adults = 2;
+        String adults = "2";
 
         Train trainOut1 = createTrain("T123", "AVE", "08:00", "10:00", "2h", 25.0);
         Train trainOut2 = createTrain("T456", "ALVIA", "12:00", "14:00", "2h", 30.0);
@@ -136,7 +136,7 @@ class SearchTrainsServiceTest {
         String destination = REAL_DESTINATION;
         String dateOut = REAL_DATE_OUT;
         String dateReturn = null;
-        int adults = 2;
+        String adults = "2";
 
         Train trainOut1 = createTrain("T123", "AVE", "08:00", "10:00", "2h", 25.0);
         List<Train> trainsOut = Arrays.asList(trainOut1);
@@ -173,7 +173,7 @@ class SearchTrainsServiceTest {
         String destination = REAL_DESTINATION;
         String dateOut = REAL_DATE_OUT;
         String dateReturn = REAL_DATE_RETURN;
-        int adults = 2;
+        String adults = "2";
 
         Train trainOut1 = createTrain("T123", "AVE", "08:00", "10:00", "2h", 25.0);
         List<Train> trainsOut = Arrays.asList(trainOut1);
@@ -201,7 +201,7 @@ class SearchTrainsServiceTest {
         String destination = REAL_DESTINATION;
         String dateOut = REAL_DATE_OUT;
         String dateReturn = null;
-        int adults = 2;
+        String adults = "2";
 
         List<Train> trainsOut = new ArrayList<>();
         List<List<Train>> scraperResult = Arrays.asList(trainsOut);
@@ -227,7 +227,7 @@ class SearchTrainsServiceTest {
         String destination = REAL_DESTINATION;
         String dateOut = REAL_DATE_OUT;
         String dateReturn = REAL_DATE_RETURN;
-        int adults = 2;
+        String adults = "2";
         String errorMessage = "Scraping failed";
 
         when(trainScraperPort.scrapeTrains(REAL_ORIGIN_STATION_NAME, REAL_DESTINATION_STATION_NAME,
@@ -265,27 +265,27 @@ class SearchTrainsServiceTest {
         when(trainScraperPort.scrapeTrains(eq(REAL_ORIGIN_STATION_NAME), eq(REAL_DESTINATION_STATION_NAME),
                 eq(REAL_ORIGIN_DESG_ESTACION), eq(REAL_DESTINATION_DESG_ESTACION),
                 eq(REAL_ORIGIN_CLAVE), eq(REAL_DESTINATION_CLAVE),
-                eq(FORMATTED_DATE_OUT), eq((String) null), anyInt()))
+                eq(FORMATTED_DATE_OUT), eq((String) null), anyString()))
                 .thenReturn(scraperResult);
 
-        TrainsResponse result1 = service.searchTrains(origin, destination, dateOut, dateReturn, 1);
-        TrainsResponse result2 = service.searchTrains(origin, destination, dateOut, dateReturn, 2);
-        TrainsResponse result3 = service.searchTrains(origin, destination, dateOut, dateReturn, 3);
-        TrainsResponse result4 = service.searchTrains(origin, destination, dateOut, dateReturn, 5);
+        TrainsResponse result1 = service.searchTrains(origin, destination, dateOut, dateReturn, "1");
+        TrainsResponse result2 = service.searchTrains(origin, destination, dateOut, dateReturn, "2");
+        TrainsResponse result3 = service.searchTrains(origin, destination, dateOut, dateReturn, "3");
+        TrainsResponse result4 = service.searchTrains(origin, destination, dateOut, dateReturn, "5");
 
         assertNotNull(result1);
         assertNotNull(result2);
         assertNotNull(result3);
         assertNotNull(result4);
-        assertEquals(1, result1.getAdults());
-        assertEquals(2, result2.getAdults());
-        assertEquals(3, result3.getAdults());
-        assertEquals(5, result4.getAdults());
+        assertEquals("1", result1.getAdults());
+        assertEquals("2", result2.getAdults());
+        assertEquals("3", result3.getAdults());
+        assertEquals("5", result4.getAdults());
 
         verify(trainScraperPort, times(4)).scrapeTrains(eq(REAL_ORIGIN_STATION_NAME), eq(REAL_DESTINATION_STATION_NAME),
                 eq(REAL_ORIGIN_DESG_ESTACION), eq(REAL_DESTINATION_DESG_ESTACION),
                 eq(REAL_ORIGIN_CLAVE), eq(REAL_DESTINATION_CLAVE),
-                eq(FORMATTED_DATE_OUT), eq((String) null), anyInt());
+                eq(FORMATTED_DATE_OUT), eq((String) null), anyString());
     }
 
     @Test
@@ -293,33 +293,51 @@ class SearchTrainsServiceTest {
     void shouldHandleNullInputValuesGracefully() {
         // Test null origin
         ValidationException exception1 = assertThrows(ValidationException.class, () -> {
-            service.searchTrains(null, REAL_DESTINATION, REAL_DATE_OUT, null, 2);
+            service.searchTrains(null, REAL_DESTINATION, REAL_DATE_OUT, null, "2");
         });
         assertEquals("Origin is required", exception1.getMessage());
 
         // Test null destination
         ValidationException exception2 = assertThrows(ValidationException.class, () -> {
-            service.searchTrains(REAL_ORIGIN, null, REAL_DATE_OUT, null, 2);
+            service.searchTrains(REAL_ORIGIN, null, REAL_DATE_OUT, null, "2");
         });
         assertEquals("Destination is required", exception2.getMessage());
 
         // Test null dateOut
         ValidationException exception3 = assertThrows(ValidationException.class, () -> {
-            service.searchTrains(REAL_ORIGIN, REAL_DESTINATION, null, null, 2);
+            service.searchTrains(REAL_ORIGIN, REAL_DESTINATION, null, null, "2");
         });
         assertTrue(exception3.getMessage().contains("dateOut is required") || exception3.getMessage().contains("Date out is required"));
 
         // Test adults = 0
         ValidationException exception4 = assertThrows(ValidationException.class, () -> {
-            service.searchTrains(REAL_ORIGIN, REAL_DESTINATION, REAL_DATE_OUT, null, 0);
+            service.searchTrains(REAL_ORIGIN, REAL_DESTINATION, REAL_DATE_OUT, null, "0");
         });
         assertEquals("Adults must be greater than 0", exception4.getMessage());
 
         // Test adults < 0
         ValidationException exception5 = assertThrows(ValidationException.class, () -> {
-            service.searchTrains(REAL_ORIGIN, REAL_DESTINATION, REAL_DATE_OUT, null, -1);
+            service.searchTrains(REAL_ORIGIN, REAL_DESTINATION, REAL_DATE_OUT, null, "-1");
         });
         assertEquals("Adults must be greater than 0", exception5.getMessage());
+        
+        // Test adults = null
+        ValidationException exception6 = assertThrows(ValidationException.class, () -> {
+            service.searchTrains(REAL_ORIGIN, REAL_DESTINATION, REAL_DATE_OUT, null, null);
+        });
+        assertEquals("Adults is required", exception6.getMessage());
+        
+        // Test adults = blank
+        ValidationException exception7 = assertThrows(ValidationException.class, () -> {
+            service.searchTrains(REAL_ORIGIN, REAL_DESTINATION, REAL_DATE_OUT, null, "");
+        });
+        assertEquals("Adults is required", exception7.getMessage());
+        
+        // Test adults = invalid format
+        ValidationException exception8 = assertThrows(ValidationException.class, () -> {
+            service.searchTrains(REAL_ORIGIN, REAL_DESTINATION, REAL_DATE_OUT, null, "abc");
+        });
+        assertEquals("Adults must be a valid number", exception8.getMessage());
     }
 
     @Test
@@ -329,7 +347,7 @@ class SearchTrainsServiceTest {
         String destination = REAL_DESTINATION;
         String invalidDateOut = "16-01-2026";  // Wrong format (should be yyyy-MM-dd)
         String dateReturn = null;
-        int adults = 2;
+        String adults = "2";
 
         ValidationException exception = assertThrows(ValidationException.class, () -> {
             service.searchTrains(origin, destination, invalidDateOut, dateReturn, adults);
@@ -339,7 +357,7 @@ class SearchTrainsServiceTest {
         assertTrue(exception.getMessage().contains("dateOut"));
         assertTrue(exception.getMessage().contains(invalidDateOut));
         assertTrue(exception.getMessage().contains("yyyy-MM-dd"));
-        verify(trainScraperPort, never()).scrapeTrains(anyString(), anyString(), anyString(), anyString(), anyString(), anyString(), anyString(), anyString(), anyInt());
+        verify(trainScraperPort, never()).scrapeTrains(anyString(), anyString(), anyString(), anyString(), anyString(), anyString(), anyString(), anyString(), anyString());
     }
 
     @Test
@@ -349,7 +367,7 @@ class SearchTrainsServiceTest {
         String destination = REAL_DESTINATION;
         String dateOut = REAL_DATE_OUT;
         String invalidDateReturn = "18-01-2026";  // Wrong format (should be yyyy-MM-dd)
-        int adults = 2;
+        String adults = "2";
 
         ValidationException exception = assertThrows(ValidationException.class, () -> {
             service.searchTrains(origin, destination, dateOut, invalidDateReturn, adults);
@@ -359,7 +377,7 @@ class SearchTrainsServiceTest {
         assertTrue(exception.getMessage().contains("dateReturn"));
         assertTrue(exception.getMessage().contains(invalidDateReturn));
         assertTrue(exception.getMessage().contains("yyyy-MM-dd"));
-        verify(trainScraperPort, never()).scrapeTrains(anyString(), anyString(), anyString(), anyString(), anyString(), anyString(), anyString(), anyString(), anyInt());
+        verify(trainScraperPort, never()).scrapeTrains(anyString(), anyString(), anyString(), anyString(), anyString(), anyString(), anyString(), anyString(), anyString());
     }
 
     @Test
@@ -369,7 +387,7 @@ class SearchTrainsServiceTest {
         String destination = REAL_DESTINATION;
         String dateOut = "2026-12-25";  // Different date to verify formatting
         String dateReturn = null;
-        int adults = 2;
+        String adults = "2";
 
         Train trainOut1 = createTrain("T123", "AVE", "08:00", "10:00", "2h", 25.0);
         List<Train> trainsOut = Arrays.asList(trainOut1);
@@ -399,7 +417,7 @@ class SearchTrainsServiceTest {
         String destination = REAL_DESTINATION;
         String dateOut = REAL_DATE_OUT;
         String dateReturn = null;
-        int adults = 2;
+        String adults = "2";
 
         Train trainOut1 = createTrain("T123", "AVE", "08:00", "10:00", "2h", 25.0);
         List<Train> trainsOut = Arrays.asList(trainOut1);
@@ -431,7 +449,7 @@ class SearchTrainsServiceTest {
         String destination = REAL_DESTINATION;
         String dateOut = REAL_DATE_OUT;
         String dateReturn = null;
-        int adults = 2;
+        String adults = "2";
 
         // Simulate scraper returning a list with null first element
         List<List<Train>> scraperResult = new ArrayList<>();
@@ -457,7 +475,7 @@ class SearchTrainsServiceTest {
         String destination = REAL_DESTINATION;
         String dateOut = REAL_DATE_OUT;
         String dateReturn = REAL_DATE_RETURN;
-        int adults = 2;
+        String adults = "2";
 
         Train trainOut1 = createTrain("T123", "AVE", "08:00", "10:00", "2h", 25.0);
         List<Train> trainsOut = Arrays.asList(trainOut1);
@@ -484,7 +502,7 @@ class SearchTrainsServiceTest {
         String destination = REAL_DESTINATION;
         String dateOut = REAL_DATE_OUT;
         String dateReturn = null;
-        int adults = 2;
+        String adults = "2";
 
         when(getStationsUseCase.searchStations(origin)).thenReturn(List.of());
 
@@ -495,7 +513,7 @@ class SearchTrainsServiceTest {
         assertTrue(exception.getMessage().contains("No station found matching"));
         assertTrue(exception.getMessage().contains("origin"));
         verify(getStationsUseCase, times(1)).searchStations(origin);
-        verify(trainScraperPort, never()).scrapeTrains(anyString(), anyString(), anyString(), anyString(), anyString(), anyString(), anyString(), anyString(), anyInt());
+        verify(trainScraperPort, never()).scrapeTrains(anyString(), anyString(), anyString(), anyString(), anyString(), anyString(), anyString(), anyString(), anyString());
     }
 
     @Test
@@ -505,7 +523,7 @@ class SearchTrainsServiceTest {
         String destination = "NONEXISTENT";
         String dateOut = REAL_DATE_OUT;
         String dateReturn = null;
-        int adults = 2;
+        String adults = "2";
 
         when(getStationsUseCase.searchStations(destination)).thenReturn(List.of());
 
@@ -517,7 +535,7 @@ class SearchTrainsServiceTest {
         assertTrue(exception.getMessage().contains("destination"));
         verify(getStationsUseCase, times(1)).searchStations(origin);
         verify(getStationsUseCase, times(1)).searchStations(destination);
-        verify(trainScraperPort, never()).scrapeTrains(anyString(), anyString(), anyString(), anyString(), anyString(), anyString(), anyString(), anyString(), anyInt());
+        verify(trainScraperPort, never()).scrapeTrains(anyString(), anyString(), anyString(), anyString(), anyString(), anyString(), anyString(), anyString(), anyString());
     }
 
     @Test
@@ -527,7 +545,7 @@ class SearchTrainsServiceTest {
         String destination = REAL_DESTINATION;
         String dateOut = REAL_DATE_OUT;
         String dateReturn = null;
-        int adults = 2;
+        String adults = "2";
 
         Station station1 = new Station("MADRI", "0071", 1, null,
                 "MADRID (TODAS)", null, "0071,MADRI,null", "MADRID (TODAS)");
@@ -550,7 +568,7 @@ class SearchTrainsServiceTest {
         assertTrue(exception.getMessage().contains("MADRID-CHAMARTIN"));
         // Note: The message uses stationNamePlano, which should be the same as stationName in this case
         verify(getStationsUseCase, times(1)).searchStations(origin);
-        verify(trainScraperPort, never()).scrapeTrains(anyString(), anyString(), anyString(), anyString(), anyString(), anyString(), anyString(), anyString(), anyInt());
+        verify(trainScraperPort, never()).scrapeTrains(anyString(), anyString(), anyString(), anyString(), anyString(), anyString(), anyString(), anyString(), anyString());
     }
 
     @Test
@@ -560,7 +578,7 @@ class SearchTrainsServiceTest {
         String destination = "BARCELONA";
         String dateOut = REAL_DATE_OUT;
         String dateReturn = null;
-        int adults = 2;
+        String adults = "2";
 
         Station station1 = new Station("BARCE", "0071", 1, null,
                 "BARCELONA (TODAS)", null, "0071,BARCE,null", "BARCELONA (TODAS)");
@@ -579,7 +597,7 @@ class SearchTrainsServiceTest {
         assertTrue(exception.getMessage().contains("BARCELONA-SANTS"));
         verify(getStationsUseCase, times(1)).searchStations(origin);
         verify(getStationsUseCase, times(1)).searchStations(destination);
-        verify(trainScraperPort, never()).scrapeTrains(anyString(), anyString(), anyString(), anyString(), anyString(), anyString(), anyString(), anyString(), anyInt());
+        verify(trainScraperPort, never()).scrapeTrains(anyString(), anyString(), anyString(), anyString(), anyString(), anyString(), anyString(), anyString(), anyString());
     }
 
     @Test
@@ -589,7 +607,7 @@ class SearchTrainsServiceTest {
         String destination = REAL_DESTINATION;
         String dateOut = REAL_DATE_OUT;
         String dateReturn = null;
-        int adults = 2;
+        String adults = "2";
 
         Station originStation = new Station("MADRI", "0071", 1, null,
                 "MADRID (TODAS)", null, "0071,MADRI,null", "MADRID (TODAS)");

@@ -14,10 +14,10 @@ public interface SearchTrainsUseCase {
      * @param destination Station destination (e.g., "MADRID")
      * @param dateOut Outbound date in format YYYY-MM-DD
      * @param dateReturn Optional return date in format YYYY-MM-DD
-     * @param adults Number of adult passengers (1-8)
+     * @param adults Number of adult passengers (1-8) as string
      * @return TrainsResponse with outbound and optional return trains
      */
     TrainsResponse searchTrains(String origin, String destination, String dateOut,
-                                String dateReturn, int adults);
+                                String dateReturn, String adults);
 }
 

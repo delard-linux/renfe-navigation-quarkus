@@ -19,12 +19,12 @@ public interface TrainScraperPort {
      * @param destinationClave Destination station key (clave) for form submission
      * @param dateOut Outbound date (formatted as dd/MM/yyyy)
      * @param dateReturn Optional return date (formatted as dd/MM/yyyy)
-     * @param adults Number of adults
+     * @param adults Number of adults as string
      * @return List with [trainsOut, trainsReturn]
      */
     List<List<Train>> scrapeTrains(String origin, String destination,
                                     String originDesgEstacion, String destinationDesgEstacion,
                                     String originClave, String destinationClave,
-                                    String dateOut, String dateReturn, int adults);
+                                    String dateOut, String dateReturn, String adults);
 }
 

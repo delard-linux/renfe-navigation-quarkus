@@ -32,7 +32,7 @@ public class PlaywrightSearchTrainsService {
     public SearchTrainsResult searchTrains(String origin, String destination,
                                            String originDesgEstacion, String destinationDesgEstacion,
                                            String originClave, String destinationClave,
-                                           String dateOut, String dateReturn, int adults) {
+                                           String dateOut, String dateReturn, String adults) {
         LOG.debugf("Starting Chromium browser");
 
         LOG.debugf("Origin: %s (desgEstacion: %s, clave: %s)", origin, originDesgEstacion, originClave);
@@ -156,7 +156,7 @@ public class PlaywrightSearchTrainsService {
                                               String destinationClave,
                                               String dateOutFormatted,
                                               String dateReturnFormatted,
-                                              int adults) {
+                                              String adults) {
         Map<String, String> formData = new LinkedHashMap<>();
         formData.put("tipoBusqueda", "autocomplete");
         formData.put("currenLocation", "menuBusqueda");
@@ -172,7 +172,7 @@ public class PlaywrightSearchTrainsService {
         formData.put("_fechaVueltaVisual", dateReturnFormatted);
         formData.put("minPriceDeparture", "10");
         formData.put("minPriceReturn", "false");
-        formData.put("adultos_", String.valueOf(adults));
+        formData.put("adultos_", adults != null ? adults.trim() : "1");
         formData.put("ninos_", "0");
         formData.put("ninosMenores", "0");
         formData.put("codPromocional", "");

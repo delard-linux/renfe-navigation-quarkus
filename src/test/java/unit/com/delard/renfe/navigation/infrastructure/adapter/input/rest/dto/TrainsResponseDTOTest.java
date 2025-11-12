@@ -18,7 +18,7 @@ class TrainsResponseDTOTest {
     void testDefaultConstructor() {
         TrainsResponseDTO dto = new TrainsResponseDTO();
         assertNotNull(dto);
-        assertEquals(0, dto.getAdults());
+        assertNull(dto.getAdults());
     }
 
     @Test
@@ -42,8 +42,8 @@ class TrainsResponseDTOTest {
         assertEquals("2025-12-05", dto.getDateReturn());
 
         // Test adults
-        dto.setAdults(2);
-        assertEquals(2, dto.getAdults());
+        dto.setAdults("2");
+        assertEquals("2", dto.getAdults());
     }
 
     @Test
@@ -111,7 +111,7 @@ class TrainsResponseDTOTest {
         dto.setDestination("MADRID");
         dto.setDateOut("2025-12-01");
         dto.setDateReturn("2025-12-05");
-        dto.setAdults(2);
+        dto.setAdults("2");
 
         List<TrainDTO> trainsOut = Arrays.asList(createTrainDTO("TRAIN1"));
         dto.setTrainsOut(trainsOut);
@@ -123,7 +123,7 @@ class TrainsResponseDTOTest {
         assertEquals("MADRID", dto.getDestination());
         assertEquals("2025-12-01", dto.getDateOut());
         assertEquals("2025-12-05", dto.getDateReturn());
-        assertEquals(2, dto.getAdults());
+        assertEquals("2", dto.getAdults());
         assertEquals(1, dto.getTrainsOut().size());
         assertEquals(1, dto.getTrainsReturn().size());
     }

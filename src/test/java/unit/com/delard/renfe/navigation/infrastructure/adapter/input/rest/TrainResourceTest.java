@@ -42,7 +42,7 @@ class TrainResourceTest {
         String destination = "MADRID";
         String dateOut = "2025-12-01";
         String dateReturn = "2025-12-05";
-        int adults = 2;
+        String adults = "2";
 
         TrainsResponse trainsResponse = createMockTrainsResponse();
         when(searchTrainsUseCase.searchTrains(origin, destination, dateOut, dateReturn, adults))
@@ -67,7 +67,7 @@ class TrainResourceTest {
         String destination = "MADRID";
         String dateOut = "2025-12-01";
         String dateReturn = null;
-        int adults = 1;
+        String adults = "1";
 
         TrainsResponse trainsResponse = createMockTrainsResponse();
         when(searchTrainsUseCase.searchTrains(origin, destination, dateOut, dateReturn, adults))
@@ -89,7 +89,7 @@ class TrainResourceTest {
         String destination = "MADRID";
         String dateOut = "2025-12-01";
         String dateReturn = "";
-        int adults = 1;
+        String adults = "1";
 
         TrainsResponse trainsResponse = createMockTrainsResponse();
         when(searchTrainsUseCase.searchTrains(origin, destination, dateOut, dateReturn, adults))
@@ -110,7 +110,7 @@ class TrainResourceTest {
         String destination = "MADRID";
         String dateOut = "2025-12-01";
         String dateReturn = null;
-        int adults = 1;
+        String adults = "1";
 
         RuntimeException exception = new RuntimeException("Service error");
         when(searchTrainsUseCase.searchTrains(eq(origin), eq(destination), eq(dateOut), eq(dateReturn), eq(adults)))
@@ -136,7 +136,7 @@ class TrainResourceTest {
         String destination = "MADRID";
         String dateOut = "2025-12-01";
         String dateReturn = null;
-        int adults = 1;
+        String adults = "1";
 
         NullPointerException exception = new NullPointerException("Null value");
         when(searchTrainsUseCase.searchTrains(eq(origin), eq(destination), eq(dateOut), eq(dateReturn), eq(adults)))
@@ -158,7 +158,7 @@ class TrainResourceTest {
         String destination = "MADRID";
         String dateOut = "2025-12-01";
         String dateReturn = null;
-        int adults = 8; // Maximum
+        String adults = "8"; // Maximum
 
         TrainsResponse trainsResponse = createMockTrainsResponse();
         when(searchTrainsUseCase.searchTrains(origin, destination, dateOut, dateReturn, adults))
@@ -171,7 +171,7 @@ class TrainResourceTest {
         assertNotNull(response);
         assertEquals(Response.Status.OK.getStatusCode(), response.getStatus());
         verify(searchTrainsUseCase, times(1))
-                .searchTrains(origin, destination, dateOut, dateReturn, 8);
+                .searchTrains(origin, destination, dateOut, dateReturn, "8");
     }
 
     @Test
@@ -236,7 +236,7 @@ class TrainResourceTest {
         response.setDestination("MADRID");
         response.setDateOut("2025-12-01");
         response.setDateReturn("2025-12-05");
-        response.setAdults(2);
+        response.setAdults("2");
 
         Train train = new Train();
         train.setTrainId("TRAIN123");

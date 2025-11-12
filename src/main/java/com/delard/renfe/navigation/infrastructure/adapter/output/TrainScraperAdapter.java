@@ -26,8 +26,8 @@ public class TrainScraperAdapter implements TrainScraperPort {
     public List<List<Train>> scrapeTrains(String origin, String destination,
                                           String originDesgEstacion, String destinationDesgEstacion,
                                           String originClave, String destinationClave,
-                                          String dateOut, String dateReturn, int adults) {
-        LOG.debugf("Scraping trains: %s -> %s, dateOut: %s, dateReturn: %s, adults: %d",
+                                          String dateOut, String dateReturn, String adults) {
+        LOG.debugf("Scraping trains: %s -> %s, dateOut: %s, dateReturn: %s, adults: %s",
                 origin, destination, dateOut, dateReturn, adults);
 
         try {

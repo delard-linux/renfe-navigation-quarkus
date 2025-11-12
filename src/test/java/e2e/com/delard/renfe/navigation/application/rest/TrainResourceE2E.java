@@ -39,7 +39,7 @@ public class TrainResourceE2E {
             .body("origin", is("OURENSE"))
             .body("destination", is("MADRID"))
             .body("date_out", is("2025-12-01"))
-            .body("adults", is(1))
+            .body("adults", is("1"))
             .body("trains_out", notNullValue());
     }
 
@@ -62,7 +62,7 @@ public class TrainResourceE2E {
             .body("origin", is("BARCELONA"))
             .body("destination", is("VALENCIA"))
             .body("date_return", is("2025-12-20"))
-            .body("adults", is(2));
+            .body("adults", is("2"));
     }
 
     /**

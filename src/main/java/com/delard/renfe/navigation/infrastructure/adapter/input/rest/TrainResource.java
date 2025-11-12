@@ -7,10 +7,7 @@ import com.delard.renfe.navigation.infrastructure.adapter.input.rest.dto.TrainsR
 import com.delard.renfe.navigation.infrastructure.adapter.input.rest.mapper.TrainMapper;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
-import jakarta.validation.constraints.Max;
-import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Pattern;
 import jakarta.ws.rs.*;
 import jakarta.ws.rs.core.MediaType;
@@ -65,13 +62,11 @@ public class TrainResource {
 
             @Parameter(description = "Number of adult passengers (required, must be greater than 0, max 8)", required = true)
             @QueryParam("adults")
-            @NotNull(message = "Adults is required")
-            @Min(value = 1, message = "Adults must be greater than 0")
-            @Max(value = 8, message = "Adults must be at most 8")
-            Integer adults) {
+            @NotBlank(message = "Adults is required")
+            String adults) {
 
         try {
-            LOG.infof("REST Request - GET /trains: %s -> %s, dateOut: %s, dateReturn: %s, adults: %d",
+            LOG.infof("REST Request - GET /trains: %s -> %s, dateOut: %s, dateReturn: %s, adults: %s",
                     origin, destination, dateOut, dateReturn, adults);
 
             TrainsResponse result = searchTrainsUseCase.searchTrains(

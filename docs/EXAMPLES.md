@@ -41,7 +41,7 @@ curl -s "http://localhost:8999/trains?origin=OURENSE&destination=MADRID+%28TODAS
   "destination": "MADRID",
   "date_out": "2025-12-15",
   "date_return": null,
-  "adults": 1,
+  "adults": "1",
   "trains_out": [
     {
       "train_id": "12345",

@@ -43,7 +43,7 @@ class TrainMapperTest {
         assertEquals("MADRID", dto.getDestination());
         assertEquals("2025-12-01", dto.getDateOut());
         assertEquals("2025-12-05", dto.getDateReturn());
-        assertEquals(2, dto.getAdults());
+        assertEquals("2", dto.getAdults());
         assertNotNull(dto.getTrainsOut());
         assertEquals(2, dto.getTrainsOut().size());
         assertNotNull(dto.getTrainsReturn());
@@ -56,7 +56,7 @@ class TrainMapperTest {
         domain.setOrigin("OURENSE");
         domain.setDestination("MADRID");
         domain.setDateOut("2025-12-01");
-        domain.setAdults(1);
+        domain.setAdults("1");
         domain.setTrainsOut(null);
         domain.setTrainsReturn(null);
 
@@ -75,7 +75,7 @@ class TrainMapperTest {
         domain.setOrigin("OURENSE");
         domain.setDestination("MADRID");
         domain.setDateOut("2025-12-01");
-        domain.setAdults(1);
+        domain.setAdults("1");
         domain.setTrainsOut(Collections.emptyList());
         domain.setTrainsReturn(Collections.emptyList());
 
@@ -94,7 +94,7 @@ class TrainMapperTest {
         domain.setOrigin("OURENSE");
         domain.setDestination("MADRID");
         domain.setDateOut("2025-12-01");
-        domain.setAdults(1);
+        domain.setAdults("1");
         domain.setTrainsOut(Arrays.asList(train));
         domain.setTrainsReturn(null);
 
@@ -125,7 +125,7 @@ class TrainMapperTest {
         domain.setOrigin("OURENSE");
         domain.setDestination("MADRID");
         domain.setDateOut("2025-12-01");
-        domain.setAdults(1);
+        domain.setAdults("1");
         domain.setTrainsOut(Arrays.asList(train1, train2));
         domain.setTrainsReturn(null);
 
@@ -144,7 +144,7 @@ class TrainMapperTest {
         domain.setOrigin("OURENSE");
         domain.setDestination("MADRID");
         domain.setDateOut("2025-12-01");
-        domain.setAdults(1);
+        domain.setAdults("1");
         domain.setTrainsOut(Arrays.asList(train));
         domain.setTrainsReturn(null);
 
@@ -163,7 +163,7 @@ class TrainMapperTest {
         domain.setOrigin("OURENSE");
         domain.setDestination("MADRID");
         domain.setDateOut("2025-12-01");
-        domain.setAdults(1);
+        domain.setAdults("1");
         domain.setTrainsOut(Arrays.asList(train));
         domain.setTrainsReturn(null);
 
@@ -198,7 +198,7 @@ class TrainMapperTest {
         domain.setOrigin("OURENSE");
         domain.setDestination("MADRID");
         domain.setDateOut("2025-12-01");
-        domain.setAdults(1);
+        domain.setAdults("1");
         domain.setTrainsOut(Arrays.asList(train));
         domain.setTrainsReturn(null);
 
@@ -234,7 +234,7 @@ class TrainMapperTest {
         domain.setOrigin("OURENSE");
         domain.setDestination("MADRID");
         domain.setDateOut("2025-12-01");
-        domain.setAdults(1);
+        domain.setAdults("1");
         domain.setTrainsOut(Arrays.asList(train));
         domain.setTrainsReturn(null);
 
@@ -252,14 +252,14 @@ class TrainMapperTest {
         domain.setOrigin("A");
         domain.setDestination("B");
         domain.setDateOut("2025-01-01");
-        domain.setAdults(1);
+        domain.setAdults("1");
 
         TrainsResponseDTO dto = TrainMapper.toDTO(domain);
         assertNotNull(dto);
         assertEquals("A", dto.getOrigin());
         assertEquals("B", dto.getDestination());
         assertEquals("2025-01-01", dto.getDateOut());
-        assertEquals(1, dto.getAdults());
+        assertEquals("1", dto.getAdults());
     }
 
     private TrainsResponse createCompleteTrainsResponse() {
@@ -285,7 +285,7 @@ class TrainMapperTest {
         response.setDestination("MADRID");
         response.setDateOut("2025-12-01");
         response.setDateReturn("2025-12-05");
-        response.setAdults(2);
+        response.setAdults("2");
         response.setTrainsOut(Arrays.asList(train1, train2));
         response.setTrainsReturn(Arrays.asList(returnTrain));
 

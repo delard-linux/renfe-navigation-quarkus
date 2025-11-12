@@ -11,7 +11,7 @@ public class TrainsResponse {
     private String destination;
     private String dateOut;
     private String dateReturn;
-    private int adults;
+    private String adults;
     private List<Train> trainsOut;
     private List<Train> trainsReturn;
 
@@ -19,7 +19,7 @@ public class TrainsResponse {
     }
 
     public TrainsResponse(String origin, String destination, String dateOut, String dateReturn,
-                          int adults, List<Train> trainsOut, List<Train> trainsReturn) {
+                          String adults, List<Train> trainsOut, List<Train> trainsReturn) {
         this.origin = origin;
         this.destination = destination;
         this.dateOut = dateOut;
@@ -62,11 +62,11 @@ public class TrainsResponse {
         this.dateReturn = dateReturn;
     }
 
-    public int getAdults() {
+    public String getAdults() {
         return adults;
     }
 
-    public void setAdults(int adults) {
+    public void setAdults(String adults) {
         this.adults = adults;
     }
 

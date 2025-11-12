@@ -40,7 +40,7 @@ public class SearchTrainsService implements SearchTrainsUseCase {
 
     @Override
     public TrainsResponse searchTrains(String origin, String destination, String dateOut,
-                                       String dateReturn, int adults) {
+                                       String dateReturn, String adults) {
         Instant startTime = Instant.now();
 
         // Validate required parameters
@@ -61,7 +61,7 @@ public class SearchTrainsService implements SearchTrainsUseCase {
         String originClave = stationValidation.getOriginClave();
         String destinationClave = stationValidation.getDestinationClave();
 
-        LOG.debugf("[REQUEST] Starting search: %s -> %s, Outbound: %s, Return: %s, Passengers: %d",
+        LOG.debugf("[REQUEST] Starting search: %s -> %s, Outbound: %s, Return: %s, Passengers: %s",
                 realOrigin, realDestination, formattedDateOut, formattedDateReturn, adults);
 
         try {
@@ -138,10 +138,10 @@ public class SearchTrainsService implements SearchTrainsUseCase {
      * @param origin      Station origin (required)
      * @param destination Station destination (required)
      * @param dateOut     Outbound date (required)
-     * @param adults      Number of adult passengers (required, must be > 0)
+     * @param adults      Number of adult passengers (required, must be > 0) as string
      * @throws ValidationException if validation fails
      */
-    private void validateRequiredFields(String origin, String destination, String dateOut, int adults) {
+    private void validateRequiredFields(String origin, String destination, String dateOut, String adults) {
         if (origin == null || origin.isBlank()) {
             throw new ValidationException("Origin is required");
         }
@@ -154,8 +154,20 @@ public class SearchTrainsService implements SearchTrainsUseCase {
             throw new ValidationException("Date out is required");
         }
 
-        if (adults <= 0) {
-            throw new ValidationException("Adults must be greater than 0");
+        if (adults == null || adults.isBlank()) {
+            throw new ValidationException("Adults is required");
+        }
+
+        try {
+            int adultsInt = Integer.parseInt(adults.trim());
+            if (adultsInt <= 0) {
+                throw new ValidationException("Adults must be greater than 0");
+            }
+            if (adultsInt > 8) {
+                throw new ValidationException("Adults must be at most 8");
+            }
+        } catch (NumberFormatException e) {
+            throw new ValidationException("Adults must be a valid number");
         }
     }
 

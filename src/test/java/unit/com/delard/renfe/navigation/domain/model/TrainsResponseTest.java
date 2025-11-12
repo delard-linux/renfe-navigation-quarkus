@@ -24,7 +24,7 @@ class TrainsResponseTest {
         assertNull(response.getDestination());
         assertNull(response.getDateOut());
         assertNull(response.getDateReturn());
-        assertEquals(0, response.getAdults());
+        assertNull(response.getAdults());
         assertNull(response.getTrainsOut());
         assertNull(response.getTrainsReturn());
     }
@@ -36,7 +36,7 @@ class TrainsResponseTest {
         String destination = "MADRID";
         String dateOut = "2025-12-01";
         String dateReturn = "2025-12-05";
-        int adults = 2;
+        String adults = "2";
         Train train1 = new Train("TRAIN123", "AVE", "08:00", "12:30", "4h 30m", 45.50);
         Train train2 = new Train("TRAIN456", "ALVIA", "10:00", "15:30", "5h 30m", 67.80);
         List<Train> trainsOut = Arrays.asList(train1, train2);
@@ -64,7 +64,7 @@ class TrainsResponseTest {
         String destination = "MADRID";
         String dateOut = "2025-12-01";
         String dateReturn = null;
-        int adults = 1;
+        String adults = "1";
         List<Train> trainsOut = null;
         List<Train> trainsReturn = null;
 
@@ -89,7 +89,7 @@ class TrainsResponseTest {
         String destination = "VALENCIA";
         String dateOut = "2025-12-10";
         String dateReturn = "2025-12-15";
-        int adults = 3;
+        String adults = "3";
 
         // Act
         response.setOrigin(origin);
@@ -238,10 +238,10 @@ class TrainsResponseTest {
         TrainsResponse response = new TrainsResponse();
 
         // Act
-        response.setAdults(0);
+        response.setAdults("0");
 
         // Assert
-        assertEquals(0, response.getAdults());
+        assertEquals("0", response.getAdults());
     }
 
     @Test
@@ -250,10 +250,10 @@ class TrainsResponseTest {
         TrainsResponse response = new TrainsResponse();
 
         // Act
-        response.setAdults(-1);
+        response.setAdults("-1");
 
         // Assert
-        assertEquals(-1, response.getAdults());
+        assertEquals("-1", response.getAdults());
     }
 
     @Test
