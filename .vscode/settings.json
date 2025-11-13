@@ -30,5 +30,13 @@
     "search.exclude": {},
 
     // --- Opcional: mejora rendimiento del test runner ---
-    "java.test.editor.enableShortcuts": true
+    "java.test.editor.enableShortcuts": true,
+
+    "mcpServers": {
+      "renfe-navigation": {
+        "url": "http://localhost:8999/mcp",
+        "transport": "http",
+        "description": "Renfe Navigation MCP Server - Search for train schedules and fares"
+      }
+    }
 }
