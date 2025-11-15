@@ -20,7 +20,7 @@
 - test integrado ida funcionando
 - test de servicio trenes de playwright con ida y vuelta y que cuente mas de un tren en la respuesta
 - falla con busquedas de ida y vuelta
-- Los EXAMPLES.md fallan por timeout ahora
+- Los ejemplos de INTEGRATION_EXAMPLES.md fallan por timeout ahora
 - Aceptar las cookies en el resultado de los trenes
 - Permitir la configuración de headless y slow-mo por parametros maven
 - Numero de adultos tiene que ser string

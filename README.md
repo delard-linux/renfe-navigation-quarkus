@@ -4,13 +4,16 @@ REST API microservice built with Quarkus to search Renfe trains, following Hexag
 
 Helpful links:
 - Architecture details: [docs/ARCHITECTURE.md](./docs/ARCHITECTURE.md)
-- API usage examples: [docs/EXAMPLES.md](./docs/EXAMPLES.md)
+- Integration examples (REST & MCP): [docs/INTEGRATION_EXAMPLES.md](./docs/INTEGRATION_EXAMPLES.md)
 - Testing and debugging: [docs/TEST.md](./docs/TEST.md)
 - Backlog / next steps: [docs/BACKLOG.md](./docs/BACKLOG.md)
 - MCP Server setup for Cursor: [docs/MCP_SETUP.md](./docs/MCP_SETUP.md)
 
 ## Architecture
-See [docs/ARCHITECTURE.md](./docs/ARCHITECTURE.md) for the layer diagram, data flow, and principles.
+
+This project follows **Hexagonal Architecture (Ports & Adapters)** pattern.
+
+- **Architecture overview**: [docs/ARCHITECTURE.md](./docs/ARCHITECTURE.md) - Layer diagram, data flow, and principles
 
 ## Features
 

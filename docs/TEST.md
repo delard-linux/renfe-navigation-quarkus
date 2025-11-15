@@ -205,7 +205,50 @@ Run tests and verify coverage meets minimum thresholds:
 
 ## Debugging Tests
 
-### Debug Integration Tests from VS Code
+### Method 1: Debug with Quarkus Test Mode (Recommended)
+
+Quarkus provides a continuous testing mode that allows you to debug tests with the Quarkus context running. This is the most convenient method for debugging integration tests.
+
+#### Debug a Specific Integration Test
+
+Run a specific integration test in debug mode:
+
+```bash
+./mvnw quarkus:test -Dit.test=PlaywrightSearchTrainsServiceIT -Ddebug
+```
+
+Maven will print:
+```
+Listening for transport dt_socket at address: 5005
+```
+
+Then attach your IDE debugger to port 5005.
+
+#### Debug from IDE after Starting Server
+
+You can also start the Quarkus test server in debug mode and then run tests from your IDE:
+
+1. **Start Quarkus test server in debug mode**:
+
+```bash
+./mvnw quarkus:test
+```
+
+Maven will print:
+```
+Listening for transport dt_socket at address: 5005
+```
+
+2. **Attach debugger to port 5005** (using your IDE's attach configuration)
+
+3. **Run the test from your IDE** (right-click on test class/method and select "Run" or "Debug")
+
+This approach allows you to:
+- Keep the Quarkus context running between test executions
+- Run tests directly from your IDE while debugging
+- Avoid restarting the Quarkus context for each test run
+
+### Method 2: Debug Integration Tests from VS Code
 
 1. **Using VS Code Task**:
    - Run task: `maven: debug QuarkusTest (Surefire)`
@@ -214,9 +257,9 @@ Run tests and verify coverage meets minimum thresholds:
 2. **Attach Debugger**:
    - Use launch config: `Attach to Quarkus Test Debugger` (port 5005)
 
-### Debug from Terminal
+### Method 3: Debug from Terminal with Surefire
 
-Run a specific test in debug mode:
+Run a specific test in debug mode using Surefire:
 
 ```bash
 ./mvnw surefire:test -Dtest=PlaywrightSearchTrainsServiceIT -Dmaven.surefire.debug
@@ -227,13 +270,17 @@ Maven will print:
 Listening for transport dt_socket at address: 5005
 ```
 
-Then attach VS Code debugger using the launch config "Attach to Quarkus Test Debugger" (port 5005).
+Then attach your IDE debugger using the launch config "Attach to Quarkus Test Debugger" (port 5005).
 
 ### Debug a Specific Test Method
 
 Debug a single test method:
 
 ```bash
+# Using Quarkus test mode
+./mvnw quarkus:test -Dit.test=StationTest#testStationEquals -Ddebug
+
+# Or using Surefire
 ./mvnw surefire:test -Dtest=StationTest#testStationEquals -Dmaven.surefire.debug
 ```
 
@@ -374,11 +421,12 @@ Generate coverage report:
 ## Tips and Best Practices
 
 1. **Run unit tests frequently** - They're fast and provide quick feedback
-2. **Use integration tests for debugging** - They allow IDE debugging with `@QuarkusTest`
-3. **Override Playwright config via `-D` flags** - Use `-Dplaywright.headless=false -Dplaywright.slow-mo=4000` for local debugging without modifying properties files
-4. **Configure Playwright in properties** - Set default values in `application-integration.properties` for CI/CD
-5. **Check coverage regularly** - Ensure tests cover critical code paths
-6. **Use specific test runs** - Run only what you need during development
+2. **Use `quarkus:test` mode for debugging** - Start with `./mvnw quarkus:test` and run tests from your IDE while attached to the debugger (port 5005)
+3. **Use integration tests for debugging** - They allow IDE debugging with `@QuarkusTest`
+4. **Override Playwright config via `-D` flags** - Use `-Dplaywright.headless=false -Dplaywright.slow-mo=4000` for local debugging without modifying properties files
+5. **Configure Playwright in properties** - Set default values in `application-integration.properties` for CI/CD
+6. **Check coverage regularly** - Ensure tests cover critical code paths
+7. **Use specific test runs** - Run only what you need during development
 
 ## Troubleshooting
 
