@@ -39,15 +39,15 @@ class TrainMapperTest {
         TrainsResponseDTO dto = TrainMapper.toDTO(domain);
 
         assertNotNull(dto);
-        assertEquals("OURENSE", dto.getOrigin());
-        assertEquals("MADRID", dto.getDestination());
-        assertEquals("2025-12-01", dto.getDateOut());
-        assertEquals("2025-12-05", dto.getDateReturn());
-        assertEquals("2", dto.getAdults());
-        assertNotNull(dto.getTrainsOut());
-        assertEquals(2, dto.getTrainsOut().size());
-        assertNotNull(dto.getTrainsReturn());
-        assertEquals(1, dto.getTrainsReturn().size());
+        assertEquals("OURENSE", dto.origin());
+        assertEquals("MADRID", dto.destination());
+        assertEquals("2025-12-01", dto.dateOut());
+        assertEquals("2025-12-05", dto.dateReturn());
+        assertEquals("2", dto.adults());
+        assertNotNull(dto.trainsOut());
+        assertEquals(2, dto.trainsOut().size());
+        assertNotNull(dto.trainsReturn());
+        assertEquals(1, dto.trainsReturn().size());
     }
 
     @Test
@@ -62,11 +62,11 @@ class TrainMapperTest {
 
         TrainsResponseDTO dto = TrainMapper.toDTO(domain);
         assertNotNull(dto);
-        // getTrainsOut() returns empty list when null, not null itself
-        assertNotNull(dto.getTrainsOut());
-        assertTrue(dto.getTrainsOut().isEmpty());
-        // getTrainsReturn() returns null when null
-        assertNull(dto.getTrainsReturn());
+        // trainsOut() returns empty list when null, not null itself
+        assertNotNull(dto.trainsOut());
+        assertTrue(dto.trainsOut().isEmpty());
+        // trainsReturn() returns null when null
+        assertNull(dto.trainsReturn());
     }
 
     @Test
@@ -81,10 +81,10 @@ class TrainMapperTest {
 
         TrainsResponseDTO dto = TrainMapper.toDTO(domain);
         assertNotNull(dto);
-        assertNotNull(dto.getTrainsOut());
-        assertTrue(dto.getTrainsOut().isEmpty());
-        assertNotNull(dto.getTrainsReturn());
-        assertTrue(dto.getTrainsReturn().isEmpty());
+        assertNotNull(dto.trainsOut());
+        assertTrue(dto.trainsOut().isEmpty());
+        assertNotNull(dto.trainsReturn());
+        assertTrue(dto.trainsReturn().isEmpty());
     }
 
     @Test
@@ -100,21 +100,21 @@ class TrainMapperTest {
 
         TrainsResponseDTO dto = TrainMapper.toDTO(domain);
         assertNotNull(dto);
-        assertEquals(1, dto.getTrainsOut().size());
+        assertEquals(1, dto.trainsOut().size());
 
-        TrainDTO trainDTO = dto.getTrainsOut().get(0);
-        assertEquals("TRAIN123", trainDTO.getTrainId());
-        assertEquals("AVE", trainDTO.getServiceType());
-        assertEquals("08:00", trainDTO.getDepartureTime());
-        assertEquals("12:30", trainDTO.getArrivalTime());
-        assertEquals("4h 30m", trainDTO.getDuration());
-        assertEquals(45.50, trainDTO.getPriceFrom(), 0.01);
-        assertEquals("EUR", trainDTO.getCurrency());
-        assertTrue(trainDTO.isAccessible());
-        assertTrue(trainDTO.isEcoFriendly());
-        assertEquals(2, trainDTO.getBadges().size());
-        assertTrue(trainDTO.getBadges().contains("WIFI"));
-        assertTrue(trainDTO.getBadges().contains("POWER"));
+        TrainDTO trainDTO = dto.trainsOut().get(0);
+        assertEquals("TRAIN123", trainDTO.trainId());
+        assertEquals("AVE", trainDTO.serviceType());
+        assertEquals("08:00", trainDTO.departureTime());
+        assertEquals("12:30", trainDTO.arrivalTime());
+        assertEquals("4h 30m", trainDTO.duration());
+        assertEquals(45.50, trainDTO.priceFrom(), 0.01);
+        assertEquals("EUR", trainDTO.currency());
+        assertTrue(trainDTO.accessible());
+        assertTrue(trainDTO.ecoFriendly());
+        assertEquals(2, trainDTO.badges().size());
+        assertTrue(trainDTO.badges().contains("WIFI"));
+        assertTrue(trainDTO.badges().contains("POWER"));
     }
 
     @Test
@@ -131,9 +131,9 @@ class TrainMapperTest {
 
         TrainsResponseDTO dto = TrainMapper.toDTO(domain);
         assertNotNull(dto);
-        assertEquals(2, dto.getTrainsOut().size());
-        assertNotNull(dto.getTrainsOut().get(0));
-        assertNull(dto.getTrainsOut().get(1));
+        assertEquals(2, dto.trainsOut().size());
+        assertNotNull(dto.trainsOut().get(0));
+        assertNull(dto.trainsOut().get(1));
     }
 
     @Test
@@ -150,9 +150,9 @@ class TrainMapperTest {
 
         TrainsResponseDTO dto = TrainMapper.toDTO(domain);
         assertNotNull(dto);
-        TrainDTO trainDTO = dto.getTrainsOut().get(0);
-        assertNotNull(trainDTO.getFares());
-        assertTrue(trainDTO.getFares().isEmpty());
+        TrainDTO trainDTO = dto.trainsOut().get(0);
+        assertNotNull(trainDTO.fares());
+        assertTrue(trainDTO.fares().isEmpty());
     }
 
     @Test
@@ -169,9 +169,9 @@ class TrainMapperTest {
 
         TrainsResponseDTO dto = TrainMapper.toDTO(domain);
         assertNotNull(dto);
-        TrainDTO trainDTO = dto.getTrainsOut().get(0);
-        assertNotNull(trainDTO.getFares());
-        assertTrue(trainDTO.getFares().isEmpty());
+        TrainDTO trainDTO = dto.trainsOut().get(0);
+        assertNotNull(trainDTO.fares());
+        assertTrue(trainDTO.fares().isEmpty());
     }
 
     @Test
@@ -204,21 +204,21 @@ class TrainMapperTest {
 
         TrainsResponseDTO dto = TrainMapper.toDTO(domain);
         assertNotNull(dto);
-        TrainDTO trainDTO = dto.getTrainsOut().get(0);
-        assertEquals(2, trainDTO.getFares().size());
+        TrainDTO trainDTO = dto.trainsOut().get(0);
+        assertEquals(2, trainDTO.fares().size());
 
-        FareOptionDTO fareDTO1 = trainDTO.getFares().get(0);
-        assertEquals("Basic", fareDTO1.getName());
-        assertEquals(45.50, fareDTO1.getPrice(), 0.01);
-        assertEquals("EUR", fareDTO1.getCurrency());
-        assertEquals("BASIC", fareDTO1.getCode());
-        assertEquals("https://example.com/basic", fareDTO1.getTpEnlace());
-        assertEquals(1, fareDTO1.getFeatures().size());
+        FareOptionDTO fareDTO1 = trainDTO.fares().get(0);
+        assertEquals("Basic", fareDTO1.name());
+        assertEquals(45.50, fareDTO1.price(), 0.01);
+        assertEquals("EUR", fareDTO1.currency());
+        assertEquals("BASIC", fareDTO1.code());
+        assertEquals("https://example.com/basic", fareDTO1.tpEnlace());
+        assertEquals(1, fareDTO1.features().size());
 
-        FareOptionDTO fareDTO2 = trainDTO.getFares().get(1);
-        assertEquals("Premium", fareDTO2.getName());
-        assertEquals(89.90, fareDTO2.getPrice(), 0.01);
-        assertEquals(2, fareDTO2.getFeatures().size());
+        FareOptionDTO fareDTO2 = trainDTO.fares().get(1);
+        assertEquals("Premium", fareDTO2.name());
+        assertEquals(89.90, fareDTO2.price(), 0.01);
+        assertEquals(2, fareDTO2.features().size());
     }
 
     @Test
@@ -240,10 +240,10 @@ class TrainMapperTest {
 
         TrainsResponseDTO dto = TrainMapper.toDTO(domain);
         assertNotNull(dto);
-        TrainDTO trainDTO = dto.getTrainsOut().get(0);
-        assertEquals(2, trainDTO.getFares().size());
-        assertNotNull(trainDTO.getFares().get(0));
-        assertNull(trainDTO.getFares().get(1));
+        TrainDTO trainDTO = dto.trainsOut().get(0);
+        assertEquals(2, trainDTO.fares().size());
+        assertNotNull(trainDTO.fares().get(0));
+        assertNull(trainDTO.fares().get(1));
     }
 
     @Test
@@ -256,10 +256,10 @@ class TrainMapperTest {
 
         TrainsResponseDTO dto = TrainMapper.toDTO(domain);
         assertNotNull(dto);
-        assertEquals("A", dto.getOrigin());
-        assertEquals("B", dto.getDestination());
-        assertEquals("2025-01-01", dto.getDateOut());
-        assertEquals("1", dto.getAdults());
+        assertEquals("A", dto.origin());
+        assertEquals("B", dto.destination());
+        assertEquals("2025-01-01", dto.dateOut());
+        assertEquals("1", dto.adults());
     }
 
     private TrainsResponse createCompleteTrainsResponse() {

@@ -25,16 +25,15 @@ public final class TrainMapper {
             return null;
         }
 
-        TrainsResponseDTO dto = new TrainsResponseDTO();
-        dto.setOrigin(domain.getOrigin());
-        dto.setDestination(domain.getDestination());
-        dto.setDateOut(domain.getDateOut());
-        dto.setDateReturn(domain.getDateReturn());
-        dto.setAdults(domain.getAdults());
-        dto.setTrainsOut(toTrainDTOList(domain.getTrainsOut()));
-        dto.setTrainsReturn(toTrainDTOList(domain.getTrainsReturn()));
-
-        return dto;
+        return new TrainsResponseDTO(
+            domain.getOrigin(),
+            domain.getDestination(),
+            domain.getDateOut(),
+            domain.getDateReturn(),
+            domain.getAdults(),
+            toTrainDTOList(domain.getTrainsOut()),
+            toTrainDTOList(domain.getTrainsReturn())
+        );
     }
 
     private static List<TrainDTO> toTrainDTOList(List<Train> trains) {
@@ -51,20 +50,19 @@ public final class TrainMapper {
             return null;
         }
 
-        TrainDTO dto = new TrainDTO();
-        dto.setTrainId(train.getTrainId());
-        dto.setServiceType(train.getServiceType());
-        dto.setDepartureTime(train.getDepartureTime());
-        dto.setArrivalTime(train.getArrivalTime());
-        dto.setDuration(train.getDuration());
-        dto.setPriceFrom(train.getPriceFrom());
-        dto.setCurrency(train.getCurrency());
-        dto.setFares(toFareOptionDTOList(train.getFares()));
-        dto.setBadges(new ArrayList<>(train.getBadges()));
-        dto.setAccessible(train.isAccessible());
-        dto.setEcoFriendly(train.isEcoFriendly());
-
-        return dto;
+        return new TrainDTO(
+            train.getTrainId(),
+            train.getServiceType(),
+            train.getDepartureTime(),
+            train.getArrivalTime(),
+            train.getDuration(),
+            train.getPriceFrom(),
+            train.getCurrency(),
+            toFareOptionDTOList(train.getFares()),
+            new ArrayList<>(train.getBadges()),
+            train.isAccessible(),
+            train.isEcoFriendly()
+        );
     }
 
     private static List<FareOptionDTO> toFareOptionDTOList(List<FareOption> fares) {
@@ -81,16 +79,15 @@ public final class TrainMapper {
             return null;
         }
 
-        FareOptionDTO dto = new FareOptionDTO();
-        dto.setName(fare.getName());
-        dto.setPrice(fare.getPrice());
-        dto.setCurrency(fare.getCurrency());
-        dto.setCode(fare.getCode());
-        dto.setTpEnlace(fare.getTpEnlace());
-        dto.setPlan(fare.getPlan());
-        dto.setFeatures(fare.getFeatures());
-
-        return dto;
+        return new FareOptionDTO(
+            fare.getName(),
+            fare.getPrice(),
+            fare.getCurrency(),
+            fare.getCode(),
+            fare.getTpEnlace(),
+            fare.getPlan(),
+            fare.getFeatures()
+        );
     }
 }
 

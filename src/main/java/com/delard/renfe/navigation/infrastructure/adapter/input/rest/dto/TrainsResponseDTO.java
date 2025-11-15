@@ -8,83 +8,29 @@ import java.util.List;
 /**
  * DTO for Trains Response
  */
-public class TrainsResponseDTO {
-
-    private String origin;
-    private String destination;
-
-    @JsonProperty("date_out")
-    private String dateOut;
-
-    @JsonProperty("date_return")
-    private String dateReturn;
-
-    private String adults;
-
-    @JsonProperty("trains_out")
-    private List<TrainDTO> trainsOut;
-
-    @JsonProperty("trains_return")
-    private List<TrainDTO> trainsReturn;
-
-    public TrainsResponseDTO() {
+public record TrainsResponseDTO(
+    String origin,
+    String destination,
+    @JsonProperty("date_out") String dateOut,
+    @JsonProperty("date_return") String dateReturn,
+    String adults,
+    @JsonProperty("trains_out") List<TrainDTO> trainsOut,
+    @JsonProperty("trains_return") List<TrainDTO> trainsReturn
+) {
+    /**
+     * Compact constructor for defensive copying
+     */
+    public TrainsResponseDTO {
+        // Defensive copy of trainsOut list
+        if (trainsOut == null) {
+            trainsOut = Collections.emptyList();
+        } else {
+            trainsOut = new ArrayList<>(trainsOut);
+        }
+        // Defensive copy of trainsReturn list (can be null)
+        if (trainsReturn != null) {
+            trainsReturn = new ArrayList<>(trainsReturn);
+        }
     }
 
-    // Getters and Setters
-    public String getOrigin() {
-        return origin;
-    }
-
-    public void setOrigin(String origin) {
-        this.origin = origin;
-    }
-
-    public String getDestination() {
-        return destination;
-    }
-
-    public void setDestination(String destination) {
-        this.destination = destination;
-    }
-
-    public String getDateOut() {
-        return dateOut;
-    }
-
-    public void setDateOut(String dateOut) {
-        this.dateOut = dateOut;
-    }
-
-    public String getDateReturn() {
-        return dateReturn;
-    }
-
-    public void setDateReturn(String dateReturn) {
-        this.dateReturn = dateReturn;
-    }
-
-    public String getAdults() {
-        return adults;
-    }
-
-    public void setAdults(String adults) {
-        this.adults = adults;
-    }
-
-    public List<TrainDTO> getTrainsOut() {
-        return trainsOut != null ? new ArrayList<>(trainsOut) : Collections.emptyList();
-    }
-
-    public void setTrainsOut(List<TrainDTO> trainsOut) {
-        this.trainsOut = trainsOut != null ? new ArrayList<>(trainsOut) : null;
-    }
-
-    public List<TrainDTO> getTrainsReturn() {
-        return trainsReturn != null ? new ArrayList<>(trainsReturn) : null;
-    }
-
-    public void setTrainsReturn(List<TrainDTO> trainsReturn) {
-        this.trainsReturn = trainsReturn != null ? new ArrayList<>(trainsReturn) : null;
-    }
 }
-
