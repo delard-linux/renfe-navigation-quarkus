@@ -27,6 +27,7 @@
 - MCP endpoint instead REST
 - Meter los endpoints REST y MCP de las estaciones
 - Incluir la gestión del error de la Queue en la compra del billete
+- MEjora cobertura, tests, y limpieza de warnings de construcion y tests con maven
 
 ## Current pending
 
