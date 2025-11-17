@@ -26,7 +26,7 @@
         <build-helper-maven-plugin.version>3.5.0</build-helper-maven-plugin.version>
         <jacoco-maven-plugin.version>0.8.14</jacoco-maven-plugin.version>
         <maven-toolchains-plugin.version>3.0.0</maven-toolchains-plugin.version>
-        <maven-project-info-reports-plugin.version>3.9.0</maven-project-info-reports-plugin.version>
+        <maven-project-info-reports-plugin.version>3.4.5</maven-project-info-reports-plugin.version>
         <playwright.version>1.56.0</playwright.version>
         <jsoup.version>1.18.1</jsoup.version>
     </properties>
