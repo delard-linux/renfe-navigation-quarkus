@@ -37,16 +37,33 @@ public class RenfeStationRepository implements StationRepository {
         List<Station> allStations = loadAllStations();
         String searchTextUpper = searchText.toUpperCase().trim();
         
-        List<Station> matchingStations = new ArrayList<>();
+        // Split search text into words
+        String[] words = searchTextUpper.split("\\s+");
         
-        for (Station station : allStations) {
-            if (matchesSearch(station, searchTextUpper)) {
-                matchingStations.add(station);
+        // If single word, use simple search
+        if (words.length == 1) {
+            List<Station> matchingStations = new ArrayList<>();
+            for (Station station : allStations) {
+                if (matchesSearch(station, searchTextUpper)) {
+                    matchingStations.add(station);
+                }
             }
+            LOG.debugf("Found %d stations matching '%s'", matchingStations.size(), searchText);
+            return matchingStations;
         }
         
-        LOG.debugf("Found %d stations matching '%s'", matchingStations.size(), searchText);
-        return matchingStations;
+        // Multiple words: try AND search first, then OR if no results
+        List<Station> andResults = searchStationsWithAnd(allStations, words);
+        
+        if (!andResults.isEmpty()) {
+            LOG.debugf("Found %d stations matching all words (AND) for '%s'", andResults.size(), searchText);
+            return andResults;
+        }
+        
+        // If no AND results, try OR search
+        List<Station> orResults = searchStationsWithOr(allStations, words);
+        LOG.debugf("Found %d stations matching any word (OR) for '%s'", orResults.size(), searchText);
+        return orResults;
     }
 
     /**
@@ -67,6 +84,108 @@ public class RenfeStationRepository implements StationRepository {
         
         if (stationNamePlano != null && stationNamePlano.toUpperCase().contains(searchTextUpper)) {
             return true;
+        }
+        
+        return false;
+    }
+
+    /**
+     * Search stations that contain ALL words (AND logic)
+     * A station matches if both stationName and stationNamePlano contain all words
+     *
+     * @param allStations All available stations
+     * @param words Array of search words (uppercase)
+     * @return List of stations matching all words
+     */
+    private List<Station> searchStationsWithAnd(List<Station> allStations, String[] words) {
+        List<Station> matchingStations = new ArrayList<>();
+        
+        for (Station station : allStations) {
+            if (matchesAllWords(station, words)) {
+                matchingStations.add(station);
+            }
+        }
+        
+        return matchingStations;
+    }
+
+    /**
+     * Search stations that contain ANY word (OR logic)
+     * A station matches if stationName or stationNamePlano contains at least one word
+     *
+     * @param allStations All available stations
+     * @param words Array of search words (uppercase)
+     * @return List of stations matching any word
+     */
+    private List<Station> searchStationsWithOr(List<Station> allStations, String[] words) {
+        List<Station> matchingStations = new ArrayList<>();
+        
+        for (Station station : allStations) {
+            if (matchesAnyWord(station, words)) {
+                matchingStations.add(station);
+            }
+        }
+        
+        return matchingStations;
+    }
+
+    /**
+     * Check if a station contains all the search words
+     * Checks both stationName and stationNamePlano fields
+     *
+     * @param station Station to check
+     * @param words Array of search words (uppercase)
+     * @return true if station contains all words
+     */
+    private boolean matchesAllWords(Station station, String[] words) {
+        String stationName = station.getStationName();
+        String stationNamePlano = station.getStationNamePlano();
+        
+        String stationText = "";
+        if (stationName != null) {
+            stationText = stationName.toUpperCase() + " ";
+        }
+        if (stationNamePlano != null) {
+            stationText += stationNamePlano.toUpperCase();
+        }
+        stationText = stationText.trim();
+        
+        // Check if all words are present in the combined station text
+        for (String word : words) {
+            if (!stationText.contains(word)) {
+                return false;
+            }
+        }
+        
+        return true;
+    }
+
+    /**
+     * Check if a station contains any of the search words
+     * Checks both stationName and stationNamePlano fields
+     *
+     * @param station Station to check
+     * @param words Array of search words (uppercase)
+     * @return true if station contains at least one word
+     */
+    private boolean matchesAnyWord(Station station, String[] words) {
+        String stationName = station.getStationName();
+        String stationNamePlano = station.getStationNamePlano();
+        
+        String stationText = "";
+        if (stationName != null) {
+            stationText = stationName.toUpperCase() + " ";
+        }
+        if (stationNamePlano != null) {
+            stationText += stationNamePlano.toUpperCase();
+        }
+        stationText = stationText.trim();
+        
+        // Check if any word is present in the combined station text
+        for (String word : words) {
+            if (stationText.contains(word)) {
+                return true;
+            }
         }
         
         return false;
