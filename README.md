@@ -4,17 +4,22 @@ REST API microservice built with Quarkus to search Renfe trains, following Hexag
 
 Helpful links:
 - Architecture details: [docs/ARCHITECTURE.md](./docs/ARCHITECTURE.md)
-- API usage examples: [docs/EXAMPLES.md](./docs/EXAMPLES.md)
+- Integration examples (REST & MCP): [docs/INTEGRATION_EXAMPLES.md](./docs/INTEGRATION_EXAMPLES.md)
 - Testing and debugging: [docs/TEST.md](./docs/TEST.md)
 - Backlog / next steps: [docs/BACKLOG.md](./docs/BACKLOG.md)
+- MCP Server setup for Cursor: [docs/MCP_SETUP.md](./docs/MCP_SETUP.md)
 
 ## Architecture
-See [docs/ARCHITECTURE.md](./docs/ARCHITECTURE.md) for the layer diagram, data flow, and principles.
+
+This project follows **Hexagonal Architecture (Ports & Adapters)** pattern.
+
+- **Architecture overview**: [docs/ARCHITECTURE.md](./docs/ARCHITECTURE.md) - Layer diagram, data flow, and principles
 
 ## Features
 
 - ✅ Hexagonal architecture (Ports & Adapters)
 - ✅ REST API with Quarkus RESTEasy Reactive
+- ✅ MCP Server for AI development tools (Cursor, Claude Desktop)
 - ✅ Integrated OpenAPI/Swagger documentation
 - ✅ Parameter validation with Bean Validation
 - ✅ Structured logging management
@@ -32,16 +37,18 @@ See [docs/ARCHITECTURE.md](./docs/ARCHITECTURE.md) for the layer diagram, data f
 ./mvnw quarkus:dev
 
 # 3. Access the application
-http://localhost:8000
+http://localhost:8999
 ```
 
 Playwright installation and all test instructions have moved to [docs/TEST.md](./docs/TEST.md).
 
 ## Endpoints
 
-### GET /trains
+The service provides two interfaces for searching trains:
 
-Searches for trains between two stations.
+### REST API: GET /trains
+
+Standard HTTP REST endpoint for searching trains between two stations. Suitable for web clients, mobile apps, and general HTTP clients.
 
 **Parameters:**
 - `origin` (required): Origin station (e.g., "OURENSE")
@@ -52,8 +59,18 @@ Searches for trains between two stations.
 
 **Example:**
 ```bash
-curl "http://localhost:8000/trains?origin=OURENSE&destination=MADRID&date_out=2025-11-15&adults=2"
+curl "http://localhost:8999/trains?origin=OURENSE&destination=MADRID&date_out=2025-11-15&adults=2"
 ```
+
+### MCP Server: /mcp
+
+Model Context Protocol (MCP) endpoint for AI-powered development tools like Cursor. Provides the same functionality through the `getTrains` tool.
+
+**Setup:** See [docs/MCP_SETUP.md](./docs/MCP_SETUP.md) for detailed configuration instructions.
+
+**Use cases:**
+- **REST**: Web applications, mobile apps, Postman, curl, general HTTP clients
+- **MCP**: Cursor IDE, Claude Desktop, and other AI development tools
 
 ## Requirements
 
@@ -122,9 +139,9 @@ JAVA_HOME=/usr/lib/jvm/java-21-openjdk
 ```
 
 The application will be available at:
-- API: http://localhost:8000
-- Swagger UI: http://localhost:8000/swagger-ui
-- OpenAPI spec: http://localhost:8000/openapi
+- API: http://localhost:8999
+- Swagger UI: http://localhost:8999/swagger-ui
+- OpenAPI spec: http://localhost:8999/openapi
 
 ### Compile and run
 
@@ -146,7 +163,7 @@ Configuration is located in `src/main/resources/application.properties`:
 
 ```properties
 # HTTP Port
-quarkus.http.port=8000
+quarkus.http.port=8999
 
 # Log level
 quarkus.log.level=INFO

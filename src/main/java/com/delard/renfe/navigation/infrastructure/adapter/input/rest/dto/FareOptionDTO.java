@@ -7,78 +7,36 @@ import java.util.List;
 /**
  * DTO for individual train fare
  */
-public class FareOptionDTO {
-
-    private String name;
-    private Double price;
-    private String currency = "EUR";
-    private String code;
-
-    @JsonProperty("tp_enlace")
-    private String tpEnlace;
-
-    private String plan;
-
-    private List<String> features = new ArrayList<>();
-
-    public FareOptionDTO() {
+public record FareOptionDTO(
+    String name,
+    Double price,
+    String currency,
+    String code,
+    @JsonProperty("tp_enlace") String tpEnlace,
+    String plan,
+    List<String> features
+) {
+    /**
+     * Compact constructor for default values and defensive copying
+     */
+    public FareOptionDTO {
+        // Default currency if null
+        if (currency == null) {
+            currency = "EUR";
+        }
+        // Defensive copy of features list
+        if (features == null) {
+            features = new ArrayList<>();
+        } else {
+            features = new ArrayList<>(features);
+        }
     }
 
-    // Getters and Setters
-    public String getName() {
-        return name;
+    /**
+     * Constructor with default values for convenience
+     */
+    public FareOptionDTO(String name, Double price, String code, String tpEnlace) {
+        this(name, price, "EUR", code, tpEnlace, null, new ArrayList<>());
     }
 
-    public void setName(String name) {
-        this.name = name;
-    }
-
-    public Double getPrice() {
-        return price;
-    }
-
-    public void setPrice(Double price) {
-        this.price = price;
-    }
-
-    public String getCurrency() {
-        return currency;
-    }
-
-    public void setCurrency(String currency) {
-        this.currency = currency;
-    }
-
-    public String getCode() {
-        return code;
-    }
-
-    public void setCode(String code) {
-        this.code = code;
-    }
-
-    public String getTpEnlace() {
-        return tpEnlace;
-    }
-
-    public void setTpEnlace(String tpEnlace) {
-        this.tpEnlace = tpEnlace;
-    }
-
-    public String getPlan() {
-        return plan;
-    }
-
-    public void setPlan(String plan) {
-        this.plan = plan;
-    }
-
-    public List<String> getFeatures() {
-        return new ArrayList<>(features);
-    }
-
-    public void setFeatures(List<String> features) {
-        this.features = features != null ? new ArrayList<>(features) : new ArrayList<>();
-    }
 }
-

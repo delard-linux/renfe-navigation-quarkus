@@ -7,123 +7,39 @@ import java.util.List;
 /**
  * DTO for Train information
  */
-public class TrainDTO {
-
-    @JsonProperty("train_id")
-    private String trainId;
-
-    @JsonProperty("service_type")
-    private String serviceType;
-
-    @JsonProperty("departure_time")
-    private String departureTime;
-
-    @JsonProperty("arrival_time")
-    private String arrivalTime;
-
-    private String duration;
-
-    @JsonProperty("price_from")
-    private double priceFrom;
-
-    private String currency = "EUR";
-    private List<FareOptionDTO> fares = new ArrayList<>();
-    private List<String> badges = new ArrayList<>();
-    private boolean accessible = false;
-
-    @JsonProperty("eco_friendly")
-    private boolean ecoFriendly = false;
-
-    public TrainDTO() {
+public record TrainDTO(
+    @JsonProperty("train_id") String trainId,
+    @JsonProperty("service_type") String serviceType,
+    @JsonProperty("departure_time") String departureTime,
+    @JsonProperty("arrival_time") String arrivalTime,
+    String duration,
+    @JsonProperty("price_from") double priceFrom,
+    String currency,
+    List<FareOptionDTO> fares,
+    List<String> badges,
+    boolean accessible,
+    @JsonProperty("eco_friendly") boolean ecoFriendly
+) {
+    /**
+     * Compact constructor for default values and defensive copying
+     */
+    public TrainDTO {
+        // Default currency if null
+        if (currency == null) {
+            currency = "EUR";
+        }
+        // Defensive copy of fares list
+        if (fares == null) {
+            fares = new ArrayList<>();
+        } else {
+            fares = new ArrayList<>(fares);
+        }
+        // Defensive copy of badges list
+        if (badges == null) {
+            badges = new ArrayList<>();
+        } else {
+            badges = new ArrayList<>(badges);
+        }
     }
 
-    // Getters and Setters
-    public String getTrainId() {
-        return trainId;
-    }
-
-    public void setTrainId(String trainId) {
-        this.trainId = trainId;
-    }
-
-    public String getServiceType() {
-        return serviceType;
-    }
-
-    public void setServiceType(String serviceType) {
-        this.serviceType = serviceType;
-    }
-
-    public String getDepartureTime() {
-        return departureTime;
-    }
-
-    public void setDepartureTime(String departureTime) {
-        this.departureTime = departureTime;
-    }
-
-    public String getArrivalTime() {
-        return arrivalTime;
-    }
-
-    public void setArrivalTime(String arrivalTime) {
-        this.arrivalTime = arrivalTime;
-    }
-
-    public String getDuration() {
-        return duration;
-    }
-
-    public void setDuration(String duration) {
-        this.duration = duration;
-    }
-
-    public double getPriceFrom() {
-        return priceFrom;
-    }
-
-    public void setPriceFrom(double priceFrom) {
-        this.priceFrom = priceFrom;
-    }
-
-    public String getCurrency() {
-        return currency;
-    }
-
-    public void setCurrency(String currency) {
-        this.currency = currency;
-    }
-
-    public List<FareOptionDTO> getFares() {
-        return new ArrayList<>(fares);
-    }
-
-    public void setFares(List<FareOptionDTO> fares) {
-        this.fares = fares != null ? new ArrayList<>(fares) : new ArrayList<>();
-    }
-
-    public List<String> getBadges() {
-        return new ArrayList<>(badges);
-    }
-
-    public void setBadges(List<String> badges) {
-        this.badges = badges != null ? new ArrayList<>(badges) : new ArrayList<>();
-    }
-
-    public boolean isAccessible() {
-        return accessible;
-    }
-
-    public void setAccessible(boolean accessible) {
-        this.accessible = accessible;
-    }
-
-    public boolean isEcoFriendly() {
-        return ecoFriendly;
-    }
-
-    public void setEcoFriendly(boolean ecoFriendly) {
-        this.ecoFriendly = ecoFriendly;
-    }
 }
-
