@@ -8,7 +8,8 @@
     <artifactId>renfe-navigation-quarkus</artifactId>
     <version>1.0.0-SNAPSHOT</version>
     <name>Renfe Navigation API</name>
-    <description>API para la compra de billetes en RENFE - Microservicio de búsqueda y navegación con arquitectura hexagonal</description>
+    <description>MCP Server and API for ticket purchasing at RENFE - Hexagonal architecture microservice for search and navigation, Playwright integration for web scraping</description>
+    <url>https://github.com/delard/renfe-navigation-quarkus</url>
 
     <properties>
         <compiler-plugin.version>3.11.0</compiler-plugin.version>
