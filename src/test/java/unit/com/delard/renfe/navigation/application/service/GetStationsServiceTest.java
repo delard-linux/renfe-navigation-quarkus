@@ -220,5 +220,99 @@ class GetStationsServiceTest {
         
         verify(stationRepository, times(1)).searchStations("MADRID");
     }
+
+    @Test
+    void testSearchStationsWithMultipleWordsAllValid() {
+        Station station1 = new Station("MADRI", "0071", 1, null,
+                "MADRID (TODAS)", null, "0071,MADRI,null", "MADRID (TODAS)");
+        List<Station> matchingStations = Arrays.asList(station1);
+
+        when(stationRepository.searchStations("MADRID RAMON")).thenReturn(matchingStations);
+
+        List<Station> result = getStationsService.searchStations("MADRID RAMON");
+
+        assertNotNull(result);
+        assertEquals(1, result.size());
+        verify(stationRepository, times(1)).searchStations("MADRID RAMON");
+    }
+
+    @Test
+    void testSearchStationsWithWordLessThanThreeCharacters() {
+        ValidationException exception = assertThrows(ValidationException.class, () -> {
+            getStationsService.searchStations("MA AB");
+        });
+
+        assertTrue(exception.getMessage().contains("Each word in the search text must have at least 3 characters"));
+        // The message will mention the first invalid word found (MA)
+        assertTrue(exception.getMessage().contains("MA"));
+        verify(stationRepository, never()).searchStations(anyString());
+    }
+
+    @Test
+    void testSearchStationsWithSingleWordLessThanThreeCharacters() {
+        ValidationException exception = assertThrows(ValidationException.class, () -> {
+            getStationsService.searchStations("AB");
+        });
+
+        assertEquals("Search text must have at least 3 characters", exception.getMessage());
+        verify(stationRepository, never()).searchStations(anyString());
+    }
+
+    @Test
+    void testSearchStationsWithMultipleWordsOneInvalid() {
+        ValidationException exception = assertThrows(ValidationException.class, () -> {
+            getStationsService.searchStations("MADRID AB");
+        });
+
+        assertTrue(exception.getMessage().contains("Each word in the search text must have at least 3 characters"));
+        // The message will mention the invalid word (AB)
+        assertTrue(exception.getMessage().contains("AB"));
+        verify(stationRepository, never()).searchStations(anyString());
+    }
+
+    @Test
+    void testSearchStationsWithMultipleSpacesBetweenWords() {
+        Station station1 = new Station("MADRI", "0071", 1, null,
+                "MADRID (TODAS)", null, "0071,MADRI,null", "MADRID (TODAS)");
+        List<Station> matchingStations = Arrays.asList(station1);
+
+        when(stationRepository.searchStations("MADRID   RAMON")).thenReturn(matchingStations);
+
+        List<Station> result = getStationsService.searchStations("MADRID   RAMON");
+
+        assertNotNull(result);
+        assertEquals(1, result.size());
+        verify(stationRepository, times(1)).searchStations("MADRID   RAMON");
+    }
+
+    @Test
+    void testSearchStationsWithLeadingAndTrailingSpaces() {
+        Station station1 = new Station("MADRI", "0071", 1, null,
+                "MADRID (TODAS)", null, "0071,MADRI,null", "MADRID (TODAS)");
+        List<Station> matchingStations = Arrays.asList(station1);
+
+        when(stationRepository.searchStations("  MADRID RAMON  ")).thenReturn(matchingStations);
+
+        List<Station> result = getStationsService.searchStations("  MADRID RAMON  ");
+
+        assertNotNull(result);
+        assertEquals(1, result.size());
+        verify(stationRepository, times(1)).searchStations("  MADRID RAMON  ");
+    }
+
+    @Test
+    void testSearchStationsWithThreeCharacterWords() {
+        Station station1 = new Station("MADRI", "0071", 1, null,
+                "MADRID (TODAS)", null, "0071,MADRI,null", "MADRID (TODAS)");
+        List<Station> matchingStations = Arrays.asList(station1);
+
+        when(stationRepository.searchStations("MAD RAM")).thenReturn(matchingStations);
+
+        List<Station> result = getStationsService.searchStations("MAD RAM");
+
+        assertNotNull(result);
+        assertEquals(1, result.size());
+        verify(stationRepository, times(1)).searchStations("MAD RAM");
+    }
 }
 

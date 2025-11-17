@@ -65,6 +65,8 @@ public class GetStationsService implements GetStationsUseCase {
 
     /**
      * Validates the search text parameter
+     * The search text can be a set of words separated by spaces.
+     * Each word must have at least 3 characters.
      *
      * @param searchText Search text to validate
      * @throws ValidationException if validation fails
@@ -74,8 +76,19 @@ public class GetStationsService implements GetStationsUseCase {
             throw new ValidationException("Search text is required");
         }
 
-        if (searchText.trim().length() < 3) {
+        String trimmedText = searchText.trim();
+        if (trimmedText.length() < 3) {
             throw new ValidationException("Search text must have at least 3 characters");
+        }
+
+        // Split by spaces and validate each word
+        String[] words = trimmedText.split("\\s+");
+        for (String word : words) {
+            if (word.length() < 3) {
+                throw new ValidationException(
+                    String.format("Each word in the search text must have at least 3 characters. Found word with %d characters: '%s'", 
+                        word.length(), word));
+            }
         }
     }
 }
