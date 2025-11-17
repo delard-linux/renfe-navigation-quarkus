@@ -1,5 +1,6 @@
 package com.delard.renfe.navigation.application.service;
 
+import com.delard.renfe.navigation.application.exception.QueueException;
 import com.delard.renfe.navigation.application.exception.ValidationException;
 import com.delard.renfe.navigation.domain.model.Station;
 import com.delard.renfe.navigation.domain.model.Train;
@@ -251,6 +252,35 @@ class SearchTrainsServiceTest {
     }
 
     @Test
+    @DisplayName("Should re-throw QueueException when scraper throws QueueException")
+    void shouldReThrowQueueExceptionWhenScraperThrowsQueueException() {
+        String origin = REAL_ORIGIN;
+        String destination = REAL_DESTINATION;
+        String dateOut = REAL_DATE_OUT;
+        String dateReturn = REAL_DATE_RETURN;
+        String adults = "2";
+        String queueMessage = "Ticket purchase is queued. The system redirected to a queue management page. Please try again later.";
+
+        when(trainScraperPort.scrapeTrains(REAL_ORIGIN_STATION_NAME, REAL_DESTINATION_STATION_NAME,
+                REAL_ORIGIN_DESG_ESTACION, REAL_DESTINATION_DESG_ESTACION,
+                REAL_ORIGIN_CLAVE, REAL_DESTINATION_CLAVE,
+                FORMATTED_DATE_OUT, FORMATTED_DATE_RETURN, adults))
+                .thenThrow(new QueueException(queueMessage));
+
+        QueueException exception = assertThrows(QueueException.class, () -> {
+            service.searchTrains(origin, destination, dateOut, dateReturn, adults);
+        });
+
+        assertEquals(queueMessage, exception.getMessage());
+        assertNull(exception.getCause());
+
+        verify(trainScraperPort, times(1)).scrapeTrains(REAL_ORIGIN_STATION_NAME, REAL_DESTINATION_STATION_NAME,
+                REAL_ORIGIN_DESG_ESTACION, REAL_DESTINATION_DESG_ESTACION,
+                REAL_ORIGIN_CLAVE, REAL_DESTINATION_CLAVE,
+                FORMATTED_DATE_OUT, FORMATTED_DATE_RETURN, adults);
+    }
+
+    @Test
     @DisplayName("Should handle different number of adults correctly (1, 2, 3, 5 adults)")
     void shouldHandleDifferentNumberOfAdultsCorrectly() {
         String origin = REAL_ORIGIN;
@@ -338,6 +368,27 @@ class SearchTrainsServiceTest {
             service.searchTrains(REAL_ORIGIN, REAL_DESTINATION, REAL_DATE_OUT, null, "abc");
         });
         assertEquals("Adults must be a valid number", exception8.getMessage());
+        
+        // Test adults > 8
+        ValidationException exception9 = assertThrows(ValidationException.class, () -> {
+            service.searchTrains(REAL_ORIGIN, REAL_DESTINATION, REAL_DATE_OUT, null, "9");
+        });
+        assertEquals("Adults must be at most 8", exception9.getMessage());
+        
+        // Test adults = 8 (boundary value - should be valid)
+        Train trainOut1 = createTrain("T123", "AVE", "08:00", "10:00", "2h", 25.0);
+        List<Train> trainsOut = Arrays.asList(trainOut1);
+        List<List<Train>> scraperResult = Arrays.asList(trainsOut);
+        
+        when(trainScraperPort.scrapeTrains(eq(REAL_ORIGIN_STATION_NAME), eq(REAL_DESTINATION_STATION_NAME),
+                eq(REAL_ORIGIN_DESG_ESTACION), eq(REAL_DESTINATION_DESG_ESTACION),
+                eq(REAL_ORIGIN_CLAVE), eq(REAL_DESTINATION_CLAVE),
+                eq(FORMATTED_DATE_OUT), eq((String) null), eq("8")))
+                .thenReturn(scraperResult);
+        
+        TrainsResponse result = service.searchTrains(REAL_ORIGIN, REAL_DESTINATION, REAL_DATE_OUT, null, "8");
+        assertNotNull(result);
+        assertEquals("8", result.getAdults());
     }
 
     @Test
@@ -644,6 +695,323 @@ class SearchTrainsServiceTest {
         verify(trainScraperPort, times(1)).scrapeTrains(realOriginName, realDestinationName,
                 originDesgEstacion, destinationDesgEstacion,
                 originClave, destinationClave,
+                FORMATTED_DATE_OUT, null, adults);
+    }
+
+    @Test
+    @DisplayName("Should handle station with null stationNamePlano (fallback to stationName)")
+    void shouldHandleStationWithNullStationNamePlano() {
+        String origin = "MADRID";
+        String destination = REAL_DESTINATION;
+        String dateOut = REAL_DATE_OUT;
+        String dateReturn = null;
+        String adults = "2";
+
+        // Station with null stationNamePlano but valid stationName
+        Station originStation = new Station("MADRI", "0071", 1, null,
+                "MADRID (TODAS)", null, "0071,MADRI,null", null); // stationNamePlano is null
+        Station destinationStation = new Station("BARCE", "0071", 3, null,
+                "BARCELONA (TODAS)", null, "0071,BARCE,null", "BARCELONA (TODAS)");
+
+        when(getStationsUseCase.searchStations(origin)).thenReturn(List.of(originStation));
+        when(getStationsUseCase.searchStations(destination)).thenReturn(List.of(destinationStation));
+
+        Train trainOut1 = createTrain("T123", "AVE", "08:00", "10:00", "2h", 25.0);
+        List<Train> trainsOut = Arrays.asList(trainOut1);
+        List<List<Train>> scraperResult = Arrays.asList(trainsOut);
+
+        // Should use stationName as fallback for stationNamePlano
+        String expectedOriginName = originStation.getStationName(); // "MADRID (TODAS)"
+        String expectedOriginDesgEstacion = originStation.getStationName(); // "MADRID (TODAS)"
+        String expectedOriginClave = originStation.getKey(); // "0071,MADRI,null"
+
+        when(trainScraperPort.scrapeTrains(expectedOriginName, destinationStation.getStationNamePlano(),
+                expectedOriginDesgEstacion, destinationStation.getStationName(),
+                expectedOriginClave, destinationStation.getKey(),
+                FORMATTED_DATE_OUT, null, adults))
+                .thenReturn(scraperResult);
+
+        TrainsResponse result = service.searchTrains(origin, destination, dateOut, dateReturn, adults);
+
+        assertNotNull(result);
+        assertEquals(expectedOriginName, result.getOrigin());
+        verify(getStationsUseCase, times(1)).searchStations(origin);
+        verify(getStationsUseCase, times(1)).searchStations(destination);
+    }
+
+    @Test
+    @DisplayName("Should handle station with blank stationNamePlano (fallback to stationName)")
+    void shouldHandleStationWithBlankStationNamePlano() {
+        String origin = "MADRID";
+        String destination = REAL_DESTINATION;
+        String dateOut = REAL_DATE_OUT;
+        String dateReturn = null;
+        String adults = "2";
+
+        // Station with blank stationNamePlano but valid stationName
+        Station originStation = new Station("MADRI", "0071", 1, null,
+                "MADRID (TODAS)", null, "0071,MADRI,null", "   "); // stationNamePlano is blank
+        Station destinationStation = new Station("BARCE", "0071", 3, null,
+                "BARCELONA (TODAS)", null, "0071,BARCE,null", "BARCELONA (TODAS)");
+
+        when(getStationsUseCase.searchStations(origin)).thenReturn(List.of(originStation));
+        when(getStationsUseCase.searchStations(destination)).thenReturn(List.of(destinationStation));
+
+        Train trainOut1 = createTrain("T123", "AVE", "08:00", "10:00", "2h", 25.0);
+        List<Train> trainsOut = Arrays.asList(trainOut1);
+        List<List<Train>> scraperResult = Arrays.asList(trainsOut);
+
+        // Should use stationName as fallback for stationNamePlano
+        String expectedOriginName = originStation.getStationName(); // "MADRID (TODAS)"
+        String expectedOriginDesgEstacion = originStation.getStationName(); // "MADRID (TODAS)"
+        String expectedOriginClave = originStation.getKey(); // "0071,MADRI,null"
+
+        when(trainScraperPort.scrapeTrains(expectedOriginName, destinationStation.getStationNamePlano(),
+                expectedOriginDesgEstacion, destinationStation.getStationName(),
+                expectedOriginClave, destinationStation.getKey(),
+                FORMATTED_DATE_OUT, null, adults))
+                .thenReturn(scraperResult);
+
+        TrainsResponse result = service.searchTrains(origin, destination, dateOut, dateReturn, adults);
+
+        assertNotNull(result);
+        assertEquals(expectedOriginName, result.getOrigin());
+        verify(getStationsUseCase, times(1)).searchStations(origin);
+        verify(getStationsUseCase, times(1)).searchStations(destination);
+    }
+
+    @Test
+    @DisplayName("Should handle station with null stationNamePlano and null stationName (fallback to search text)")
+    void shouldHandleStationWithNullStationNamePlanoAndNullStationName() {
+        String origin = "MADRID";
+        String destination = REAL_DESTINATION;
+        String dateOut = REAL_DATE_OUT;
+        String dateReturn = null;
+        String adults = "2";
+
+        // Station with both stationNamePlano and stationName null
+        Station originStation = new Station("MADRI", "0071", 1, null,
+                null, null, "0071,MADRI,null", null); // Both null
+        Station destinationStation = new Station("BARCE", "0071", 3, null,
+                "BARCELONA (TODAS)", null, "0071,BARCE,null", "BARCELONA (TODAS)");
+
+        when(getStationsUseCase.searchStations(origin)).thenReturn(List.of(originStation));
+        when(getStationsUseCase.searchStations(destination)).thenReturn(List.of(destinationStation));
+
+        Train trainOut1 = createTrain("T123", "AVE", "08:00", "10:00", "2h", 25.0);
+        List<Train> trainsOut = Arrays.asList(trainOut1);
+        List<List<Train>> scraperResult = Arrays.asList(trainsOut);
+
+        // Should use search text (origin) as final fallback
+        String expectedOriginName = origin; // "MADRID"
+        String expectedOriginDesgEstacion = origin; // "MADRID" (fallback from realStationName)
+        String expectedOriginClave = originStation.getKey(); // "0071,MADRI,null"
+
+        when(trainScraperPort.scrapeTrains(expectedOriginName, destinationStation.getStationNamePlano(),
+                expectedOriginDesgEstacion, destinationStation.getStationName(),
+                expectedOriginClave, destinationStation.getKey(),
+                FORMATTED_DATE_OUT, null, adults))
+                .thenReturn(scraperResult);
+
+        TrainsResponse result = service.searchTrains(origin, destination, dateOut, dateReturn, adults);
+
+        assertNotNull(result);
+        assertEquals(expectedOriginName, result.getOrigin());
+        verify(getStationsUseCase, times(1)).searchStations(origin);
+        verify(getStationsUseCase, times(1)).searchStations(destination);
+    }
+
+    @Test
+    @DisplayName("Should handle station with null stationName (use realStationName as desgEstacion)")
+    void shouldHandleStationWithNullStationName() {
+        String origin = "MADRID";
+        String destination = REAL_DESTINATION;
+        String dateOut = REAL_DATE_OUT;
+        String dateReturn = null;
+        String adults = "2";
+
+        // Station with null stationName but valid stationNamePlano
+        Station originStation = new Station("MADRI", "0071", 1, null,
+                null, null, "0071,MADRI,null", "MADRID (TODAS)"); // stationName is null, stationNamePlano is valid
+        Station destinationStation = new Station("BARCE", "0071", 3, null,
+                "BARCELONA (TODAS)", null, "0071,BARCE,null", "BARCELONA (TODAS)");
+
+        when(getStationsUseCase.searchStations(origin)).thenReturn(List.of(originStation));
+        when(getStationsUseCase.searchStations(destination)).thenReturn(List.of(destinationStation));
+
+        Train trainOut1 = createTrain("T123", "AVE", "08:00", "10:00", "2h", 25.0);
+        List<Train> trainsOut = Arrays.asList(trainOut1);
+        List<List<Train>> scraperResult = Arrays.asList(trainsOut);
+
+        // Should use stationNamePlano as realStationName, and realStationName as desgEstacion (since stationName is null)
+        String expectedOriginName = originStation.getStationNamePlano(); // "MADRID (TODAS)"
+        String expectedOriginDesgEstacion = expectedOriginName; // Same as realStationName (fallback)
+        String expectedOriginClave = originStation.getKey(); // "0071,MADRI,null"
+
+        when(trainScraperPort.scrapeTrains(expectedOriginName, destinationStation.getStationNamePlano(),
+                expectedOriginDesgEstacion, destinationStation.getStationName(),
+                expectedOriginClave, destinationStation.getKey(),
+                FORMATTED_DATE_OUT, null, adults))
+                .thenReturn(scraperResult);
+
+        TrainsResponse result = service.searchTrains(origin, destination, dateOut, dateReturn, adults);
+
+        assertNotNull(result);
+        assertEquals(expectedOriginName, result.getOrigin());
+        verify(getStationsUseCase, times(1)).searchStations(origin);
+        verify(getStationsUseCase, times(1)).searchStations(destination);
+    }
+
+    @Test
+    @DisplayName("Should handle station with blank stationName (use realStationName as desgEstacion)")
+    void shouldHandleStationWithBlankStationName() {
+        String origin = "MADRID";
+        String destination = REAL_DESTINATION;
+        String dateOut = REAL_DATE_OUT;
+        String dateReturn = null;
+        String adults = "2";
+
+        // Station with blank stationName but valid stationNamePlano
+        Station originStation = new Station("MADRI", "0071", 1, null,
+                "   ", null, "0071,MADRI,null", "MADRID (TODAS)"); // stationName is blank, stationNamePlano is valid
+        Station destinationStation = new Station("BARCE", "0071", 3, null,
+                "BARCELONA (TODAS)", null, "0071,BARCE,null", "BARCELONA (TODAS)");
+
+        when(getStationsUseCase.searchStations(origin)).thenReturn(List.of(originStation));
+        when(getStationsUseCase.searchStations(destination)).thenReturn(List.of(destinationStation));
+
+        Train trainOut1 = createTrain("T123", "AVE", "08:00", "10:00", "2h", 25.0);
+        List<Train> trainsOut = Arrays.asList(trainOut1);
+        List<List<Train>> scraperResult = Arrays.asList(trainsOut);
+
+        // Should use stationNamePlano as realStationName, and realStationName as desgEstacion (since stationName is blank)
+        String expectedOriginName = originStation.getStationNamePlano(); // "MADRID (TODAS)"
+        String expectedOriginDesgEstacion = expectedOriginName; // Same as realStationName (fallback)
+        String expectedOriginClave = originStation.getKey(); // "0071,MADRI,null"
+
+        when(trainScraperPort.scrapeTrains(expectedOriginName, destinationStation.getStationNamePlano(),
+                expectedOriginDesgEstacion, destinationStation.getStationName(),
+                expectedOriginClave, destinationStation.getKey(),
+                FORMATTED_DATE_OUT, null, adults))
+                .thenReturn(scraperResult);
+
+        TrainsResponse result = service.searchTrains(origin, destination, dateOut, dateReturn, adults);
+
+        assertNotNull(result);
+        assertEquals(expectedOriginName, result.getOrigin());
+        verify(getStationsUseCase, times(1)).searchStations(origin);
+        verify(getStationsUseCase, times(1)).searchStations(destination);
+    }
+
+    @Test
+    @DisplayName("Should handle station with null key (use empty string)")
+    void shouldHandleStationWithNullKey() {
+        String origin = "MADRID";
+        String destination = REAL_DESTINATION;
+        String dateOut = REAL_DATE_OUT;
+        String dateReturn = null;
+        String adults = "2";
+
+        // Station with null key
+        Station originStation = new Station("MADRI", "0071", 1, null,
+                "MADRID (TODAS)", null, null, "MADRID (TODAS)"); // key is null
+        Station destinationStation = new Station("BARCE", "0071", 3, null,
+                "BARCELONA (TODAS)", null, "0071,BARCE,null", "BARCELONA (TODAS)");
+
+        when(getStationsUseCase.searchStations(origin)).thenReturn(List.of(originStation));
+        when(getStationsUseCase.searchStations(destination)).thenReturn(List.of(destinationStation));
+
+        Train trainOut1 = createTrain("T123", "AVE", "08:00", "10:00", "2h", 25.0);
+        List<Train> trainsOut = Arrays.asList(trainOut1);
+        List<List<Train>> scraperResult = Arrays.asList(trainsOut);
+
+        // Should use empty string for clave when key is null
+        String expectedOriginName = originStation.getStationNamePlano(); // "MADRID (TODAS)"
+        String expectedOriginDesgEstacion = originStation.getStationName(); // "MADRID (TODAS)"
+        String expectedOriginClave = ""; // Empty string when key is null
+
+        when(trainScraperPort.scrapeTrains(expectedOriginName, destinationStation.getStationNamePlano(),
+                expectedOriginDesgEstacion, destinationStation.getStationName(),
+                expectedOriginClave, destinationStation.getKey(),
+                FORMATTED_DATE_OUT, null, adults))
+                .thenReturn(scraperResult);
+
+        TrainsResponse result = service.searchTrains(origin, destination, dateOut, dateReturn, adults);
+
+        assertNotNull(result);
+        assertEquals(expectedOriginName, result.getOrigin());
+        verify(getStationsUseCase, times(1)).searchStations(origin);
+        verify(getStationsUseCase, times(1)).searchStations(destination);
+    }
+
+    @Test
+    @DisplayName("Should handle station with blank key (use empty string)")
+    void shouldHandleStationWithBlankKey() {
+        String origin = "MADRID";
+        String destination = REAL_DESTINATION;
+        String dateOut = REAL_DATE_OUT;
+        String dateReturn = null;
+        String adults = "2";
+
+        // Station with blank key
+        Station originStation = new Station("MADRI", "0071", 1, null,
+                "MADRID (TODAS)", null, "   ", "MADRID (TODAS)"); // key is blank
+        Station destinationStation = new Station("BARCE", "0071", 3, null,
+                "BARCELONA (TODAS)", null, "0071,BARCE,null", "BARCELONA (TODAS)");
+
+        when(getStationsUseCase.searchStations(origin)).thenReturn(List.of(originStation));
+        when(getStationsUseCase.searchStations(destination)).thenReturn(List.of(destinationStation));
+
+        Train trainOut1 = createTrain("T123", "AVE", "08:00", "10:00", "2h", 25.0);
+        List<Train> trainsOut = Arrays.asList(trainOut1);
+        List<List<Train>> scraperResult = Arrays.asList(trainsOut);
+
+        // Should use empty string for clave when key is blank
+        String expectedOriginName = originStation.getStationNamePlano(); // "MADRID (TODAS)"
+        String expectedOriginDesgEstacion = originStation.getStationName(); // "MADRID (TODAS)"
+        String expectedOriginClave = ""; // Empty string when key is blank
+
+        when(trainScraperPort.scrapeTrains(expectedOriginName, destinationStation.getStationNamePlano(),
+                expectedOriginDesgEstacion, destinationStation.getStationName(),
+                expectedOriginClave, destinationStation.getKey(),
+                FORMATTED_DATE_OUT, null, adults))
+                .thenReturn(scraperResult);
+
+        TrainsResponse result = service.searchTrains(origin, destination, dateOut, dateReturn, adults);
+
+        assertNotNull(result);
+        assertEquals(expectedOriginName, result.getOrigin());
+        verify(getStationsUseCase, times(1)).searchStations(origin);
+        verify(getStationsUseCase, times(1)).searchStations(destination);
+    }
+
+    @Test
+    @DisplayName("Should handle dateReturn with blank value (treat as null)")
+    void shouldHandleDateReturnWithBlankValue() {
+        String origin = REAL_ORIGIN;
+        String destination = REAL_DESTINATION;
+        String dateOut = REAL_DATE_OUT;
+        String dateReturn = "   "; // Blank value - should be treated as null (optional)
+        String adults = "2";
+
+        Train trainOut1 = createTrain("T123", "AVE", "08:00", "10:00", "2h", 25.0);
+        List<Train> trainsOut = Arrays.asList(trainOut1);
+        List<List<Train>> scraperResult = Arrays.asList(trainsOut);
+
+        when(trainScraperPort.scrapeTrains(REAL_ORIGIN_STATION_NAME, REAL_DESTINATION_STATION_NAME,
+                REAL_ORIGIN_DESG_ESTACION, REAL_DESTINATION_DESG_ESTACION,
+                REAL_ORIGIN_CLAVE, REAL_DESTINATION_CLAVE,
+                FORMATTED_DATE_OUT, null, adults)) // dateReturn should be null when blank
+                .thenReturn(scraperResult);
+
+        TrainsResponse result = service.searchTrains(origin, destination, dateOut, dateReturn, adults);
+
+        assertNotNull(result);
+        assertNull(result.getDateReturn()); // Should be null when blank
+        assertEquals(1, result.getTrainsOut().size());
+        verify(trainScraperPort, times(1)).scrapeTrains(REAL_ORIGIN_STATION_NAME, REAL_DESTINATION_STATION_NAME,
+                REAL_ORIGIN_DESG_ESTACION, REAL_DESTINATION_DESG_ESTACION,
+                REAL_ORIGIN_CLAVE, REAL_DESTINATION_CLAVE,
                 FORMATTED_DATE_OUT, null, adults);
     }
 
