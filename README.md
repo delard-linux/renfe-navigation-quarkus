@@ -1,6 +1,6 @@
-# Renfe Navigation Quarkus
+# MCP Renfe Navigation Quarkus
 
-REST API microservice built with Quarkus to search Renfe trains, following Hexagonal Architecture.
+Model Context Protocol (MCP) and REST API microservice built with Quarkus to search Renfe trains, following Hexagonal Architecture.
 
 Helpful links:
 - Architecture details: [docs/ARCHITECTURE.md](./docs/ARCHITECTURE.md)

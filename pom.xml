@@ -8,7 +8,8 @@
     <artifactId>renfe-navigation-quarkus</artifactId>
     <version>1.0.0-SNAPSHOT</version>
     <name>Renfe Navigation API</name>
-    <description>API para la compra de billetes en RENFE - Microservicio de búsqueda y navegación con arquitectura hexagonal</description>
+    <description>MCP Server and API for ticket purchasing at RENFE - Hexagonal architecture microservice for search and navigation, Playwright integration for web scraping</description>
+    <url>https://github.com/delard/renfe-navigation-quarkus</url>
 
     <properties>
         <compiler-plugin.version>3.11.0</compiler-plugin.version>
@@ -20,12 +21,13 @@
         <quarkus.platform.version>3.27.0</quarkus.platform.version>
         <skipITs>true</skipITs>
         <surefire-plugin.version>3.2.5</surefire-plugin.version>
-        <surefire-report-plugin.version>3.2.5</surefire-report-plugin.version>
+        <surefire-report-plugin.version>3.3.0</surefire-report-plugin.version>
         <failsafe-plugin.version>3.3.0</failsafe-plugin.version>
         <exec-maven-plugin.version>3.3.0</exec-maven-plugin.version>
         <build-helper-maven-plugin.version>3.5.0</build-helper-maven-plugin.version>
         <jacoco-maven-plugin.version>0.8.14</jacoco-maven-plugin.version>
         <maven-toolchains-plugin.version>3.0.0</maven-toolchains-plugin.version>
+        <maven-project-info-reports-plugin.version>3.4.5</maven-project-info-reports-plugin.version>
         <playwright.version>1.56.0</playwright.version>
         <jsoup.version>1.18.1</jsoup.version>
     </properties>
@@ -421,11 +423,11 @@
 
     <reporting>
         <plugins>
-            <!-- Surefire Report Plugin for HTML test reports -->
+            <!-- Project Info Reports Plugin for project information reports -->
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-surefire-report-plugin</artifactId>
-                <version>${surefire-report-plugin.version}</version>
+                <artifactId>maven-project-info-reports-plugin</artifactId>
+                <version>${maven-project-info-reports-plugin.version}</version>
             </plugin>
             <!-- JXR Plugin for source code cross-references -->
             <plugin>

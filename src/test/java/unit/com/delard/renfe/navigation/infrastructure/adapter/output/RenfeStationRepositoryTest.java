@@ -386,5 +386,162 @@ class RenfeStationRepositoryTest {
         assertEquals(1, result.size());
         assertEquals("MADRI", result.get(0).getStationCode());
     }
+
+    @Test
+    void testSearchStationsWithMultipleWordsAndMatch() {
+        // Test AND search: station contains all words
+        Map<String, Object> station1 = new HashMap<>();
+        station1.put("cdgoEstacion", "60000");
+        station1.put("cdgoAdmon", "0071");
+        station1.put("nmroPrioridad", 2);
+        station1.put("desgEstacion", "MADRID-PUERTA DE ATOCHA-ALMUDENA GRANDES");
+        station1.put("desgEstacionPlano", "MADRID-PUERTA DE ATOCHA-ALMUDENA GRANDES");
+        station1.put("clave", "0071,60000,00600");
+
+        Map<String, Object> station2 = new HashMap<>();
+        station2.put("cdgoEstacion", "MADRI");
+        station2.put("cdgoAdmon", "0071");
+        station2.put("nmroPrioridad", 1);
+        station2.put("desgEstacion", "MADRID (TODAS)");
+        station2.put("desgEstacionPlano", "MADRID (TODAS)");
+        station2.put("clave", "0071,MADRI,null");
+
+        when(stationLoaderService.loadStations()).thenReturn(Arrays.asList(station1, station2));
+
+        // Search for "MADRID PUERTA" - should return only station1 (contains both words)
+        List<Station> result = renfeStationRepository.searchStations("MADRID PUERTA");
+
+        assertNotNull(result);
+        assertEquals(1, result.size());
+        assertEquals("60000", result.get(0).getStationCode());
+    }
+
+    @Test
+    void testSearchStationsWithMultipleWordsOrMatch() {
+        // Test OR search: no station contains all words, so return stations with any word
+        Map<String, Object> station1 = new HashMap<>();
+        station1.put("cdgoEstacion", "MADRI");
+        station1.put("cdgoAdmon", "0071");
+        station1.put("nmroPrioridad", 1);
+        station1.put("desgEstacion", "MADRID (TODAS)");
+        station1.put("desgEstacionPlano", "MADRID (TODAS)");
+        station1.put("clave", "0071,MADRI,null");
+
+        Map<String, Object> station2 = new HashMap<>();
+        station2.put("cdgoEstacion", "BARCE");
+        station2.put("cdgoAdmon", "0071");
+        station2.put("nmroPrioridad", 3);
+        station2.put("desgEstacion", "BARCELONA (TODAS)");
+        station2.put("desgEstacionPlano", "BARCELONA (TODAS)");
+        station2.put("clave", "0071,BARCE,null");
+
+        when(stationLoaderService.loadStations()).thenReturn(Arrays.asList(station1, station2));
+
+        // Search for "MADRID BARCELONA" - no station contains both, so return both (OR)
+        List<Station> result = renfeStationRepository.searchStations("MADRID BARCELONA");
+
+        assertNotNull(result);
+        assertEquals(2, result.size());
+        // Both stations should be returned because they match at least one word
+    }
+
+    @Test
+    void testSearchStationsWithMultipleWordsNoMatch() {
+        Map<String, Object> station1 = new HashMap<>();
+        station1.put("cdgoEstacion", "MADRI");
+        station1.put("cdgoAdmon", "0071");
+        station1.put("nmroPrioridad", 1);
+        station1.put("desgEstacion", "MADRID (TODAS)");
+        station1.put("desgEstacionPlano", "MADRID (TODAS)");
+        station1.put("clave", "0071,MADRI,null");
+
+        when(stationLoaderService.loadStations()).thenReturn(Collections.singletonList(station1));
+
+        // Search for words that don't match any station
+        List<Station> result = renfeStationRepository.searchStations("VALENCIA SEVILLA");
+
+        assertNotNull(result);
+        assertTrue(result.isEmpty());
+    }
+
+    @Test
+    void testSearchStationsWithMultipleWordsAllMatchInSameStation() {
+        // Test that a station containing all words is returned (AND)
+        Map<String, Object> station1 = new HashMap<>();
+        station1.put("cdgoEstacion", "97201");
+        station1.put("cdgoAdmon", "0071");
+        station1.put("nmroPrioridad", 681);
+        station1.put("desgEstacion", "MADRID-RAMON Y CAJAL");
+        station1.put("desgEstacionPlano", "MADRID-RAMON Y CAJAL");
+        station1.put("clave", "0071,97201,97201");
+
+        Map<String, Object> station2 = new HashMap<>();
+        station2.put("cdgoEstacion", "MADRI");
+        station2.put("cdgoAdmon", "0071");
+        station2.put("nmroPrioridad", 1);
+        station2.put("desgEstacion", "MADRID (TODAS)");
+        station2.put("desgEstacionPlano", "MADRID (TODAS)");
+        station2.put("clave", "0071,MADRI,null");
+
+        when(stationLoaderService.loadStations()).thenReturn(Arrays.asList(station1, station2));
+
+        // Search for "MADRID RAMON" - should return only station1 (contains both words)
+        List<Station> result = renfeStationRepository.searchStations("MADRID RAMON");
+
+        assertNotNull(result);
+        assertEquals(1, result.size());
+        assertEquals("97201", result.get(0).getStationCode());
+    }
+
+    @Test
+    void testSearchStationsWithMultipleWordsPartialAndMatch() {
+        // Test that AND takes precedence over OR
+        Map<String, Object> station1 = new HashMap<>();
+        station1.put("cdgoEstacion", "60000");
+        station1.put("cdgoAdmon", "0071");
+        station1.put("nmroPrioridad", 2);
+        station1.put("desgEstacion", "MADRID-PUERTA DE ATOCHA-ALMUDENA GRANDES");
+        station1.put("desgEstacionPlano", "MADRID-PUERTA DE ATOCHA-ALMUDENA GRANDES");
+        station1.put("clave", "0071,60000,00600");
+
+        Map<String, Object> station2 = new HashMap<>();
+        station2.put("cdgoEstacion", "MADRI");
+        station2.put("cdgoAdmon", "0071");
+        station2.put("nmroPrioridad", 1);
+        station2.put("desgEstacion", "MADRID (TODAS)");
+        station2.put("desgEstacionPlano", "MADRID (TODAS)");
+        station2.put("clave", "0071,MADRI,null");
+
+        when(stationLoaderService.loadStations()).thenReturn(Arrays.asList(station1, station2));
+
+        // Search for "MADRID ATOCHA" - station1 contains both, station2 only contains MADRID
+        // Should return only station1 (AND match)
+        List<Station> result = renfeStationRepository.searchStations("MADRID ATOCHA");
+
+        assertNotNull(result);
+        assertEquals(1, result.size());
+        assertEquals("60000", result.get(0).getStationCode());
+    }
+
+    @Test
+    void testSearchStationsWithMultipleSpacesBetweenWords() {
+        // Test that multiple spaces are handled correctly
+        Map<String, Object> station1 = new HashMap<>();
+        station1.put("cdgoEstacion", "60000");
+        station1.put("cdgoAdmon", "0071");
+        station1.put("nmroPrioridad", 2);
+        station1.put("desgEstacion", "MADRID-PUERTA DE ATOCHA-ALMUDENA GRANDES");
+        station1.put("desgEstacionPlano", "MADRID-PUERTA DE ATOCHA-ALMUDENA GRANDES");
+        station1.put("clave", "0071,60000,00600");
+
+        when(stationLoaderService.loadStations()).thenReturn(Collections.singletonList(station1));
+
+        // Search with multiple spaces
+        List<Station> result = renfeStationRepository.searchStations("MADRID   PUERTA");
+
+        assertNotNull(result);
+        assertEquals(1, result.size());
+        assertEquals("60000", result.get(0).getStationCode());
+    }
 }
 

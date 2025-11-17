@@ -1,5 +1,6 @@
 package com.delard.renfe.navigation.infrastructure.adapter.input.mcp;
 
+import com.delard.renfe.navigation.application.exception.QueueException;
 import com.delard.renfe.navigation.application.exception.ValidationException;
 import com.delard.renfe.navigation.domain.model.TrainsResponse;
 import com.delard.renfe.navigation.domain.port.input.SearchTrainsUseCase;
@@ -52,6 +53,9 @@ public class TrainResource {
 
         } catch (ValidationException e) {
             LOG.warnf("[MCP TOOL] Validation error: %s", e.getMessage());
+            return new TextContent("Error: " + e.getMessage());
+        } catch (QueueException e) {
+            LOG.warnf("[MCP TOOL] Queue error: %s", e.getMessage());
             return new TextContent("Error: " + e.getMessage());
         } catch (Exception e) {
             LOG.errorf(e, "[MCP TOOL] Error searching trains");
