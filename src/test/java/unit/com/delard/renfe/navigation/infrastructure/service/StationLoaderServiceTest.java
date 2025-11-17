@@ -304,16 +304,15 @@ class StationLoaderServiceTest {
         List<Map<String, Object>> result = service.loadStations();
 
         assertNotNull(result);
-        verify(cachePort, never()).get(anyString(), any(Class.class));
+        verify(cachePort, never()).get(anyString(), any());
         verify(cachePort, never()).put(anyString(), any(), anyLong());
     }
 
     @Test
     void testLoadStationsEmptyResultNotCached() throws Exception {
         when(cachePort.isEnabled()).thenReturn(true);
-        @SuppressWarnings({"unchecked", "rawtypes"})
-        Optional empty = Optional.empty();
-        when(cachePort.get("stations:all", List.class)).thenReturn(empty);
+        Optional<List<Map<String, Object>>> empty = Optional.empty();
+        doReturn(empty).when(cachePort).get("stations:all", List.class);
 
         // Mock to return empty list
         List<Map<String, Object>> result = service.loadStations();
@@ -614,9 +613,8 @@ class StationLoaderServiceTest {
     @Test
     void testLoadStationsCachesNonEmptyResult() throws Exception {
         when(cachePort.isEnabled()).thenReturn(true);
-        @SuppressWarnings({"unchecked", "rawtypes"})
-        Optional empty = Optional.empty();
-        when(cachePort.get("stations:all", List.class)).thenReturn(empty);
+        Optional<List<Map<String, Object>>> empty = Optional.empty();
+        doReturn(empty).when(cachePort).get("stations:all", List.class);
 
         List<Map<String, Object>> result = service.loadStations();
 
@@ -663,9 +661,8 @@ class StationLoaderServiceTest {
         // This test verifies the flow when URL loading succeeds
         // Since we can't easily mock HttpClient, we test the cache behavior
         when(cachePort.isEnabled()).thenReturn(true);
-        @SuppressWarnings({"unchecked", "rawtypes"})
-        Optional empty = Optional.empty();
-        when(cachePort.get("stations:all", List.class)).thenReturn(empty);
+        Optional<List<Map<String, Object>>> empty = Optional.empty();
+        doReturn(empty).when(cachePort).get("stations:all", List.class);
 
         // Service will try URL first (will fail in unit test), then file
         List<Map<String, Object>> result = service.loadStations();
@@ -681,9 +678,8 @@ class StationLoaderServiceTest {
     void testLoadStationsWithUrlFailureAndEmptyFile() throws Exception {
         // Test the flow when both URL and file fail/return empty
         when(cachePort.isEnabled()).thenReturn(true);
-        @SuppressWarnings({"unchecked", "rawtypes"})
-        Optional empty = Optional.empty();
-        when(cachePort.get("stations:all", List.class)).thenReturn(empty);
+        Optional<List<Map<String, Object>>> empty = Optional.empty();
+        doReturn(empty).when(cachePort).get("stations:all", List.class);
 
         // Set a non-existent path so file returns empty
         injectField("stationsDefaultPath", "/nonexistent/file.js");
