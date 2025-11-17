@@ -1,5 +1,6 @@
 package com.delard.renfe.navigation.application.service;
 
+import com.delard.renfe.navigation.application.exception.QueueException;
 import com.delard.renfe.navigation.application.exception.ValidationException;
 import com.delard.renfe.navigation.domain.model.Station;
 import com.delard.renfe.navigation.domain.model.Train;
@@ -82,6 +83,12 @@ public class SearchTrainsService implements SearchTrainsUseCase {
                     realOrigin, realDestination, formattedDateOut, formattedDateReturn, adults,
                     trainsOut, trainsReturn);
 
+        } catch (QueueException e) {
+            // Re-throw queue exceptions as-is
+            Duration elapsed = Duration.between(startTime, Instant.now());
+            LOG.warnf("[WARN] Queue detected after %.2fs: %s",
+                    elapsed.toMillis() / 1000.0, e.getMessage());
+            throw e;
         } catch (Exception e) {
             Duration elapsed = Duration.between(startTime, Instant.now());
             LOG.errorf(e, "[ERROR] Search failed after %.2fs: %s",

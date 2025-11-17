@@ -1,5 +1,6 @@
 package com.delard.renfe.navigation.infrastructure.service;
 
+import com.delard.renfe.navigation.application.exception.QueueException;
 import com.delard.renfe.navigation.domain.model.FareOption;
 import com.delard.renfe.navigation.domain.model.Train;
 import com.delard.renfe.navigation.infrastructure.config.PlaywrightConfig;
@@ -73,6 +74,9 @@ public class PlaywrightSearchTrainsService {
                             .setTimeout(config.getNavigationTimeoutMs())
                     );
 
+                    // Check if the page redirected to a queue management page
+                    checkForQueuePage(page);
+
                     LOG.debug("Waiting for train results to appear...");
                     // Wait directly for train results instead of NETWORKIDLE (which may timeout on sites with continuous polling)
                     page.waitForSelector("div.selectedTren[role='listitem']", new Page.WaitForSelectorOptions()
@@ -137,9 +141,79 @@ public class PlaywrightSearchTrainsService {
             } finally {
                 browser.close();
             }
+        } catch (QueueException e) {
+            // Re-throw queue exceptions as-is
+            throw e;
         } catch (Exception e) {
             LOG.errorf(e, "Error during scraping");
             throw new RuntimeException("Error scraping trains: " + e.getMessage(), e);
+        }
+    }
+
+    /**
+     * Checks if the current page is a queue management page and throws QueueException if detected.
+     * This prevents timeouts when the system redirects to a queue page instead of showing train results.
+     *
+     * @param page The Playwright page to check
+     * @throws QueueException if a queue page is detected
+     */
+    private void checkForQueuePage(Page page) {
+        try {
+            // Wait a short moment for the page to render
+            page.waitForTimeout(500);
+
+            // Get page content for text analysis
+            String pageContent = "";
+            String pageText = "";
+            try {
+                pageContent = page.content().toLowerCase();
+                String bodyText = page.locator("body").textContent();
+                if (bodyText != null) {
+                    pageText = bodyText.toLowerCase();
+                }
+            } catch (Exception e) {
+                // If we can't get page content, continue with empty strings
+                LOG.debugf("Could not get page content for queue check: %s", e.getMessage());
+            }
+
+            // Check for queue-related text in Spanish
+            boolean hasQueueText = pageText.contains("estás en la cola") ||
+                    pageText.contains("estas en la cola") ||
+                    pageText.contains("cola para comprar") ||
+                    pageText.contains("cuando sea tu turno") ||
+                    pageText.contains("te redirigiremos");
+
+            // Check for Queue.it logo or elements in HTML content
+            boolean hasQueueItElements = pageContent.contains("queue.it") ||
+                    pageContent.contains("queueit");
+
+            // Check for Queue.it elements using locators
+            boolean hasQueueItLocators = false;
+            try {
+                hasQueueItLocators = page.locator("[class*='queue'], [id*='queue'], img[alt*='queue'], img[src*='queue']").count() > 0;
+            } catch (Exception e) {
+                // Ignore locator errors
+            }
+
+            // Check for specific queue page text elements
+            boolean hasQueuePageText = false;
+            try {
+                hasQueuePageText = page.locator("text=/cola/i").count() > 0 ||
+                        page.locator("text=/turno/i").count() > 0;
+            } catch (Exception e) {
+                // Ignore locator errors
+            }
+
+            if (hasQueueText || hasQueueItElements || hasQueueItLocators || hasQueuePageText) {
+                LOG.warn("Queue page detected - ticket purchase is queued");
+                throw new QueueException("Ticket purchase is queued. The system redirected to a queue management page. Please try again later.");
+            }
+        } catch (QueueException e) {
+            // Re-throw queue exceptions
+            throw e;
+        } catch (Exception e) {
+            // If checking for queue page fails, log and continue (don't block normal flow)
+            LOG.debugf("Error checking for queue page (continuing normally): %s", e.getMessage());
         }
     }
 

@@ -1,5 +1,6 @@
 package com.delard.renfe.navigation.infrastructure.adapter.input.rest;
 
+import com.delard.renfe.navigation.application.exception.QueueException;
 import com.delard.renfe.navigation.application.exception.ValidationException;
 import com.delard.renfe.navigation.domain.model.TrainsResponse;
 import com.delard.renfe.navigation.domain.port.input.SearchTrainsUseCase;
@@ -37,6 +38,7 @@ public class TrainResource {
     @Operation(summary = "Search trains", description = "Search for trains between two stations")
     @APIResponse(responseCode = "200", description = "Successful search with train results")
     @APIResponse(responseCode = "400", description = "Invalid request parameters")
+    @APIResponse(responseCode = "503", description = "Service unavailable - ticket purchase is queued")
     @APIResponse(responseCode = "500", description = "Internal server error")
     public Response getTrains(
             @Parameter(description = "Station origin (e.g., OURENSE)", required = true)
@@ -79,6 +81,11 @@ public class TrainResource {
         } catch (ValidationException e) {
             LOG.warnf("Validation error in /trains request: %s", e.getMessage());
             return Response.status(Response.Status.BAD_REQUEST)
+                    .entity(new ErrorResponse(e.getMessage()))
+                    .build();
+        } catch (QueueException e) {
+            LOG.warnf("Queue error in /trains request: %s", e.getMessage());
+            return Response.status(Response.Status.SERVICE_UNAVAILABLE)
                     .entity(new ErrorResponse(e.getMessage()))
                     .build();
         } catch (Exception e) {
