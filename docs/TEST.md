@@ -203,9 +203,96 @@ Run tests and verify coverage meets minimum thresholds:
 
 **Note**: Use `test` instead of `verify` to avoid Failsafe plugin processes.
 
-## Debugging Tests
+## Debugging
 
-### Method 1: Debug with Quarkus Test Mode (Recommended)
+### Debugging the Server (Development Mode)
+
+When running the server in development mode (`quarkus:dev`), you can enable debugging and configure Playwright for visual debugging.
+
+#### Enable Debug Mode
+
+To enable debugging, add the `-Ddebug` flag when starting the server:
+
+```bash
+./mvnw quarkus:dev -Ddebug
+```
+
+Maven will print:
+```
+Listening for transport dt_socket at address: 5005
+```
+
+Then attach your IDE debugger to port 5005:
+- **VS Code**: Use the "Debug Quarkus application" launch configuration
+- **IntelliJ IDEA**: Create a Remote JVM Debug configuration for port 5005
+
+#### Visual Debugging with Playwright
+
+To see the browser executing actions (useful for debugging Playwright interactions), you can override Playwright configuration at runtime:
+
+**Slow execution with visible browser (recommended for debugging):**
+```bash
+./mvnw quarkus:dev -Ddebug \
+  -Dplaywright.headless=false \
+  -Dplaywright.slow-mo=5000 \
+  -Dplaywright.timeout-navigation-ms=60000 \
+  -Dplaywright.timeout-networkidle-ms=60000
+```
+
+**Parameters explained:**
+- `-Dplaywright.headless=false`: Shows the browser window (not headless)
+- `-Dplaywright.slow-mo=5000`: Adds 5 second delay between actions (adjust as needed)
+- `-Dplaywright.timeout-navigation-ms=60000`: Increases navigation timeout to 60 seconds
+- `-Dplaywright.timeout-networkidle-ms=60000`: Increases network idle timeout to 60 seconds
+
+**Alternative: Using environment variables:**
+```bash
+export PLAYWRIGHT_HEADLESS=false
+export PLAYWRIGHT_SLOW_MO=5000
+export PLAYWRIGHT_TIMEOUT_NAVIGATION_MS=60000
+./mvnw quarkus:dev -Ddebug
+```
+
+**Alternative: Using .env file:**
+Add to your `.env` file:
+```bash
+PLAYWRIGHT_HEADLESS=false
+PLAYWRIGHT_SLOW_MO=5000
+PLAYWRIGHT_TIMEOUT_NAVIGATION_MS=60000
+```
+
+Then run:
+```bash
+./mvnw quarkus:dev -Ddebug
+```
+
+#### Override Playwright Properties
+
+You can override any Playwright property at runtime using one of these methods:
+
+1. **Command line arguments** (highest priority):
+   ```bash
+   ./mvnw quarkus:dev -Dplaywright.headless=false -Dplaywright.slow-mo=5000
+   ```
+
+2. **Environment variables**:
+   ```bash
+   export PLAYWRIGHT_HEADLESS=false
+   export PLAYWRIGHT_SLOW_MO=5000
+   ./mvnw quarkus:dev
+   ```
+
+3. **.env file** (in project root):
+   ```bash
+   PLAYWRIGHT_HEADLESS=false
+   PLAYWRIGHT_SLOW_MO=5000
+   ```
+
+See `src/main/resources/application.properties` for all available Playwright configuration properties.
+
+### Debugging Tests
+
+#### Method 1: Debug with Quarkus Test Mode (Recommended)
 
 Quarkus provides a continuous testing mode that allows you to debug tests with the Quarkus context running. This is the most convenient method for debugging integration tests.
 
@@ -248,7 +335,7 @@ This approach allows you to:
 - Run tests directly from your IDE while debugging
 - Avoid restarting the Quarkus context for each test run
 
-### Method 2: Debug Integration Tests from VS Code
+#### Method 2: Debug Integration Tests from VS Code
 
 1. **Using VS Code Task**:
    - Run task: `maven: debug QuarkusTest (Surefire)`
@@ -257,7 +344,7 @@ This approach allows you to:
 2. **Attach Debugger**:
    - Use launch config: `Attach to Quarkus Test Debugger` (port 5005)
 
-### Method 3: Debug from Terminal with Surefire
+#### Method 3: Debug from Terminal with Surefire
 
 Run a specific test in debug mode using Surefire:
 
@@ -272,7 +359,7 @@ Listening for transport dt_socket at address: 5005
 
 Then attach your IDE debugger using the launch config "Attach to Quarkus Test Debugger" (port 5005).
 
-### Debug a Specific Test Method
+#### Debug a Specific Test Method
 
 Debug a single test method:
 
