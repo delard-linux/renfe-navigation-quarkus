@@ -617,7 +617,6 @@ class PlaywrightSearchTrainsServiceTest {
         
         when(mockPage.locator("body")).thenReturn(mockBodyLocator);
         when(mockBodyLocator.textContent()).thenReturn("Estás en la cola de espera");
-        when(mockPage.content()).thenReturn("<html><body>Normal page</body></html>");
 
         // Act & Assert
         Method method = PlaywrightSearchTrainsService.class.getDeclaredMethod("checkForQueuePage", Page.class);
@@ -635,7 +634,6 @@ class PlaywrightSearchTrainsServiceTest {
         assertTrue(cause instanceof QueueException, "Expected QueueException but got: " + cause.getClass());
         assertTrue(cause.getMessage().contains("queued"));
         verify(mockPage, times(1)).waitForTimeout(500L);
-        verify(mockPage, times(1)).content();
         verify(mockPage, times(1)).locator("body");
     }
 
@@ -648,7 +646,6 @@ class PlaywrightSearchTrainsServiceTest {
         
         when(mockPage.locator("body")).thenReturn(mockBodyLocator);
         when(mockBodyLocator.textContent()).thenReturn("Estás en la cola para comprar billetes");
-        when(mockPage.content()).thenReturn("<html><body>Normal page</body></html>");
 
         // Act & Assert
         Method method = PlaywrightSearchTrainsService.class.getDeclaredMethod("checkForQueuePage", Page.class);
@@ -675,7 +672,6 @@ class PlaywrightSearchTrainsServiceTest {
         
         when(mockPage.locator("body")).thenReturn(mockBodyLocator);
         when(mockBodyLocator.textContent()).thenReturn("Cuando sea tu turno te redirigiremos");
-        when(mockPage.content()).thenReturn("<html><body>Normal page</body></html>");
 
         // Act & Assert
         Method method = PlaywrightSearchTrainsService.class.getDeclaredMethod("checkForQueuePage", Page.class);
@@ -702,7 +698,6 @@ class PlaywrightSearchTrainsServiceTest {
         
         when(mockPage.locator("body")).thenReturn(mockBodyLocator);
         when(mockBodyLocator.textContent()).thenReturn("Te redirigiremos cuando sea tu turno");
-        when(mockPage.content()).thenReturn("<html><body>Normal page</body></html>");
 
         // Act & Assert
         Method method = PlaywrightSearchTrainsService.class.getDeclaredMethod("checkForQueuePage", Page.class);
@@ -721,15 +716,18 @@ class PlaywrightSearchTrainsServiceTest {
     }
 
     @Test
-    @DisplayName("checkForQueuePage should throw QueueException when page contains 'queue.it' in HTML")
+    @DisplayName("checkForQueuePage should throw QueueException when queue locators find queue.it elements")
     void testCheckForQueuePageWithQueueItInHtml() throws Exception {
         // Arrange
         Page mockPage = mock(Page.class);
         Locator mockBodyLocator = mock(Locator.class);
+        Locator mockQueueLocator = mock(Locator.class);
         
         when(mockPage.locator("body")).thenReturn(mockBodyLocator);
         when(mockBodyLocator.textContent()).thenReturn("Normal page content");
-        when(mockPage.content()).thenReturn("<html><body><script src='queue.it/script.js'></script></body></html>");
+        when(mockPage.locator("[class*='queue'], [id*='queue'], img[alt*='queue'], img[src*='queue']"))
+                .thenReturn(mockQueueLocator);
+        when(mockQueueLocator.count()).thenReturn(1); // Found queue element
 
         // Act & Assert
         Method method = PlaywrightSearchTrainsService.class.getDeclaredMethod("checkForQueuePage", Page.class);
@@ -748,15 +746,18 @@ class PlaywrightSearchTrainsServiceTest {
     }
 
     @Test
-    @DisplayName("checkForQueuePage should throw QueueException when page contains 'queueit' in HTML")
+    @DisplayName("checkForQueuePage should throw QueueException when queue locators find queueit elements")
     void testCheckForQueuePageWithQueueitInHtml() throws Exception {
         // Arrange
         Page mockPage = mock(Page.class);
         Locator mockBodyLocator = mock(Locator.class);
+        Locator mockQueueLocator = mock(Locator.class);
         
         when(mockPage.locator("body")).thenReturn(mockBodyLocator);
         when(mockBodyLocator.textContent()).thenReturn("Normal page content");
-        when(mockPage.content()).thenReturn("<html><body><div class='queueit-widget'></div></body></html>");
+        when(mockPage.locator("[class*='queue'], [id*='queue'], img[alt*='queue'], img[src*='queue']"))
+                .thenReturn(mockQueueLocator);
+        when(mockQueueLocator.count()).thenReturn(1); // Found queueit element
 
         // Act & Assert
         Method method = PlaywrightSearchTrainsService.class.getDeclaredMethod("checkForQueuePage", Page.class);
@@ -784,7 +785,6 @@ class PlaywrightSearchTrainsServiceTest {
         
         when(mockPage.locator("body")).thenReturn(mockBodyLocator);
         when(mockBodyLocator.textContent()).thenReturn("Normal page content");
-        when(mockPage.content()).thenReturn("<html><body>Normal page</body></html>");
         when(mockPage.locator("[class*='queue'], [id*='queue'], img[alt*='queue'], img[src*='queue']"))
                 .thenReturn(mockQueueLocator);
         when(mockQueueLocator.count()).thenReturn(1);
@@ -880,7 +880,6 @@ class PlaywrightSearchTrainsServiceTest {
         
         when(mockPage.locator("body")).thenReturn(mockBodyLocator);
         when(mockBodyLocator.textContent()).thenReturn("Normal train search page");
-        when(mockPage.content()).thenReturn("<html><body>Train results</body></html>");
         when(mockPage.locator("[class*='queue'], [id*='queue'], img[alt*='queue'], img[src*='queue']"))
                 .thenReturn(mockQueueLocator);
         when(mockQueueLocator.count()).thenReturn(0);
@@ -898,7 +897,6 @@ class PlaywrightSearchTrainsServiceTest {
         });
         
         verify(mockPage, times(1)).waitForTimeout(500L);
-        verify(mockPage, times(1)).content();
     }
 
     @Test
@@ -913,7 +911,6 @@ class PlaywrightSearchTrainsServiceTest {
         
         when(mockPage.locator("body")).thenReturn(mockBodyLocator);
         when(mockBodyLocator.textContent()).thenReturn(null); // null bodyText
-        when(mockPage.content()).thenReturn("<html><body>Normal page</body></html>");
         when(mockPage.locator("[class*='queue'], [id*='queue'], img[alt*='queue'], img[src*='queue']"))
                 .thenReturn(mockQueueLocator);
         when(mockQueueLocator.count()).thenReturn(0);
@@ -937,10 +934,19 @@ class PlaywrightSearchTrainsServiceTest {
         // Arrange
         Page mockPage = mock(Page.class);
         Locator mockBodyLocator = mock(Locator.class);
+        Locator mockQueueLocator = mock(Locator.class);
+        Locator mockColaLocator = mock(Locator.class);
+        Locator mockTurnoLocator = mock(Locator.class);
         
         when(mockPage.locator("body")).thenReturn(mockBodyLocator);
         when(mockBodyLocator.textContent()).thenThrow(new RuntimeException("Error getting content"));
-        when(mockPage.content()).thenThrow(new RuntimeException("Error getting page content"));
+        when(mockPage.locator("[class*='queue'], [id*='queue'], img[alt*='queue'], img[src*='queue']"))
+                .thenReturn(mockQueueLocator);
+        when(mockQueueLocator.count()).thenReturn(0);
+        when(mockPage.locator("text=/cola/i")).thenReturn(mockColaLocator);
+        when(mockColaLocator.count()).thenReturn(0);
+        when(mockPage.locator("text=/turno/i")).thenReturn(mockTurnoLocator);
+        when(mockTurnoLocator.count()).thenReturn(0);
 
         // Act & Assert - Should not throw (exception is caught and logged)
         Method method = PlaywrightSearchTrainsService.class.getDeclaredMethod("checkForQueuePage", Page.class);
@@ -959,12 +965,17 @@ class PlaywrightSearchTrainsServiceTest {
         // Arrange
         Page mockPage = mock(Page.class);
         Locator mockBodyLocator = mock(Locator.class);
+        Locator mockColaLocator = mock(Locator.class);
+        Locator mockTurnoLocator = mock(Locator.class);
         
         when(mockPage.locator("body")).thenReturn(mockBodyLocator);
         when(mockBodyLocator.textContent()).thenReturn("Normal page");
-        when(mockPage.content()).thenReturn("<html><body>Normal page</body></html>");
         when(mockPage.locator("[class*='queue'], [id*='queue'], img[alt*='queue'], img[src*='queue']"))
                 .thenThrow(new RuntimeException("Error with locator"));
+        when(mockPage.locator("text=/cola/i")).thenReturn(mockColaLocator);
+        when(mockColaLocator.count()).thenReturn(0);
+        when(mockPage.locator("text=/turno/i")).thenReturn(mockTurnoLocator);
+        when(mockTurnoLocator.count()).thenReturn(0);
 
         // Act & Assert - Should not throw (exception is caught and ignored)
         Method method = PlaywrightSearchTrainsService.class.getDeclaredMethod("checkForQueuePage", Page.class);
@@ -985,7 +996,6 @@ class PlaywrightSearchTrainsServiceTest {
         
         when(mockPage.locator("body")).thenReturn(mockBodyLocator);
         when(mockBodyLocator.textContent()).thenReturn("Normal page");
-        when(mockPage.content()).thenReturn("<html><body>Normal page</body></html>");
         when(mockPage.locator("[class*='queue'], [id*='queue'], img[alt*='queue'], img[src*='queue']"))
                 .thenReturn(mockQueueLocator);
         when(mockQueueLocator.count()).thenReturn(0);
@@ -1656,7 +1666,7 @@ class PlaywrightSearchTrainsServiceTest {
         BrowserContext mockContext = mock(BrowserContext.class);
         Page mockPage = mock(Page.class);
         Locator mockBodyLocator = mock(Locator.class);
-
+        
         when(playwrightFactory.create()).thenReturn(mockPlaywright);
         when(mockPlaywright.chromium()).thenReturn(mockBrowserType);
         when(mockBrowserType.launch(any(BrowserType.LaunchOptions.class))).thenReturn(mockBrowser);
@@ -1673,7 +1683,6 @@ class PlaywrightSearchTrainsServiceTest {
 
         when(mockPage.locator("body")).thenReturn(mockBodyLocator);
         when(mockBodyLocator.textContent()).thenReturn("Estás en la cola de espera");
-        when(mockPage.content()).thenReturn("<html><body>Queue page</body></html>");
 
         // Act & Assert
         QueueException exception = assertThrows(QueueException.class, () -> {

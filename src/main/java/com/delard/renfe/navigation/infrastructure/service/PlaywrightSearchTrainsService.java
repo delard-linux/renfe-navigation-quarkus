@@ -163,10 +163,8 @@ public class PlaywrightSearchTrainsService {
             page.waitForTimeout(500);
 
             // Get page content for text analysis
-            String pageContent = "";
             String pageText = "";
             try {
-                pageContent = page.content().toLowerCase();
                 String bodyText = page.locator("body").textContent();
                 if (bodyText != null) {
                     pageText = bodyText.toLowerCase();
@@ -182,10 +180,6 @@ public class PlaywrightSearchTrainsService {
                     pageText.contains("cola para comprar") ||
                     pageText.contains("cuando sea tu turno") ||
                     pageText.contains("te redirigiremos");
-
-            // Check for Queue.it logo or elements in HTML content
-            boolean hasQueueItElements = pageContent.contains("queue.it") ||
-                    pageContent.contains("queueit");
 
             // Check for Queue.it elements using locators
             boolean hasQueueItLocators = false;
@@ -204,7 +198,7 @@ public class PlaywrightSearchTrainsService {
                 // Ignore locator errors
             }
 
-            if (hasQueueText || hasQueueItElements || hasQueueItLocators || hasQueuePageText) {
+            if (hasQueueText || hasQueueItLocators || hasQueuePageText) {
                 LOG.warn("Queue page detected - ticket purchase is queued");
                 throw new QueueException("Ticket purchase is queued. The system redirected to a queue management page. Please try again later.");
             }
