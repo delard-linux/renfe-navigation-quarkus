@@ -36,6 +36,8 @@
 
 ## Current pending
 
+- Scaffolding de tool MCP para compra de billetes
+
 ## Next
 
 - Manejar la validationException que es una Runtime no declarada en los servicios.. puede saltar en un REST o en un MCP
@@ -47,3 +49,11 @@
 - Security validation
 
 
+## Warnings to be reviewed
+
+- Mockito is currently self-attaching to enable the inline-mock-maker. This will no longer work in future releases of the JDK. Please add Mockito as an agent to your build as described in Mockito's documentation: https://javadoc.io/doc/org.mockito/mockito-core/latest/org.mockito/org/mockito/Mockito.html#0.3
+- OpenJDK 64-Bit Server VM warning: Sharing is only supported for boot loader classes because bootstrap classpath has been appended
+- WARNING: A Java agent has been loaded dynamically (/home/daviddrosadelgado/.m2/repository/net/bytebuddy/byte-buddy-agent/1.17.5/byte-buddy-agent-1.17.5.jar)
+- WARNING: If a serviceability tool is in use, please run with -XX:+EnableDynamicAgentLoading to hide this warning
+- WARNING: If a serviceability tool is not in use, please run with -Djdk.instrument.traceUsage for more information
+- WARNING: Dynamic loading of agents will be disallowed by default in a future release
