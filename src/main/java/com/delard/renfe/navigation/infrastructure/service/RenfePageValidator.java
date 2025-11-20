@@ -22,7 +22,7 @@ public class RenfePageValidator {
     public void checkForQueuePage(Page page) {
         try {
             // Wait a short moment for the page to render
-            page.waitForTimeout(500);
+            page.waitForTimeout(2000);
 
             // Get page content for text analysis
             String pageText = "";
