@@ -162,7 +162,8 @@ class TrainsResponseDTOTest {
             new ArrayList<>(),
             new ArrayList<>(),
             false,
-            false
+            false,
+            null
         );
     }
 }

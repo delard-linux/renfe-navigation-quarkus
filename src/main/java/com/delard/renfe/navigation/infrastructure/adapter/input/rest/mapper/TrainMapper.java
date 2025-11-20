@@ -2,8 +2,10 @@ package com.delard.renfe.navigation.infrastructure.adapter.input.rest.mapper;
 
 import com.delard.renfe.navigation.domain.model.FareOption;
 import com.delard.renfe.navigation.domain.model.Train;
+import com.delard.renfe.navigation.domain.model.TrainConnection;
 import com.delard.renfe.navigation.domain.model.TrainsResponse;
 import com.delard.renfe.navigation.infrastructure.adapter.input.rest.dto.FareOptionDTO;
+import com.delard.renfe.navigation.infrastructure.adapter.input.rest.dto.TrainConnectionDTO;
 import com.delard.renfe.navigation.infrastructure.adapter.input.rest.dto.TrainDTO;
 import com.delard.renfe.navigation.infrastructure.adapter.input.rest.dto.TrainsResponseDTO;
 
@@ -61,7 +63,8 @@ public final class TrainMapper {
             toFareOptionDTOList(train.getFares()),
             new ArrayList<>(train.getBadges()),
             train.isAccessible(),
-            train.isEcoFriendly()
+            train.isEcoFriendly(),
+            toTrainConnectionDTO(train.getConnection())
         );
     }
 
@@ -87,6 +90,17 @@ public final class TrainMapper {
             fare.getTpEnlace(),
             fare.getPlan(),
             fare.getFeatures()
+        );
+    }
+
+    private static TrainConnectionDTO toTrainConnectionDTO(TrainConnection connection) {
+        if (connection == null) {
+            return null;
+        }
+        return new TrainConnectionDTO(
+            connection.getDuration(),
+            connection.getFirstTrainType(),
+            connection.getSecondTrainType()
         );
     }
 }

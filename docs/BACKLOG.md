@@ -33,10 +33,12 @@
 - Flexibilizar Error: Each word in the search text must have at least 3 characters
 - Revisar tests de IT deshabilitados de PlaywrightSearchTrainsServiceIT
 - Opciones de headless=false no funcionan
+- Scaffolding de tool MCP para compra de billetes
+- Incluir la visualición de billetes con enlaces
 
 ## Current pending
 
-- Scaffolding de tool MCP para compra de billetes
+
 
 ## Next
 

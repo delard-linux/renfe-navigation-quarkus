@@ -18,6 +18,7 @@ public class Train {
     private List<String> badges;
     private boolean accessible;
     private boolean ecoFriendly;
+    private TrainConnection connection;
 
     public Train() {
         this.currency = "EUR";
@@ -125,6 +126,14 @@ public class Train {
 
     public void setEcoFriendly(boolean ecoFriendly) {
         this.ecoFriendly = ecoFriendly;
+    }
+
+    public TrainConnection getConnection() {
+        return connection;
+    }
+
+    public void setConnection(TrainConnection connection) {
+        this.connection = connection;
     }
 }
 
