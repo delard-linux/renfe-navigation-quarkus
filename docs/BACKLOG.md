@@ -27,15 +27,17 @@
 - MCP endpoint instead REST
 - Meter los endpoints REST y MCP de las estaciones
 - Incluir la gestión del error de la Queue en la compra del billete
-- MEjora cobertura, tests, y limpieza de warnings de construcion y tests con maven
+- Mejora cobertura, tests, y limpieza de warnings de construcion y tests con maven
+- Control de excepción y timeouts ante problema de disponibilidad de billetes u otros errores
+- Eliminacíon del error de minimo de tres letras cuando se buscan mas de una palabra
+- Flexibilizar Error: Each word in the search text must have at least 3 characters
+- Revisar tests de IT deshabilitados de PlaywrightSearchTrainsServiceIT
+- Opciones de headless=false no funcionan
 
 ## Current pending
 
-
 ## Next
 
-- Revisar tests de IT deshabilitados de PlaywrightSearchTrainsServiceIT
-- Opciones de headless=false no funcinan
 - Manejar la validationException que es una Runtime no declarada en los servicios.. puede saltar en un REST o en un MCP
 - renfe.responses-dir=target/responses
 - Support multiple passenger types (not only adults)

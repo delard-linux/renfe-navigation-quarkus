@@ -1,6 +1,7 @@
 package com.delard.renfe.navigation.infrastructure.service;
 
 import com.delard.renfe.navigation.application.exception.QueueException;
+import com.delard.renfe.navigation.application.exception.TrainUnavailabilityException;
 import com.delard.renfe.navigation.domain.model.FareOption;
 import com.delard.renfe.navigation.domain.model.Train;
 import com.delard.renfe.navigation.infrastructure.config.PlaywrightConfig;
@@ -29,6 +30,9 @@ public class PlaywrightSearchTrainsService {
 
     @Inject
     PlaywrightFactory playwrightFactory;
+
+    @Inject
+    RenfePageValidator pageValidator;
 
     public SearchTrainsResult searchTrains(String origin, String destination,
                                            String originDesgEstacion, String destinationDesgEstacion,
@@ -63,77 +67,10 @@ public class PlaywrightSearchTrainsService {
                         .setLocale(config.getLocale())
                         .setViewportSize(config.getViewportWidth(), config.getViewportHeight())
                 );
-
+                
                 Page page = context.newPage();
                 try {
-                    // Build URL with query string parameters
-                    String urlWithQueryString = buildUrlWithQueryString(formData);
-                    LOG.debugf("Navigating to %s", urlWithQueryString);
-                    page.navigate(urlWithQueryString, new Page.NavigateOptions()
-                            .setWaitUntil(WaitUntilState.DOMCONTENTLOADED)
-                            .setTimeout(config.getNavigationTimeoutMs())
-                    );
-
-                    // Check if the page redirected to a queue management page
-                    checkForQueuePage(page);
-
-                    LOG.debug("Waiting for train results to appear...");
-                    // Wait directly for train results instead of NETWORKIDLE (which may timeout on sites with continuous polling)
-                    page.waitForSelector("div.selectedTren[role='listitem']", new Page.WaitForSelectorOptions()
-                            .setTimeout(config.getTimeoutMs())
-                            .setState(com.microsoft.playwright.options.WaitForSelectorState.VISIBLE)
-                    );
-                    
-                    LOG.debug("Train results appeared, waiting for content to stabilize...");
-                    // Give the page a moment to fully render all dynamic content
-                    page.waitForTimeout(1000);
-
-                    // Accept cookies if the banner appears
-                    try {
-                        Locator acceptCookiesButton = page.locator("#onetrust-accept-btn-handler");
-                        // Wait for the button to appear with a short timeout
-                        acceptCookiesButton.waitFor(new Locator.WaitForOptions()
-                                .setTimeout(config.getShortTimeoutMs())
-                                .setState(com.microsoft.playwright.options.WaitForSelectorState.VISIBLE));
-                        
-                        if (acceptCookiesButton.isVisible()) {
-                            LOG.debug("Cookie banner detected, clicking 'Accept all cookies' button");
-                            acceptCookiesButton.click();
-                            // Wait a moment for the cookie banner to close
-                            page.waitForTimeout(500);
-                        }
-                    } catch (Exception e) {
-                        // Cookie banner may not appear, continue normally
-                        LOG.debugf("Cookie banner not found or already dismissed: %s", e.getMessage());
-                    }
-
-                    String responseContent = page.content();
-                    responseStorageService.saveResponse(responseContent, 200);
-
-                    LOG.debug("Extracting outbound results");
-                    List<Train> trainsOut = extractResults(page);
-
-                    List<Train> trainsRet = null;
-                    if (dateReturn != null && !dateReturn.isEmpty() && !trainsOut.isEmpty()) {
-                        try {
-                            LOG.debug("Finding return results");
-                            Locator vueltaTab = page.locator("[id*='vuelta'], [class*='vuelta'], a:has-text('Vuelta')");
-                            if (vueltaTab.count() > 0) {
-                                vueltaTab.first().click();
-                                page.waitForTimeout(config.getShortTimeoutMs());
-
-                                LOG.debug("Extracting return results");
-                                trainsRet = extractResults(page);
-                            }
-                        } catch (Exception e) {
-                            LOG.warnf(e, "Could not extract return trains: %s", e.getMessage());
-                            trainsRet = null;
-                        }
-                    }
-
-                    LOG.debug("Closing browser");
-                    return new SearchTrainsResult(trainsOut, trainsRet);
-
+                    return executeSearchOnPage(page, formData, dateReturn);
                 } finally {
                     page.close();
                     context.close();
@@ -144,71 +81,114 @@ public class PlaywrightSearchTrainsService {
         } catch (QueueException e) {
             // Re-throw queue exceptions as-is
             throw e;
+        } catch (TrainUnavailabilityException e) {
+            // Re-throw train unavailability exceptions as-is
+            throw e;
         } catch (Exception e) {
             LOG.errorf(e, "Error during scraping");
             throw new RuntimeException("Error scraping trains: " + e.getMessage(), e);
         }
     }
 
-    /**
-     * Checks if the current page is a queue management page and throws QueueException if detected.
-     * This prevents timeouts when the system redirects to a queue page instead of showing train results.
-     *
-     * @param page The Playwright page to check
-     * @throws QueueException if a queue page is detected
-     */
-    private void checkForQueuePage(Page page) {
+    private SearchTrainsResult executeSearchOnPage(Page page, Map<String, String> formData, String dateReturn) {
+        // Build URL with query string parameters
+        String urlWithQueryString = buildUrlWithQueryString(formData);
+        LOG.debugf("Navigating to %s", urlWithQueryString);
+        page.navigate(urlWithQueryString, new Page.NavigateOptions()
+                .setWaitUntil(WaitUntilState.DOMCONTENTLOADED)
+                .setTimeout(config.getNavigationTimeoutMs())
+        );
+
+        // Check if the page redirected to a queue management page
+        pageValidator.checkForQueuePage(page);
+
+        // Check for train unavailability errors before waiting for results
+        pageValidator.checkForTrainUnavailability(page, "outbound");
+
+        waitForTrainResults(page);
+
+        // Accept cookies if the banner appears
+        handleCookies(page);
+
+        String responseContent = page.content();
+        responseStorageService.saveResponse(responseContent, 200);
+
+        LOG.debug("Extracting outbound results");
         try {
-            // Wait a short moment for the page to render
-            page.waitForTimeout(500);
+            List<Train> trainsOut = extractResults(page, "outbound");
 
-            // Get page content for text analysis
-            String pageText = "";
-            try {
-                String bodyText = page.locator("body").textContent();
-                if (bodyText != null) {
-                    pageText = bodyText.toLowerCase();
-                }
-            } catch (Exception e) {
-                // If we can't get page content, continue with empty strings
-                LOG.debugf("Could not get page content for queue check: %s", e.getMessage());
+            List<Train> trainsRet = null;
+            if (dateReturn != null && !dateReturn.isEmpty() && !trainsOut.isEmpty()) {
+                trainsRet = extractReturnResults(page);
             }
 
-            // Check for queue-related text in Spanish
-            boolean hasQueueText = pageText.contains("estás en la cola") ||
-                    pageText.contains("estas en la cola") ||
-                    pageText.contains("cola para comprar") ||
-                    pageText.contains("cuando sea tu turno") ||
-                    pageText.contains("te redirigiremos");
+            LOG.debug("Closing browser");
+            return new SearchTrainsResult(trainsOut, trainsRet);
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+            throw new RuntimeException("Interrupted while extracting results", e);
+        }
+    }
 
-            // Check for Queue.it elements using locators
-            boolean hasQueueItLocators = false;
-            try {
-                hasQueueItLocators = page.locator("[class*='queue'], [id*='queue'], img[alt*='queue'], img[src*='queue']").count() > 0;
-            } catch (Exception e) {
-                // Ignore locator errors
-            }
+    private void waitForTrainResults(Page page) {
+        LOG.debug("Waiting for train results to appear...");
+        // Wait directly for train results instead of NETWORKIDLE (which may timeout on sites with continuous polling)
+        try {
+            page.waitForSelector("div.selectedTren[role='listitem']", new Page.WaitForSelectorOptions()
+                    .setTimeout(config.getTimeoutMs())
+                    .setState(com.microsoft.playwright.options.WaitForSelectorState.VISIBLE)
+            );
+        } catch (Exception e) {
+            // If waiting for train results times out, check again for unavailability messages
+            LOG.debugf("Train results did not appear, checking for error messages: %s", e.getMessage());
+            pageValidator.checkForTrainUnavailability(page, "outbound");
+            // If no unavailability message found, re-throw the original exception
+            throw e;
+        }
 
-            // Check for specific queue page text elements
-            boolean hasQueuePageText = false;
-            try {
-                hasQueuePageText = page.locator("text=/cola/i").count() > 0 ||
-                        page.locator("text=/turno/i").count() > 0;
-            } catch (Exception e) {
-                // Ignore locator errors
-            }
+        LOG.debug("Train results appeared, waiting for content to stabilize...");
+        // Give the page a moment to fully render all dynamic content
+        page.waitForTimeout(1000);
+    }
 
-            if (hasQueueText || hasQueueItLocators || hasQueuePageText) {
-                LOG.warn("Queue page detected - ticket purchase is queued");
-                throw new QueueException("Ticket purchase is queued. The system redirected to a queue management page. Please try again later.");
+    private void handleCookies(Page page) {
+        try {
+            Locator acceptCookiesButton = page.locator("#onetrust-accept-btn-handler");
+            // Wait for the button to appear with a short timeout
+            acceptCookiesButton.waitFor(new Locator.WaitForOptions()
+                    .setTimeout(config.getShortTimeoutMs())
+                    .setState(com.microsoft.playwright.options.WaitForSelectorState.VISIBLE));
+
+            if (acceptCookiesButton.isVisible()) {
+                LOG.debug("Cookie banner detected, clicking 'Accept all cookies' button");
+                acceptCookiesButton.click();
+                // Wait a moment for the cookie banner to close
+                page.waitForTimeout(500);
             }
-        } catch (QueueException e) {
-            // Re-throw queue exceptions
+        } catch (Exception e) {
+            // Cookie banner may not appear, continue normally
+            LOG.debugf("Cookie banner not found or already dismissed: %s", e.getMessage());
+        }
+    }
+
+    private List<Train> extractReturnResults(Page page) {
+        try {
+            LOG.debug("Finding return results");
+            Locator vueltaTab = page.locator("[id*='vuelta'], [class*='vuelta'], a:has-text('Vuelta')");
+            if (vueltaTab.count() > 0) {
+                vueltaTab.first().click();
+                page.waitForTimeout(config.getShortTimeoutMs());
+
+                LOG.debug("Extracting return results");
+                return extractResults(page, "return");
+            }
+        } catch (TrainUnavailabilityException e) {
+            // Re-throw train unavailability exceptions for return trips
             throw e;
         } catch (Exception e) {
-            // If checking for queue page fails, log and continue (don't block normal flow)
-            LOG.debugf("Error checking for queue page (continuing normally): %s", e.getMessage());
+            LOG.warnf(e, "Could not extract return trains: %s", e.getMessage());
         }
+        return null;
     }
 
     private Browser createBrowser(Playwright playwright) {
@@ -320,21 +300,32 @@ public class PlaywrightSearchTrainsService {
         }
     }
 
-    private List<Train> extractResults(Page page) throws InterruptedException {
-        LOG.debug("Waiting for train results to be visible...");
+    private List<Train> extractResults(Page page, String direction) throws InterruptedException {
+        LOG.debugf("Waiting for %s train results to be visible...", direction);
+        
+        // Check for train unavailability errors before waiting for results
+        pageValidator.checkForTrainUnavailability(page, direction);
         
         // Wait for train results to be visible (skip NETWORKIDLE to avoid timeout on pages with continuous polling)
-        page.waitForSelector("div.selectedTren[role='listitem']", new Page.WaitForSelectorOptions()
-                .setTimeout(config.getTimeoutMs())
-                .setState(com.microsoft.playwright.options.WaitForSelectorState.VISIBLE)
-        );
+        try {
+            page.waitForSelector("div.selectedTren[role='listitem']", new Page.WaitForSelectorOptions()
+                    .setTimeout(config.getTimeoutMs())
+                    .setState(com.microsoft.playwright.options.WaitForSelectorState.VISIBLE)
+            );
+        } catch (Exception e) {
+            // If waiting for train results times out, check again for unavailability messages
+            LOG.debugf("%s train results did not appear, checking for error messages: %s", direction, e.getMessage());
+            pageValidator.checkForTrainUnavailability(page, direction);
+            // If no unavailability message found, re-throw the original exception
+            throw e;
+        }
         
         // Wait a moment for content to stabilize
         page.waitForTimeout(1000);
         
         String html = page.content();
         List<Train> trains = trainHtmlParser.parseTrainList(html);
-        LOG.debugf("[PARSER] Extracted %d trains", trains.size());
+        LOG.debugf("[PARSER] Extracted %d %s trains", trains.size(), direction);
         return trains;
     }
 

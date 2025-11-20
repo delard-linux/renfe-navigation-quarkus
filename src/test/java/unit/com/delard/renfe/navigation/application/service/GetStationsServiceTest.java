@@ -238,6 +238,7 @@ class GetStationsServiceTest {
 
     @Test
     void testSearchStationsWithWordLessThanThreeCharacters() {
+        // When all words have 3 or fewer characters, validation requires all words to have at least 3 characters
         ValidationException exception = assertThrows(ValidationException.class, () -> {
             getStationsService.searchStations("MA AB");
         });
@@ -260,14 +261,18 @@ class GetStationsServiceTest {
 
     @Test
     void testSearchStationsWithMultipleWordsOneInvalid() {
-        ValidationException exception = assertThrows(ValidationException.class, () -> {
-            getStationsService.searchStations("MADRID AB");
-        });
+        // When there's at least one word with more than 3 characters, validation per word is skipped
+        Station station1 = new Station("MADRI", "0071", 1, null,
+                "MADRID (TODAS)", null, "0071,MADRI,null", "MADRID (TODAS)");
+        List<Station> matchingStations = Arrays.asList(station1);
 
-        assertTrue(exception.getMessage().contains("Each word in the search text must have at least 3 characters"));
-        // The message will mention the invalid word (AB)
-        assertTrue(exception.getMessage().contains("AB"));
-        verify(stationRepository, never()).searchStations(anyString());
+        when(stationRepository.searchStations("MADRID DE")).thenReturn(matchingStations);
+
+        List<Station> result = getStationsService.searchStations("MADRID DE");
+
+        assertNotNull(result);
+        assertEquals(1, result.size());
+        verify(stationRepository, times(1)).searchStations("MADRID DE");
     }
 
     @Test
@@ -313,6 +318,19 @@ class GetStationsServiceTest {
         assertNotNull(result);
         assertEquals(1, result.size());
         verify(stationRepository, times(1)).searchStations("MAD RAM");
+    }
+
+    @Test
+    void testSearchStationsWithShortWordsOnly() {
+        // When all words have 3 or fewer characters, validation requires all words to have at least 3 characters
+        ValidationException exception = assertThrows(ValidationException.class, () -> {
+            getStationsService.searchStations("DE LA");
+        });
+
+        assertTrue(exception.getMessage().contains("Each word in the search text must have at least 3 characters"));
+        // The message will mention the invalid word (DE)
+        assertTrue(exception.getMessage().contains("DE"));
+        verify(stationRepository, never()).searchStations(anyString());
     }
 }
 

@@ -1,6 +1,7 @@
 package com.delard.renfe.navigation.infrastructure.adapter.output;
 
 import com.delard.renfe.navigation.application.exception.QueueException;
+import com.delard.renfe.navigation.application.exception.TrainUnavailabilityException;
 import com.delard.renfe.navigation.domain.model.Train;
 import com.delard.renfe.navigation.domain.port.output.TrainScraperPort;
 import com.delard.renfe.navigation.infrastructure.service.PlaywrightSearchTrainsService;
@@ -48,6 +49,9 @@ public class TrainScraperAdapter implements TrainScraperPort {
 
         } catch (QueueException e) {
             // Re-throw queue exceptions as-is
+            throw e;
+        } catch (TrainUnavailabilityException e) {
+            // Re-throw train unavailability exceptions as-is
             throw e;
         } catch (Exception e) {
             LOG.errorf(e, "Error scraping trains");

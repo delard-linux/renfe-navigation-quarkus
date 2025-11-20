@@ -66,7 +66,9 @@ public class GetStationsService implements GetStationsUseCase {
     /**
      * Validates the search text parameter
      * The search text can be a set of words separated by spaces.
-     * Each word must have at least 3 characters.
+     * If all words have 3 or fewer characters, then all words must have at least 3 characters.
+     * If there is at least one word with more than 3 characters, the validation per word is skipped
+     * (allowing short words like "DE" when combined with longer words like "MADRID").
      *
      * @param searchText Search text to validate
      * @throws ValidationException if validation fails
@@ -81,13 +83,24 @@ public class GetStationsService implements GetStationsUseCase {
             throw new ValidationException("Search text must have at least 3 characters");
         }
 
-        // Split by spaces and validate each word
+        // Split by spaces and check if there's any word with more than 3 characters
         String[] words = trimmedText.split("\\s+");
+        boolean hasLongWord = false;
         for (String word : words) {
-            if (word.length() < 3) {
-                throw new ValidationException(
-                    String.format("Each word in the search text must have at least 3 characters. Found word with %d characters: '%s'", 
-                        word.length(), word));
+            if (word.length() > 3) {
+                hasLongWord = true;
+                break;
+            }
+        }
+
+        // Only validate minimum length per word if all words have 3 or fewer characters
+        if (!hasLongWord) {
+            for (String word : words) {
+                if (word.length() < 3) {
+                    throw new ValidationException(
+                        String.format("Each word in the search text must have at least 3 characters. Found word with %d characters: '%s'", 
+                            word.length(), word));
+                }
             }
         }
     }

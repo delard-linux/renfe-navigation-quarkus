@@ -1,6 +1,7 @@
 package com.delard.renfe.navigation.infrastructure.service;
 
 import com.delard.renfe.navigation.application.exception.QueueException;
+import com.delard.renfe.navigation.application.exception.TrainUnavailabilityException;
 import com.delard.renfe.navigation.support.config.PlaywrightIntegrationTestProfile;
 import io.quarkus.test.junit.QuarkusTest;
 import io.quarkus.test.junit.TestProfile;
@@ -244,6 +245,81 @@ class PlaywrightSearchTrainsServiceIT {
             LOG.warnf("IT test: Queue detected (valid controlled response): %s", e.getMessage());
             assertNotNull(e.getMessage(), "QueueException should have a message");
             assertTrue(e.getMessage().contains("queued"), "QueueException message should mention queue");
+        }
+    }
+
+    @Test
+    void shouldHandleTrainUnavailabilityProperly() {
+        // Test train unavailability detection (e.g., routes with no availability)
+        // This test verifies that the system properly detects error messages like:
+        // - <p id="noDispoIda" class="msjErrorTrenes"> for outbound unavailability
+        // - <p id="noDispoVuelta" class="msjErrorTrenes"> for return unavailability
+        // Instead of timing out, it should throw TrainUnavailabilityException with detailed message
+        
+        String dateOut = calculateOutboundDate();
+        String dateReturn = calculateReturnDate(dateOut);
+        
+        try {
+            PlaywrightSearchTrainsService.SearchTrainsResult result = playwrightSearchTrainsService.searchTrains(
+                "MADRID-RECOLETOS",
+                "BARCELONA (TODAS)",
+                "MADRID-RECOLETOS",       // originDesgEstacion
+                "BARCELONA (TODAS)",      // destinationDesgEstacion
+                "0071,MADRI,null",        // originClave (using MADRID codes)
+                "0071,BARCE,null",        // destinationClave
+                dateOut,
+                dateReturn,
+                "1"
+            );
+
+            // If we get here without exception, it means trains were found (valid scenario)
+            // This can happen if availability changes or on different dates
+            LOG.infof("IT result: Trains found (no unavailability): %s", result);
+            assertNotNull(result, "SearchTrainsResult should not be null");
+            assertNotNull(result.outboundTrains, "Outbound trains list should not be null");
+            
+        } catch (TrainUnavailabilityException e) {
+            // This is the expected behavior when trains are not available
+            LOG.infof("IT test: Train unavailability detected correctly: %s", e.getMessage());
+            
+            // Validate exception structure
+            assertNotNull(e.getMessage(), "TrainUnavailabilityException should have a message");
+            assertNotNull(e.getDirection(), "TrainUnavailabilityException should have direction");
+            assertNotNull(e.getDetailMessage(), "TrainUnavailabilityException should have detail message");
+            
+            // Verify the direction is either "outbound" or "return"
+            assertTrue(
+                e.getDirection().equalsIgnoreCase("outbound") || 
+                e.getDirection().equalsIgnoreCase("return"),
+                "Direction should be 'outbound' or 'return', got: " + e.getDirection()
+            );
+            
+            // Verify the message contains the direction
+            assertTrue(
+                e.getMessage().contains(e.getDirection()),
+                "Exception message should contain direction"
+            );
+            
+            // Verify the detail message is not empty
+            assertFalse(
+                e.getDetailMessage().trim().isEmpty(),
+                "Detail message should not be empty"
+            );
+            
+            LOG.infof("IT validation passed - Direction: %s, Detail: %s", 
+                e.getDirection(), e.getDetailMessage());
+            
+        } catch (QueueException e) {
+            // QueueException is also a valid, controlled response from Renfe's system
+            LOG.warnf("IT test: Queue detected (valid controlled response): %s", e.getMessage());
+            assertNotNull(e.getMessage(), "QueueException should have a message");
+            assertTrue(e.getMessage().contains("queued"), "QueueException message should mention queue");
+            
+        } catch (Exception e) {
+            // Any other exception should fail the test with details
+            LOG.errorf(e, "IT test: Unexpected exception type: %s", e.getClass().getName());
+            fail("Expected TrainUnavailabilityException or QueueException, but got: " + 
+                e.getClass().getName() + " - " + e.getMessage());
         }
     }
     
