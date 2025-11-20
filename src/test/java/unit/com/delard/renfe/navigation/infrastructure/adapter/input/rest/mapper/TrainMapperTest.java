@@ -1,4 +1,16 @@
+/*
+ * Copyright © ${YEAR} MCP Renfe Navigation Quarkus
+ * All rights reserved.
+ */
+
 package com.delard.renfe.navigation.infrastructure.adapter.input.rest.mapper;
+
+
+import static org.junit.jupiter.api.Assertions.*;
+
+import java.lang.reflect.Constructor;
+import java.util.Arrays;
+import java.util.Collections;
 
 import com.delard.renfe.navigation.domain.model.FareOption;
 import com.delard.renfe.navigation.domain.model.Train;
@@ -8,21 +20,19 @@ import com.delard.renfe.navigation.infrastructure.adapter.input.rest.dto.FareOpt
 import com.delard.renfe.navigation.infrastructure.adapter.input.rest.dto.TrainConnectionDTO;
 import com.delard.renfe.navigation.infrastructure.adapter.input.rest.dto.TrainDTO;
 import com.delard.renfe.navigation.infrastructure.adapter.input.rest.dto.TrainsResponseDTO;
+
 import org.junit.jupiter.api.Test;
 
-import java.lang.reflect.Constructor;
-import java.util.Arrays;
-import java.util.Collections;
-
-import static org.junit.jupiter.api.Assertions.*;
 
 /**
  * Unit tests for TrainMapper
  */
-class TrainMapperTest {
+class TrainMapperTest
+{
 
     @Test
-    void testPrivateConstructor() throws Exception {
+    void testPrivateConstructor() throws Exception
+    {
         Constructor<TrainMapper> constructor = TrainMapper.class.getDeclaredConstructor();
         constructor.setAccessible(true);
         TrainMapper instance = constructor.newInstance();
@@ -30,13 +40,15 @@ class TrainMapperTest {
     }
 
     @Test
-    void testToDTOWithNullDomain() {
+    void testToDTOWithNullDomain()
+    {
         TrainsResponseDTO result = TrainMapper.toDTO(null);
         assertNull(result);
     }
 
     @Test
-    void testToDTOWithCompleteDomain() {
+    void testToDTOWithCompleteDomain()
+    {
         TrainsResponse domain = createCompleteTrainsResponse();
         TrainsResponseDTO dto = TrainMapper.toDTO(domain);
 
@@ -53,7 +65,8 @@ class TrainMapperTest {
     }
 
     @Test
-    void testToDTOWithNullTrainsOut() {
+    void testToDTOWithNullTrainsOut()
+    {
         TrainsResponse domain = new TrainsResponse();
         domain.setOrigin("OURENSE");
         domain.setDestination("MADRID");
@@ -72,7 +85,8 @@ class TrainMapperTest {
     }
 
     @Test
-    void testToDTOWithEmptyTrainsLists() {
+    void testToDTOWithEmptyTrainsLists()
+    {
         TrainsResponse domain = new TrainsResponse();
         domain.setOrigin("OURENSE");
         domain.setDestination("MADRID");
@@ -90,7 +104,8 @@ class TrainMapperTest {
     }
 
     @Test
-    void testToDTOWithTrainContainingAllFields() {
+    void testToDTOWithTrainContainingAllFields()
+    {
         Train train = createCompleteTrain();
         TrainsResponse domain = new TrainsResponse();
         domain.setOrigin("OURENSE");
@@ -120,7 +135,8 @@ class TrainMapperTest {
     }
 
     @Test
-    void testToDTOWithNullTrainInList() {
+    void testToDTOWithNullTrainInList()
+    {
         Train train1 = createCompleteTrain();
         Train train2 = null;
         TrainsResponse domain = new TrainsResponse();
@@ -139,7 +155,8 @@ class TrainMapperTest {
     }
 
     @Test
-    void testToDTOWithTrainWithNullFares() {
+    void testToDTOWithTrainWithNullFares()
+    {
         Train train = createCompleteTrain();
         train.setFares(null);
         TrainsResponse domain = new TrainsResponse();
@@ -158,7 +175,8 @@ class TrainMapperTest {
     }
 
     @Test
-    void testToDTOWithTrainWithEmptyFares() {
+    void testToDTOWithTrainWithEmptyFares()
+    {
         Train train = createCompleteTrain();
         train.setFares(Collections.emptyList());
         TrainsResponse domain = new TrainsResponse();
@@ -177,7 +195,8 @@ class TrainMapperTest {
     }
 
     @Test
-    void testToDTOWithTrainWithFares() {
+    void testToDTOWithTrainWithFares()
+    {
         Train train = createCompleteTrain();
         FareOption fare1 = new FareOption();
         fare1.setName("Basic");
@@ -224,7 +243,8 @@ class TrainMapperTest {
     }
 
     @Test
-    void testToDTOWithNullFareInList() {
+    void testToDTOWithNullFareInList()
+    {
         Train train = createCompleteTrain();
         FareOption fare1 = new FareOption();
         fare1.setName("Basic");
@@ -249,7 +269,8 @@ class TrainMapperTest {
     }
 
     @Test
-    void testToDTOWithMinimalData() {
+    void testToDTOWithMinimalData()
+    {
         TrainsResponse domain = new TrainsResponse();
         domain.setOrigin("A");
         domain.setDestination("B");
@@ -265,7 +286,8 @@ class TrainMapperTest {
     }
 
     @Test
-    void testToDTOWithTrainWithConnection() {
+    void testToDTOWithTrainWithConnection()
+    {
         Train train = createCompleteTrain();
         TrainConnection connection = new TrainConnection();
         connection.setDuration("1 horas 10 minutos");
@@ -284,7 +306,7 @@ class TrainMapperTest {
         TrainsResponseDTO dto = TrainMapper.toDTO(domain);
         assertNotNull(dto);
         TrainDTO trainDTO = dto.trainsOut().get(0);
-        
+
         assertNotNull(trainDTO.connection());
         TrainConnectionDTO connectionDTO = trainDTO.connection();
         assertEquals("1 horas 10 minutos", connectionDTO.duration());
@@ -293,7 +315,8 @@ class TrainMapperTest {
     }
 
     @Test
-    void testToDTOWithTrainWithoutConnection() {
+    void testToDTOWithTrainWithoutConnection()
+    {
         Train train = createCompleteTrain();
         train.setConnection(null);
 
@@ -308,12 +331,13 @@ class TrainMapperTest {
         TrainsResponseDTO dto = TrainMapper.toDTO(domain);
         assertNotNull(dto);
         TrainDTO trainDTO = dto.trainsOut().get(0);
-        
+
         assertNull(trainDTO.connection());
     }
 
     @Test
-    void testToDTOWithTrainWithConnectionDifferentTypes() {
+    void testToDTOWithTrainWithConnectionDifferentTypes()
+    {
         Train train = createCompleteTrain();
         TrainConnection connection = new TrainConnection();
         connection.setDuration("45 minutos");
@@ -332,7 +356,7 @@ class TrainMapperTest {
         TrainsResponseDTO dto = TrainMapper.toDTO(domain);
         assertNotNull(dto);
         TrainDTO trainDTO = dto.trainsOut().get(0);
-        
+
         assertNotNull(trainDTO.connection());
         TrainConnectionDTO connectionDTO = trainDTO.connection();
         assertEquals("45 minutos", connectionDTO.duration());
@@ -340,7 +364,8 @@ class TrainMapperTest {
         assertEquals("EUROMED", connectionDTO.secondTrainType());
     }
 
-    private TrainsResponse createCompleteTrainsResponse() {
+    private TrainsResponse createCompleteTrainsResponse()
+    {
         Train train1 = createCompleteTrain();
         Train train2 = new Train();
         train2.setTrainId("TRAIN456");
@@ -370,7 +395,8 @@ class TrainMapperTest {
         return response;
     }
 
-    private Train createCompleteTrain() {
+    private Train createCompleteTrain()
+    {
         Train train = new Train();
         train.setTrainId("TRAIN123");
         train.setServiceType("AVE");
@@ -385,4 +411,3 @@ class TrainMapperTest {
         return train;
     }
 }
-

@@ -1,16 +1,25 @@
+/*
+ * Copyright © ${YEAR} MCP Renfe Navigation Quarkus
+ * All rights reserved.
+ */
+
 package com.delard.renfe.navigation.domain.model;
+
+
+import static org.junit.jupiter.api.Assertions.*;
 
 import org.junit.jupiter.api.Test;
 
-import static org.junit.jupiter.api.Assertions.*;
 
 /**
  * Unit tests for TrainConnection domain model
  */
-class TrainConnectionTest {
+class TrainConnectionTest
+{
 
     @Test
-    void testDefaultConstructor() {
+    void testDefaultConstructor()
+    {
         // Act
         TrainConnection connection = new TrainConnection();
 
@@ -22,7 +31,8 @@ class TrainConnectionTest {
     }
 
     @Test
-    void testParameterizedConstructor() {
+    void testParameterizedConstructor()
+    {
         // Arrange
         String duration = "1 horas 10 minutos";
         String firstTrainType = "REG.EXP.";
@@ -38,7 +48,8 @@ class TrainConnectionTest {
     }
 
     @Test
-    void testParameterizedConstructorWithNullValues() {
+    void testParameterizedConstructorWithNullValues()
+    {
         // Arrange
         String duration = null;
         String firstTrainType = null;
@@ -54,7 +65,8 @@ class TrainConnectionTest {
     }
 
     @Test
-    void testSettersAndGetters() {
+    void testSettersAndGetters()
+    {
         // Arrange
         TrainConnection connection = new TrainConnection();
         String duration = "45 minutos";
@@ -73,7 +85,8 @@ class TrainConnectionTest {
     }
 
     @Test
-    void testSetNullValues() {
+    void testSetNullValues()
+    {
         // Arrange
         TrainConnection connection = new TrainConnection("1 hora", "AVE", "ALVIA");
 
@@ -89,7 +102,8 @@ class TrainConnectionTest {
     }
 
     @Test
-    void testSetEmptyStrings() {
+    void testSetEmptyStrings()
+    {
         // Arrange
         TrainConnection connection = new TrainConnection();
 
@@ -105,13 +119,14 @@ class TrainConnectionTest {
     }
 
     @Test
-    void testDifferentTrainTypes() {
+    void testDifferentTrainTypes()
+    {
         // Test with various train type combinations
         String[][] trainTypes = {
-            {"REG.EXP.", "AVE"},
-            {"ALVIA", "EUROMED"},
-            {"AVE", "ALVIA"},
-            {"EUROMED", "REG.EXP."}
+                { "REG.EXP.", "AVE" },
+                { "ALVIA", "EUROMED" },
+                { "AVE", "ALVIA" },
+                { "EUROMED", "REG.EXP." }
         };
 
         for (String[] types : trainTypes) {
@@ -122,14 +137,15 @@ class TrainConnectionTest {
     }
 
     @Test
-    void testDifferentDurations() {
+    void testDifferentDurations()
+    {
         // Test with various duration formats
         String[] durations = {
-            "1 horas 10 minutos",
-            "45 minutos",
-            "2 horas",
-            "30 minutos",
-            "1 hora 5 minutos"
+                "1 horas 10 minutos",
+                "45 minutos",
+                "2 horas",
+                "30 minutos",
+                "1 hora 5 minutos"
         };
 
         for (String duration : durations) {
@@ -139,7 +155,8 @@ class TrainConnectionTest {
     }
 
     @Test
-    void testUpdateValues() {
+    void testUpdateValues()
+    {
         // Arrange
         TrainConnection connection = new TrainConnection("1 hora", "AVE", "ALVIA");
 
@@ -155,7 +172,8 @@ class TrainConnectionTest {
     }
 
     @Test
-    void testConstructorAndSettersCombination() {
+    void testConstructorAndSettersCombination()
+    {
         // Arrange
         TrainConnection connection = new TrainConnection("1 hora", "AVE", "ALVIA");
 
@@ -170,4 +188,3 @@ class TrainConnectionTest {
         assertEquals("EUROMED", connection.getSecondTrainType());
     }
 }
-

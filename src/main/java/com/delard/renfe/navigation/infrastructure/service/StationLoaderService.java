@@ -1,13 +1,10 @@
+/*
+ * Copyright © ${YEAR} MCP Renfe Navigation Quarkus
+ * All rights reserved.
+ */
+
 package com.delard.renfe.navigation.infrastructure.service;
 
-import com.delard.renfe.navigation.domain.port.output.CachePort;
-import com.fasterxml.jackson.core.type.TypeReference;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import jakarta.annotation.PostConstruct;
-import jakarta.enterprise.context.ApplicationScoped;
-import jakarta.inject.Inject;
-import org.eclipse.microprofile.config.inject.ConfigProperty;
-import org.jboss.logging.Logger;
 
 import java.io.InputStream;
 import java.net.URI;
@@ -20,16 +17,31 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
+import jakarta.annotation.PostConstruct;
+import jakarta.enterprise.context.ApplicationScoped;
+import jakarta.inject.Inject;
+
+import com.delard.renfe.navigation.domain.port.output.CachePort;
+
+import org.eclipse.microprofile.config.inject.ConfigProperty;
+import org.jboss.logging.Logger;
+
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.ObjectMapper;
+
+
 /**
  * Service for loading station data from URL or file
  */
 @ApplicationScoped
-public class StationLoaderService {
+public class StationLoaderService
+{
 
     private static final Logger LOG = Logger.getLogger(StationLoaderService.class);
 
     @Inject
-    @ConfigProperty(name = "renfe.stations-url", defaultValue = "https://www.renfe.com/content/dam/renfe/es/General/buscadores/javascript/estacionesEstaticas.js")
+    @ConfigProperty(name = "renfe.stations-url",
+            defaultValue = "https://www.renfe.com/content/dam/renfe/es/General/buscadores/javascript/estacionesEstaticas.js")
     String renfeStationsUrl;
 
     @Inject
@@ -49,15 +61,17 @@ public class StationLoaderService {
 
     private final ObjectMapper objectMapper;
     private HttpClient httpClient;
-    
+
     private static final String CACHE_KEY_STATIONS = "stations:all";
 
-    public StationLoaderService() {
+    public StationLoaderService()
+    {
         this.objectMapper = new ObjectMapper();
     }
 
     @PostConstruct
-    void init() {
+    void init()
+    {
         this.httpClient = HttpClient.newBuilder()
                 .connectTimeout(Duration.ofSeconds(stationsTimeoutSeconds))
                 .build();
@@ -69,12 +83,13 @@ public class StationLoaderService {
      *
      * @return List of station maps
      */
-    public List<Map<String, Object>> loadStations() {
+    public List<Map<String, Object>> loadStations()
+    {
         // Try to get from cache first
         if (cachePort.isEnabled()) {
             @SuppressWarnings("unchecked")
-            Optional<List<Map<String, Object>>> cachedStations = 
-                (Optional<List<Map<String, Object>>>) (Optional<?>) cachePort.get(CACHE_KEY_STATIONS, List.class);
+            Optional<List<Map<String, Object>>> cachedStations =
+                    (Optional<List<Map<String, Object>>>)(Optional<?>)cachePort.get(CACHE_KEY_STATIONS, List.class);
             if (cachedStations.isPresent()) {
                 LOG.debugf("Stations loaded from cache");
                 return cachedStations.get();
@@ -91,12 +106,11 @@ public class StationLoaderService {
             stations = loadFromFile();
             if (!stations.isEmpty()) {
                 LOG.warnf(
-                    "[WARNING] Stations loaded from local file (%s) instead of URL. " +
-                    "This may indicate network issues or URL unavailability. " +
-                    "Loaded %d stations from local file.",
-                    stationsDefaultPath,
-                    stations.size()
-                );
+                        "[WARNING] Stations loaded from local file (%s) instead of URL. " +
+                                "This may indicate network issues or URL unavailability. " +
+                                "Loaded %d stations from local file.",
+                        stationsDefaultPath,
+                        stations.size());
             }
         }
 
@@ -114,7 +128,8 @@ public class StationLoaderService {
      *
      * @return List of station maps
      */
-    private List<Map<String, Object>> loadFromUrl() throws Exception {
+    private List<Map<String, Object>> loadFromUrl() throws Exception
+    {
         HttpRequest request = HttpRequest.newBuilder()
                 .uri(URI.create(renfeStationsUrl))
                 .timeout(Duration.ofSeconds(stationsTimeoutSeconds))
@@ -129,10 +144,10 @@ public class StationLoaderService {
 
         String content = response.body();
         List<Map<String, Object>> urlStations = parseJavaScriptStations(content);
-        
+
         // Compare with local file and warn if different
         compareWithLocalFile(urlStations);
-        
+
         return urlStations;
     }
 
@@ -142,7 +157,8 @@ public class StationLoaderService {
      * @param content JavaScript content
      * @return List of station maps
      */
-    private List<Map<String, Object>> parseJavaScriptStations(String content) throws Exception {
+    private List<Map<String, Object>> parseJavaScriptStations(String content) throws Exception
+    {
         // Extract the estacionesEstatico array from JavaScript
         // Try different variations: with and without spaces
         int startIndex = content.indexOf("var estacionesEstatico=[");
@@ -181,9 +197,11 @@ public class StationLoaderService {
         }
 
         String jsonArray = content.substring(bracketStart, endIndex);
-        
-        List<Map<String, Object>> stations = objectMapper.readValue(jsonArray, new TypeReference<List<Map<String, Object>>>() {});
-        
+
+        List<Map<String, Object>> stations =
+                objectMapper.readValue(jsonArray, new TypeReference<List<Map<String, Object>>>() {
+                });
+
         LOG.debugf("Parsed %d stations from JavaScript", stations.size());
         return stations;
     }
@@ -193,7 +211,8 @@ public class StationLoaderService {
      *
      * @return List of station maps
      */
-    private List<Map<String, Object>> loadFromFile() {
+    private List<Map<String, Object>> loadFromFile()
+    {
         try {
             InputStream resourceStream = getClass().getResourceAsStream(stationsDefaultPath);
             if (resourceStream == null) {
@@ -203,7 +222,7 @@ public class StationLoaderService {
 
             String content = new String(resourceStream.readAllBytes(), java.nio.charset.StandardCharsets.UTF_8);
             List<Map<String, Object>> stations = parseJavaScriptStations(content);
-            
+
             LOG.debugf("Loaded %d stations from local file", stations.size());
             return stations;
         } catch (Exception e) {
@@ -217,24 +236,24 @@ public class StationLoaderService {
      *
      * @param urlStations Stations loaded from URL
      */
-    private void compareWithLocalFile(List<Map<String, Object>> urlStations) {
+    private void compareWithLocalFile(List<Map<String, Object>> urlStations)
+    {
         try {
             List<Map<String, Object>> localStations = loadFromFile();
-            
+
             if (localStations.isEmpty()) {
                 LOG.debug("Local stations file is empty or not found, skipping comparison");
                 return;
             }
-            
+
             if (!areStationsEqual(urlStations, localStations)) {
                 LOG.warnf(
-                    "[WARNING] Local static stations file (%s) differs from URL stations. " +
-                    "URL has %d stations, local file has %d stations. " +
-                    "Consider updating the local file to match the URL version.",
-                    stationsDefaultPath,
-                    urlStations.size(),
-                    localStations.size()
-                );
+                        "[WARNING] Local static stations file (%s) differs from URL stations. " +
+                                "URL has %d stations, local file has %d stations. " +
+                                "Consider updating the local file to match the URL version.",
+                        stationsDefaultPath,
+                        urlStations.size(),
+                        localStations.size());
             } else {
                 LOG.debugf("Local stations file matches URL stations (%d stations)", urlStations.size());
             }
@@ -251,11 +270,12 @@ public class StationLoaderService {
      * @param stations2 Second list of stations
      * @return true if lists are equal, false otherwise
      */
-    private boolean areStationsEqual(List<Map<String, Object>> stations1, List<Map<String, Object>> stations2) {
+    private boolean areStationsEqual(List<Map<String, Object>> stations1, List<Map<String, Object>> stations2)
+    {
         if (stations1.size() != stations2.size()) {
             return false;
         }
-        
+
         // Create a set of station keys for quick lookup
         java.util.Set<String> keys1 = new java.util.HashSet<>();
         for (Map<String, Object> station : stations1) {
@@ -264,7 +284,7 @@ public class StationLoaderService {
                 keys1.add(key);
             }
         }
-        
+
         java.util.Set<String> keys2 = new java.util.HashSet<>();
         for (Map<String, Object> station : stations2) {
             String key = getStationKey(station);
@@ -272,12 +292,12 @@ public class StationLoaderService {
                 keys2.add(key);
             }
         }
-        
+
         // Compare sets
         if (keys1.size() != keys2.size()) {
             return false;
         }
-        
+
         return keys1.equals(keys2);
     }
 
@@ -287,11 +307,12 @@ public class StationLoaderService {
      * @param station Station map
      * @return Unique key string
      */
-    private String getStationKey(Map<String, Object> station) {
+    private String getStationKey(Map<String, Object> station)
+    {
         String code = getStringValue(station, "cdgoEstacion");
         String name = getStringValue(station, "desgEstacion");
         String key = getStringValue(station, "clave");
-        
+
         // Use clave if available, otherwise use code + name
         if (key != null && !key.isEmpty()) {
             return key;
@@ -309,9 +330,9 @@ public class StationLoaderService {
      * @param key Key to look up
      * @return String value or null
      */
-    private String getStringValue(Map<String, Object> map, String key) {
+    private String getStringValue(Map<String, Object> map, String key)
+    {
         Object value = map.get(key);
         return value == null ? null : value.toString();
     }
 }
-

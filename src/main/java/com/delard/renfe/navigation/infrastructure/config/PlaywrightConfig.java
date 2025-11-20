@@ -1,22 +1,31 @@
+/*
+ * Copyright © ${YEAR} MCP Renfe Navigation Quarkus
+ * All rights reserved.
+ */
+
 package com.delard.renfe.navigation.infrastructure.config;
+
 
 import jakarta.annotation.PostConstruct;
 import jakarta.enterprise.context.ApplicationScoped;
+
 import org.eclipse.microprofile.config.inject.ConfigProperty;
 import org.jboss.logging.Logger;
+
 
 /**
  * Configuration for Playwright browser automation
  */
 @ApplicationScoped
-public class PlaywrightConfig {
+public class PlaywrightConfig
+{
 
     private static final Logger LOG = Logger.getLogger(PlaywrightConfig.class);
 
     // Default values match production configuration in application.properties
     // These values are optimized for production (headless=true, slow-mo=0, etc.)
     // Test profiles can override these values via application-integration.properties
-    
+
     @ConfigProperty(name = "playwright.headless", defaultValue = "true")
     public boolean headless;
 
@@ -51,52 +60,64 @@ public class PlaywrightConfig {
     public String responsesDir;
 
     @PostConstruct
-    void init() {
-        LOG.infof("PlaywrightConfig initialized - headless: %s, slow-mo: %d, viewport: %dx%d", 
+    void init()
+    {
+        LOG.infof("PlaywrightConfig initialized - headless: %s, slow-mo: %d, viewport: %dx%d",
                 headless, slowMo, viewportWidth, viewportHeight);
     }
 
-    public boolean isHeadless() {
+    public boolean isHeadless()
+    {
         return headless;
     }
 
-    public int getViewportWidth() {
+    public int getViewportWidth()
+    {
         return viewportWidth;
     }
 
-    public int getViewportHeight() {
+    public int getViewportHeight()
+    {
         return viewportHeight;
     }
 
-    public int getSlowMo() {
+    public int getSlowMo()
+    {
         return slowMo;
     }
 
-    public String getLocale() {
+    public String getLocale()
+    {
         return locale;
     }
 
-    public int getTimeoutMs() {
+    public int getTimeoutMs()
+    {
         return timeoutMs;
     }
 
-    public int getNavigationTimeoutMs() {
+    public int getNavigationTimeoutMs()
+    {
         return navigationTimeoutMs;
     }
 
-    public int getNetworkIdleTimeoutMs() {
+    public int getNetworkIdleTimeoutMs()
+    {
         return networkIdleTimeoutMs;
     }
 
-    public int getShortTimeoutMs() {
+    public int getShortTimeoutMs()
+    {
         return shortTimeoutMs;
     }
 
-    public String getRenfeSearchUrl() {
+    public String getRenfeSearchUrl()
+    {
         return renfeSearchUrl;
     }
 
-    public String getResponsesDir() {
+    public String getResponsesDir()
+    {
         return responsesDir;
     }
 }

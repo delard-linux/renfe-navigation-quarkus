@@ -1,25 +1,35 @@
+/*
+ * Copyright © ${YEAR} MCP Renfe Navigation Quarkus
+ * All rights reserved.
+ */
+
 package com.delard.renfe.navigation.infrastructure.service;
+
+
+import java.util.ArrayList;
+import java.util.List;
+
+import jakarta.enterprise.context.ApplicationScoped;
+import jakarta.inject.Inject;
 
 import com.delard.renfe.navigation.domain.model.FareOption;
 import com.delard.renfe.navigation.domain.model.Train;
 import com.delard.renfe.navigation.domain.model.TrainConnection;
+
 import org.jboss.logging.Logger;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 
-import jakarta.enterprise.context.ApplicationScoped;
-import jakarta.inject.Inject;
-import java.util.ArrayList;
-import java.util.List;
 
 /**
  * Parser for extracting train information from Renfe HTML
  * Orchestrates specialized parsers for different parts of the train data
  */
 @ApplicationScoped
-public class TrainHtmlParser {
+public class TrainHtmlParser
+{
 
     private static final Logger LOG = Logger.getLogger(TrainHtmlParser.class);
 
@@ -40,7 +50,8 @@ public class TrainHtmlParser {
      * @throws IllegalArgumentException if htmlContent is null
      * @throws RuntimeException if there's a critical error parsing the HTML document
      */
-    public List<Train> parseTrainList(String htmlContent) {
+    public List<Train> parseTrainList(String htmlContent)
+    {
         if (htmlContent == null) {
             throw new IllegalArgumentException("HTML content cannot be null");
         }
@@ -82,7 +93,8 @@ public class TrainHtmlParser {
     /**
      * Parse a single train row element
      */
-    private Train parseTrainRow(Element row, int index) throws Exception {
+    private Train parseTrainRow(Element row, int index) throws Exception
+    {
         // Use TrainRowParser to extract basic train information
         Train train = trainRowParser.parseTrainRow(row, index);
         String trainId = train.getTrainId();
@@ -94,7 +106,7 @@ public class TrainHtmlParser {
         TrainConnection connection = trainConnectionParser.parseTrainConnection(row, trainId);
         if (connection != null) {
             train.setConnection(connection);
-            LOG.debugf("[PARSER] Found connection for train %s: %s -> %s (duration: %s)", 
+            LOG.debugf("[PARSER] Found connection for train %s: %s -> %s (duration: %s)",
                     trainId, connection.getFirstTrainType(), connection.getSecondTrainType(), connection.getDuration());
         }
 
@@ -104,28 +116,29 @@ public class TrainHtmlParser {
     /**
      * Extract available fares from the train row
      */
-    private void extractFares(Element row, Train train, String trainId) {
+    private void extractFares(Element row, Train train, String trainId)
+    {
         // HTML format: div with class "seleccion-resumen-bottom" and "card" inside div.planes-opciones
         Element planesOpciones = row.selectFirst("div.planes-opciones");
         Elements fareCards = new Elements();
-        
+
         if (planesOpciones != null) {
             // Select divs that have both "seleccion-resumen-bottom" and "card" classes
             fareCards = planesOpciones.select("div[class*='seleccion-resumen-bottom'][class*='card']");
-            
+
             // Fallback: if still empty, try selecting by role="button" which fare cards have
             if (fareCards.isEmpty()) {
                 fareCards = planesOpciones.select("div[role='button'][class*='seleccion-resumen-bottom']");
             }
         }
-        
+
         // If still no fares found, try direct selection from row
         if (fareCards.isEmpty()) {
             fareCards = row.select("div[class*='seleccion-resumen-bottom'][class*='card']");
         }
-        
+
         LOG.debugf("[PARSER] Found %d fare cards for train %s", fareCards.size(), trainId);
-        
+
         for (int i = 0; i < fareCards.size(); i++) {
             try {
                 FareOption fare = fareCardParser.parseFareCard(fareCards.get(i), trainId);
@@ -134,7 +147,7 @@ public class TrainHtmlParser {
                     List<FareOption> fares = train.getFares();
                     fares.add(fare);
                     train.setFares(fares);
-                    LOG.debugf("[PARSER] Successfully parsed fare %d for train %s: %s (%.2f€)", 
+                    LOG.debugf("[PARSER] Successfully parsed fare %d for train %s: %s (%.2f€)",
                             i, trainId, fare.getName(), fare.getPrice());
                 } else {
                     LOG.warnf("[PARSER] parseFareCard returned null for fare %d of train %s", i, trainId);
@@ -146,4 +159,3 @@ public class TrainHtmlParser {
     }
 
 }
-

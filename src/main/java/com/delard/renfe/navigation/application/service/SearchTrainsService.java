@@ -1,4 +1,21 @@
+/*
+ * Copyright © ${YEAR} MCP Renfe Navigation Quarkus
+ * All rights reserved.
+ */
+
 package com.delard.renfe.navigation.application.service;
+
+
+import java.time.Duration;
+import java.time.Instant;
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeParseException;
+import java.util.List;
+import java.util.stream.Collectors;
+
+import jakarta.enterprise.context.ApplicationScoped;
+import jakarta.inject.Inject;
 
 import com.delard.renfe.navigation.application.exception.QueueException;
 import com.delard.renfe.navigation.application.exception.TrainUnavailabilityException;
@@ -9,26 +26,19 @@ import com.delard.renfe.navigation.domain.model.TrainsResponse;
 import com.delard.renfe.navigation.domain.port.input.GetStationsUseCase;
 import com.delard.renfe.navigation.domain.port.input.SearchTrainsUseCase;
 import com.delard.renfe.navigation.domain.port.output.TrainScraperPort;
-import jakarta.enterprise.context.ApplicationScoped;
-import jakarta.inject.Inject;
+
 import org.jboss.logging.Logger;
 
-import java.time.Duration;
-import java.time.Instant;
-import java.time.LocalDate;
-import java.time.format.DateTimeFormatter;
-import java.time.format.DateTimeParseException;
-import java.util.List;
-import java.util.stream.Collectors;
 
 /**
  * Application service for searching trains
  */
 @ApplicationScoped
-public class SearchTrainsService implements SearchTrainsUseCase {
+public class SearchTrainsService implements SearchTrainsUseCase
+{
 
     private static final Logger LOG = Logger.getLogger(SearchTrainsService.class);
-    
+
     // Date format constants
     private static final DateTimeFormatter INPUT_FORMAT = DateTimeFormatter.ofPattern("yyyy-MM-dd");
     private static final DateTimeFormatter OUTPUT_FORMAT = DateTimeFormatter.ofPattern("dd/MM/yyyy");
@@ -42,7 +52,8 @@ public class SearchTrainsService implements SearchTrainsUseCase {
 
     @Override
     public TrainsResponse searchTrains(String origin, String destination, String dateOut,
-                                       String dateReturn, String adults) {
+            String dateReturn, String adults)
+    {
         Instant startTime = Instant.now();
 
         // Validate required parameters
@@ -50,8 +61,8 @@ public class SearchTrainsService implements SearchTrainsUseCase {
 
         // Validate and format dates
         String formattedDateOut = validateAndFormatDate(dateOut, "dateOut");
-        String formattedDateReturn = dateReturn != null && !dateReturn.isBlank() 
-                ? validateAndFormatDate(dateReturn, "dateReturn") 
+        String formattedDateReturn = dateReturn != null && !dateReturn.isBlank()
+                ? validateAndFormatDate(dateReturn, "dateReturn")
                 : null;
 
         // Validate stations exist and are unique, get station data
@@ -112,11 +123,11 @@ public class SearchTrainsService implements SearchTrainsUseCase {
      * @return Formatted date string in dd/MM/yyyy format
      * @throws ValidationException if date format is incorrect
      */
-    private String validateAndFormatDate(String dateStr, String fieldName) {
+    private String validateAndFormatDate(String dateStr, String fieldName)
+    {
         if (dateStr == null || dateStr.isBlank()) {
             throw new ValidationException(
-                String.format("%s is required", fieldName)
-            );
+                    String.format("%s is required", fieldName));
         }
 
         try {
@@ -126,23 +137,19 @@ public class SearchTrainsService implements SearchTrainsUseCase {
             return formattedDate;
         } catch (DateTimeParseException e) {
             throw new ValidationException(
-                String.format(
-                    "Invalid date format for %s: '%s'. Expected format: %s",
-                    fieldName,
-                    dateStr,
-                    EXPECTED_DATE_FORMAT
-                )
-            );
+                    String.format(
+                            "Invalid date format for %s: '%s'. Expected format: %s",
+                            fieldName,
+                            dateStr,
+                            EXPECTED_DATE_FORMAT));
         } catch (Exception e) {
             LOG.errorf(e, "Error formatting %s date: %s", fieldName, dateStr);
             throw new ValidationException(
-                String.format(
-                    "Error formatting %s date '%s'. Expected format: %s",
-                    fieldName,
-                    dateStr,
-                    EXPECTED_DATE_FORMAT
-                )
-            );
+                    String.format(
+                            "Error formatting %s date '%s'. Expected format: %s",
+                            fieldName,
+                            dateStr,
+                            EXPECTED_DATE_FORMAT));
         }
     }
 
@@ -155,7 +162,8 @@ public class SearchTrainsService implements SearchTrainsUseCase {
      * @param adults      Number of adult passengers (required, must be > 0) as string
      * @throws ValidationException if validation fails
      */
-    private void validateRequiredFields(String origin, String destination, String dateOut, String adults) {
+    private void validateRequiredFields(String origin, String destination, String dateOut, String adults)
+    {
         if (origin == null || origin.isBlank()) {
             throw new ValidationException("Origin is required");
         }
@@ -194,7 +202,8 @@ public class SearchTrainsService implements SearchTrainsUseCase {
      * @return StationValidationResult with station data (name, desgEstacion, clave)
      * @throws ValidationException if validation fails
      */
-    private StationValidationResult validateStations(String origin, String destination) {
+    private StationValidationResult validateStations(String origin, String destination)
+    {
         StationData originData = validateStation(origin, "origin");
         StationData destinationData = validateStation(destination, "destination");
         return new StationValidationResult(originData, destinationData);
@@ -209,14 +218,14 @@ public class SearchTrainsService implements SearchTrainsUseCase {
      * @return StationData with stationNamePlano, desgEstacion, and clave
      * @throws ValidationException if validation fails
      */
-    private StationData validateStation(String stationName, String fieldName) {
+    private StationData validateStation(String stationName, String fieldName)
+    {
         try {
             List<Station> matchingStations = getStationsUseCase.searchStations(stationName);
 
             if (matchingStations.isEmpty()) {
                 throw new ValidationException(
-                    String.format("No station found matching '%s' for %s", stationName, fieldName)
-                );
+                        String.format("No station found matching '%s' for %s", stationName, fieldName));
             }
 
             if (matchingStations.size() > 1) {
@@ -227,12 +236,10 @@ public class SearchTrainsService implements SearchTrainsUseCase {
 
                 String stationNamesList = String.join(", ", stationNames);
                 throw new ValidationException(
-                    String.format(
-                        "Please provide a more precise station name. The current search for %s matches the following stations: [%s]",
-                        fieldName,
-                        stationNamesList
-                    )
-                );
+                        String.format(
+                                "Please provide a more precise station name. The current search for %s matches the following stations: [%s]",
+                                fieldName,
+                                stationNamesList));
             }
 
             // Exactly one station found - extract all needed data
@@ -246,15 +253,15 @@ public class SearchTrainsService implements SearchTrainsUseCase {
                     realStationName = stationName;
                 }
             }
-            
+
             String desgEstacion = foundStation.getStationName() != null && !foundStation.getStationName().isBlank()
                     ? foundStation.getStationName()
                     : realStationName;
             String clave = foundStation.getKey() != null && !foundStation.getKey().isBlank()
                     ? foundStation.getKey()
                     : "";
-            
-            LOG.debugf("Validated %s station: %s (desgEstacion: %s, clave: %s, search text: %s)", 
+
+            LOG.debugf("Validated %s station: %s (desgEstacion: %s, clave: %s, search text: %s)",
                     fieldName, realStationName, desgEstacion, clave, stationName);
             return new StationData(realStationName, desgEstacion, clave);
 
@@ -264,34 +271,38 @@ public class SearchTrainsService implements SearchTrainsUseCase {
         } catch (Exception e) {
             LOG.errorf(e, "Error validating %s station: %s", fieldName, e.getMessage());
             throw new ValidationException(
-                String.format("Error validating %s station: %s", fieldName, e.getMessage())
-            );
+                    String.format("Error validating %s station: %s", fieldName, e.getMessage()));
         }
     }
 
     /**
      * Station data needed for form submission
      */
-    private static class StationData {
+    private static class StationData
+    {
         private final String stationNamePlano;
         private final String desgEstacion;
         private final String clave;
 
-        StationData(String stationNamePlano, String desgEstacion, String clave) {
+        StationData(String stationNamePlano, String desgEstacion, String clave)
+        {
             this.stationNamePlano = stationNamePlano;
             this.desgEstacion = desgEstacion;
             this.clave = clave;
         }
 
-        String getStationNamePlano() {
+        String getStationNamePlano()
+        {
             return stationNamePlano;
         }
 
-        String getDesgEstacion() {
+        String getDesgEstacion()
+        {
             return desgEstacion;
         }
 
-        String getClave() {
+        String getClave()
+        {
             return clave;
         }
     }
@@ -299,38 +310,45 @@ public class SearchTrainsService implements SearchTrainsUseCase {
     /**
      * Result of station validation containing the station data to use
      */
-    private static class StationValidationResult {
+    private static class StationValidationResult
+    {
         private final StationData originData;
         private final StationData destinationData;
 
-        StationValidationResult(StationData originData, StationData destinationData) {
+        StationValidationResult(StationData originData, StationData destinationData)
+        {
             this.originData = originData;
             this.destinationData = destinationData;
         }
 
-        String getOriginStationName() {
+        String getOriginStationName()
+        {
             return originData.getStationNamePlano();
         }
 
-        String getDestinationStationName() {
+        String getDestinationStationName()
+        {
             return destinationData.getStationNamePlano();
         }
 
-        String getOriginDesgEstacion() {
+        String getOriginDesgEstacion()
+        {
             return originData.getDesgEstacion();
         }
 
-        String getDestinationDesgEstacion() {
+        String getDestinationDesgEstacion()
+        {
             return destinationData.getDesgEstacion();
         }
 
-        String getOriginClave() {
+        String getOriginClave()
+        {
             return originData.getClave();
         }
 
-        String getDestinationClave() {
+        String getDestinationClave()
+        {
             return destinationData.getClave();
         }
     }
 }
-

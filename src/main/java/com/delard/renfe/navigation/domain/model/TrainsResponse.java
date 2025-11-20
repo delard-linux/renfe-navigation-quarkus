@@ -1,12 +1,20 @@
+/*
+ * Copyright © ${YEAR} MCP Renfe Navigation Quarkus
+ * All rights reserved.
+ */
+
 package com.delard.renfe.navigation.domain.model;
+
 
 import java.util.ArrayList;
 import java.util.List;
 
+
 /**
  * Search result containing trains for outbound and optional return journey
  */
-public class TrainsResponse {
+public class TrainsResponse
+{
     private String origin;
     private String destination;
     private String dateOut;
@@ -15,11 +23,13 @@ public class TrainsResponse {
     private List<Train> trainsOut;
     private List<Train> trainsReturn;
 
-    public TrainsResponse() {
+    public TrainsResponse()
+    {
     }
 
     public TrainsResponse(String origin, String destination, String dateOut, String dateReturn,
-                          String adults, List<Train> trainsOut, List<Train> trainsReturn) {
+            String adults, List<Train> trainsOut, List<Train> trainsReturn)
+    {
         this.origin = origin;
         this.destination = destination;
         this.dateOut = dateOut;
@@ -30,60 +40,73 @@ public class TrainsResponse {
     }
 
     // Getters and Setters
-    public String getOrigin() {
+    public String getOrigin()
+    {
         return origin;
     }
 
-    public void setOrigin(String origin) {
+    public void setOrigin(String origin)
+    {
         this.origin = origin;
     }
 
-    public String getDestination() {
+    public String getDestination()
+    {
         return destination;
     }
 
-    public void setDestination(String destination) {
+    public void setDestination(String destination)
+    {
         this.destination = destination;
     }
 
-    public String getDateOut() {
+    public String getDateOut()
+    {
         return dateOut;
     }
 
-    public void setDateOut(String dateOut) {
+    public void setDateOut(String dateOut)
+    {
         this.dateOut = dateOut;
     }
 
-    public String getDateReturn() {
+    public String getDateReturn()
+    {
         return dateReturn;
     }
 
-    public void setDateReturn(String dateReturn) {
+    public void setDateReturn(String dateReturn)
+    {
         this.dateReturn = dateReturn;
     }
 
-    public String getAdults() {
+    public String getAdults()
+    {
         return adults;
     }
 
-    public void setAdults(String adults) {
+    public void setAdults(String adults)
+    {
         this.adults = adults;
     }
 
-    public List<Train> getTrainsOut() {
+    public List<Train> getTrainsOut()
+    {
         return trainsOut != null ? new ArrayList<>(trainsOut) : null;
     }
 
-    public void setTrainsOut(List<Train> trainsOut) {
+    public void setTrainsOut(List<Train> trainsOut)
+    {
         this.trainsOut = trainsOut != null ? new ArrayList<>(trainsOut) : null;
     }
 
-    public List<Train> getTrainsReturn() {
+    public List<Train> getTrainsReturn()
+    {
         return trainsReturn != null ? new ArrayList<>(trainsReturn) : null;
     }
 
-    public void setTrainsReturn(List<Train> trainsReturn) {
+    public void setTrainsReturn(List<Train> trainsReturn)
+    {
         this.trainsReturn = trainsReturn != null ? new ArrayList<>(trainsReturn) : null;
     }
 }
-

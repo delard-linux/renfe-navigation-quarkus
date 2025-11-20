@@ -1,4 +1,14 @@
+/*
+ * Copyright © ${YEAR} MCP Renfe Navigation Quarkus
+ * All rights reserved.
+ */
+
 package com.delard.renfe.navigation.infrastructure.adapter.input.rest.mapper;
+
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.stream.Collectors;
 
 import com.delard.renfe.navigation.domain.model.FareOption;
 import com.delard.renfe.navigation.domain.model.Train;
@@ -9,36 +19,36 @@ import com.delard.renfe.navigation.infrastructure.adapter.input.rest.dto.TrainCo
 import com.delard.renfe.navigation.infrastructure.adapter.input.rest.dto.TrainDTO;
 import com.delard.renfe.navigation.infrastructure.adapter.input.rest.dto.TrainsResponseDTO;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.stream.Collectors;
 
 /**
  * Mapper for converting between domain models and DTOs
  */
-public final class TrainMapper {
+public final class TrainMapper
+{
 
-    private TrainMapper() {
+    private TrainMapper()
+    {
         // Private constructor to prevent instantiation
     }
 
-    public static TrainsResponseDTO toDTO(TrainsResponse domain) {
+    public static TrainsResponseDTO toDTO(TrainsResponse domain)
+    {
         if (domain == null) {
             return null;
         }
 
         return new TrainsResponseDTO(
-            domain.getOrigin(),
-            domain.getDestination(),
-            domain.getDateOut(),
-            domain.getDateReturn(),
-            domain.getAdults(),
-            toTrainDTOList(domain.getTrainsOut()),
-            toTrainDTOList(domain.getTrainsReturn())
-        );
+                domain.getOrigin(),
+                domain.getDestination(),
+                domain.getDateOut(),
+                domain.getDateReturn(),
+                domain.getAdults(),
+                toTrainDTOList(domain.getTrainsOut()),
+                toTrainDTOList(domain.getTrainsReturn()));
     }
 
-    private static List<TrainDTO> toTrainDTOList(List<Train> trains) {
+    private static List<TrainDTO> toTrainDTOList(List<Train> trains)
+    {
         if (trains == null) {
             return null;
         }
@@ -47,28 +57,29 @@ public final class TrainMapper {
                 .collect(Collectors.toList());
     }
 
-    private static TrainDTO toTrainDTO(Train train) {
+    private static TrainDTO toTrainDTO(Train train)
+    {
         if (train == null) {
             return null;
         }
 
         return new TrainDTO(
-            train.getTrainId(),
-            train.getServiceType(),
-            train.getDepartureTime(),
-            train.getArrivalTime(),
-            train.getDuration(),
-            train.getPriceFrom(),
-            train.getCurrency(),
-            toFareOptionDTOList(train.getFares()),
-            new ArrayList<>(train.getBadges()),
-            train.isAccessible(),
-            train.isEcoFriendly(),
-            toTrainConnectionDTO(train.getConnection())
-        );
+                train.getTrainId(),
+                train.getServiceType(),
+                train.getDepartureTime(),
+                train.getArrivalTime(),
+                train.getDuration(),
+                train.getPriceFrom(),
+                train.getCurrency(),
+                toFareOptionDTOList(train.getFares()),
+                new ArrayList<>(train.getBadges()),
+                train.isAccessible(),
+                train.isEcoFriendly(),
+                toTrainConnectionDTO(train.getConnection()));
     }
 
-    private static List<FareOptionDTO> toFareOptionDTOList(List<FareOption> fares) {
+    private static List<FareOptionDTO> toFareOptionDTOList(List<FareOption> fares)
+    {
         if (fares == null) {
             return new ArrayList<>();
         }
@@ -77,31 +88,30 @@ public final class TrainMapper {
                 .collect(Collectors.toList());
     }
 
-    private static FareOptionDTO toFareOptionDTO(FareOption fare) {
+    private static FareOptionDTO toFareOptionDTO(FareOption fare)
+    {
         if (fare == null) {
             return null;
         }
 
         return new FareOptionDTO(
-            fare.getName(),
-            fare.getPrice(),
-            fare.getCurrency(),
-            fare.getCode(),
-            fare.getTpEnlace(),
-            fare.getPlan(),
-            fare.getFeatures()
-        );
+                fare.getName(),
+                fare.getPrice(),
+                fare.getCurrency(),
+                fare.getCode(),
+                fare.getTpEnlace(),
+                fare.getPlan(),
+                fare.getFeatures());
     }
 
-    private static TrainConnectionDTO toTrainConnectionDTO(TrainConnection connection) {
+    private static TrainConnectionDTO toTrainConnectionDTO(TrainConnection connection)
+    {
         if (connection == null) {
             return null;
         }
         return new TrainConnectionDTO(
-            connection.getDuration(),
-            connection.getFirstTrainType(),
-            connection.getSecondTrainType()
-        );
+                connection.getDuration(),
+                connection.getFirstTrainType(),
+                connection.getSecondTrainType());
     }
 }
-

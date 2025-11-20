@@ -1,23 +1,33 @@
+/*
+ * Copyright © ${YEAR} MCP Renfe Navigation Quarkus
+ * All rights reserved.
+ */
+
 package com.delard.renfe.navigation.infrastructure.adapter.output;
+
+
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+
+import jakarta.enterprise.context.ApplicationScoped;
+import jakarta.inject.Inject;
 
 import com.delard.renfe.navigation.application.exception.QueueException;
 import com.delard.renfe.navigation.application.exception.TrainUnavailabilityException;
 import com.delard.renfe.navigation.domain.model.Train;
 import com.delard.renfe.navigation.domain.port.output.TrainScraperPort;
 import com.delard.renfe.navigation.infrastructure.service.PlaywrightSearchTrainsService;
-import jakarta.enterprise.context.ApplicationScoped;
-import jakarta.inject.Inject;
+
 import org.jboss.logging.Logger;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
 
 /**
  * Adapter for scraping train information from Renfe website using Playwright
  */
 @ApplicationScoped
-public class TrainScraperAdapter implements TrainScraperPort {
+public class TrainScraperAdapter implements TrainScraperPort
+{
 
     private static final Logger LOG = Logger.getLogger(TrainScraperAdapter.class);
 
@@ -26,17 +36,18 @@ public class TrainScraperAdapter implements TrainScraperPort {
 
     @Override
     public List<List<Train>> scrapeTrains(String origin, String destination,
-                                          String originDesgEstacion, String destinationDesgEstacion,
-                                          String originClave, String destinationClave,
-                                          String dateOut, String dateReturn, String adults) {
+            String originDesgEstacion, String destinationDesgEstacion,
+            String originClave, String destinationClave,
+            String dateOut, String dateReturn, String adults)
+    {
         LOG.debugf("Scraping trains: %s -> %s, dateOut: %s, dateReturn: %s, adults: %s",
                 origin, destination, dateOut, dateReturn, adults);
 
         try {
             PlaywrightSearchTrainsService.SearchTrainsResult result =
-                playwrightSearchTrainsService.searchTrains(
-                        origin, destination, originDesgEstacion, destinationDesgEstacion,
-                        originClave, destinationClave, dateOut, dateReturn, adults);
+                    playwrightSearchTrainsService.searchTrains(
+                            origin, destination, originDesgEstacion, destinationDesgEstacion,
+                            originClave, destinationClave, dateOut, dateReturn, adults);
 
             List<Train> trainsOut = result.outboundTrains != null ? result.outboundTrains : new ArrayList<>();
             List<Train> trainsReturn = result.returnTrains;

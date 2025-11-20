@@ -1,9 +1,15 @@
+/*
+ * Copyright © ${YEAR} MCP Renfe Navigation Quarkus
+ * All rights reserved.
+ */
+
 package com.delard.renfe.navigation.domain.port.input;
 
 /**
  * Use case for purchasing tickets.
  */
-public interface PurchaseTicketUseCase {
+public interface PurchaseTicketUseCase
+{
 
     /**
      * Attempts to purchase a ticket with the provided data.
@@ -20,13 +26,12 @@ public interface PurchaseTicketUseCase {
      * @return Confirmation message
      */
     String purchaseTicket(String origin,
-                          String destination,
-                          String dateOut,
-                          String dateReturn,
-                          String adults,
-                          String userName,
-                          String serviceType,
-                          String departureTime,
-                          String fareName);
+            String destination,
+            String dateOut,
+            String dateReturn,
+            String adults,
+            String userName,
+            String serviceType,
+            String departureTime,
+            String fareName);
 }
-

@@ -1,10 +1,26 @@
+/*
+ * Copyright © ${YEAR} MCP Renfe Navigation Quarkus
+ * All rights reserved.
+ */
+
 package com.delard.renfe.navigation.infrastructure.service;
+
+
+import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.ArgumentMatchers.*;
+import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.mockStatic;
+
+import java.lang.reflect.Method;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 
 import com.delard.renfe.navigation.application.exception.QueueException;
 import com.delard.renfe.navigation.domain.model.FareOption;
 import com.delard.renfe.navigation.domain.model.Train;
 import com.delard.renfe.navigation.infrastructure.config.PlaywrightConfig;
-import com.microsoft.playwright.*;
+
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -13,21 +29,15 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
-import java.lang.reflect.Method;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
+import com.microsoft.playwright.*;
 
-import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.ArgumentMatchers.*;
-import static org.mockito.Mockito.*;
-import static org.mockito.Mockito.mockStatic;
 
 /**
  * Unit tests for PlaywrightSearchTrainsService
  */
 @ExtendWith(MockitoExtension.class)
-class PlaywrightSearchTrainsServiceTest {
+class PlaywrightSearchTrainsServiceTest
+{
 
     @Mock
     private PlaywrightConfig config;
@@ -48,12 +58,14 @@ class PlaywrightSearchTrainsServiceTest {
     private PlaywrightSearchTrainsService service;
 
     @BeforeEach
-    void setUp() {
+    void setUp()
+    {
         // Setup is handled by MockitoExtension
     }
 
     @Test
-    void testSearchTrainsResultConstructor() {
+    void testSearchTrainsResultConstructor()
+    {
         // Arrange
         Train train1 = new Train("TRAIN123", "AVE", "08:00", "12:30", "4h 30m", 45.50);
         Train train2 = new Train("TRAIN456", "ALVIA", "10:00", "15:30", "5h 30m", 67.80);
@@ -71,7 +83,8 @@ class PlaywrightSearchTrainsServiceTest {
     }
 
     @Test
-    void testSearchTrainsResultWithNullLists() {
+    void testSearchTrainsResultWithNullLists()
+    {
         // Arrange & Act
         PlaywrightSearchTrainsService.SearchTrainsResult result =
                 new PlaywrightSearchTrainsService.SearchTrainsResult(null, null);
@@ -83,7 +96,8 @@ class PlaywrightSearchTrainsServiceTest {
     }
 
     @Test
-    void testSearchTrainsResultToStringWithNullOrEmptyLists() {
+    void testSearchTrainsResultToStringWithNullOrEmptyLists()
+    {
         // Test null lists
         PlaywrightSearchTrainsService.SearchTrainsResult resultNull =
                 new PlaywrightSearchTrainsService.SearchTrainsResult(null, null);
@@ -104,7 +118,8 @@ class PlaywrightSearchTrainsServiceTest {
     }
 
     @Test
-    void testSearchTrainsResultToStringWithTrains() {
+    void testSearchTrainsResultToStringWithTrains()
+    {
         // Arrange
         Train train = new Train("TRAIN123", "AVE", "08:00", "12:30", "4h 30m", 45.50);
         List<Train> trains = Arrays.asList(train);
@@ -122,7 +137,8 @@ class PlaywrightSearchTrainsServiceTest {
     }
 
     @Test
-    void testSearchTrainsResultToStringWithNullTrain() {
+    void testSearchTrainsResultToStringWithNullTrain()
+    {
         // Arrange
         List<Train> trains = new ArrayList<>();
         trains.add(null);
@@ -138,7 +154,8 @@ class PlaywrightSearchTrainsServiceTest {
     }
 
     @Test
-    void testSearchTrainsResultToStringWithTrainMissingFields() {
+    void testSearchTrainsResultToStringWithTrainMissingFields()
+    {
         // Test without service type
         Train train1 = new Train();
         train1.setDepartureTime("08:00");
@@ -166,7 +183,8 @@ class PlaywrightSearchTrainsServiceTest {
     }
 
     @Test
-    void testSearchTrainsResultToStringWithTrainWithFares() {
+    void testSearchTrainsResultToStringWithTrainWithFares()
+    {
         // Arrange
         Train train = new Train("TRAIN123", "AVE", "08:00", "12:30", "4h 30m", 45.50);
         FareOption fare1 = new FareOption("Basic", 45.50, "EUR", "BASIC", null, null);
@@ -186,7 +204,8 @@ class PlaywrightSearchTrainsServiceTest {
     }
 
     @Test
-    void testSearchTrainsResultToStringWithTrainWithSingleFare() {
+    void testSearchTrainsResultToStringWithTrainWithSingleFare()
+    {
         // Arrange
         Train train = new Train("TRAIN123", "AVE", "08:00", "12:30", "4h 30m", 45.50);
         FareOption fare = new FareOption("Basic", 45.50, "EUR", "BASIC", null, null);
@@ -206,7 +225,8 @@ class PlaywrightSearchTrainsServiceTest {
     }
 
     @Test
-    void testSearchTrainsResultToStringWithTrainWithEmptyOrNullFares() {
+    void testSearchTrainsResultToStringWithTrainWithEmptyOrNullFares()
+    {
         Train train1 = new Train("TRAIN123", "AVE", "08:00", "12:30", "4h 30m", 45.50);
         train1.setFares(new ArrayList<>());
         List<Train> trains1 = Arrays.asList(train1);
@@ -229,7 +249,8 @@ class PlaywrightSearchTrainsServiceTest {
     }
 
     @Test
-    void testSearchTrainsResultToStringWithTrainWithBlankFields() {
+    void testSearchTrainsResultToStringWithTrainWithBlankFields()
+    {
         // Test with blank service type
         Train train1 = new Train();
         train1.setServiceType("   ");
@@ -262,23 +283,25 @@ class PlaywrightSearchTrainsServiceTest {
 
     @Test
     @DisplayName("escapeUrlParameter should return empty string when input is null")
-    void testEscapeUrlParameterWithNull() throws Exception {
+    void testEscapeUrlParameterWithNull() throws Exception
+    {
         Method method = PlaywrightSearchTrainsService.class.getDeclaredMethod("escapeUrlParameter", String.class);
         method.setAccessible(true);
 
-        String result = (String) method.invoke(service, (String) null);
+        String result = (String)method.invoke(service, (String)null);
 
         assertEquals("", result);
     }
 
     @Test
     @DisplayName("escapeUrlParameter should encode normal string using URLEncoder")
-    void testEscapeUrlParameterWithNormalString() throws Exception {
+    void testEscapeUrlParameterWithNormalString() throws Exception
+    {
         Method method = PlaywrightSearchTrainsService.class.getDeclaredMethod("escapeUrlParameter", String.class);
         method.setAccessible(true);
 
         String input = "Madrid Barcelona";
-        String result = (String) method.invoke(service, input);
+        String result = (String)method.invoke(service, input);
 
         // URLEncoder.encode("Madrid Barcelona", "UTF-8") should return "Madrid+Barcelona"
         assertEquals("Madrid+Barcelona", result);
@@ -286,12 +309,13 @@ class PlaywrightSearchTrainsServiceTest {
 
     @Test
     @DisplayName("escapeUrlParameter should encode special characters using URLEncoder")
-    void testEscapeUrlParameterWithSpecialCharacters() throws Exception {
+    void testEscapeUrlParameterWithSpecialCharacters() throws Exception
+    {
         Method method = PlaywrightSearchTrainsService.class.getDeclaredMethod("escapeUrlParameter", String.class);
         method.setAccessible(true);
 
         String input = "test&value=123";
-        String result = (String) method.invoke(service, input);
+        String result = (String)method.invoke(service, input);
 
         // URLEncoder should encode & and = characters
         assertTrue(result.contains("%26") || result.contains("&")); // & encoded or not depending on version
@@ -300,25 +324,27 @@ class PlaywrightSearchTrainsServiceTest {
 
     @Test
     @DisplayName("escapeUrlParameter should handle empty string")
-    void testEscapeUrlParameterWithEmptyString() throws Exception {
+    void testEscapeUrlParameterWithEmptyString() throws Exception
+    {
         Method method = PlaywrightSearchTrainsService.class.getDeclaredMethod("escapeUrlParameter", String.class);
         method.setAccessible(true);
 
-        String result = (String) method.invoke(service, "");
+        String result = (String)method.invoke(service, "");
 
         assertEquals("", result);
     }
 
     @Test
     @DisplayName("escapeUrlParameter should encode strings with special characters")
-    void testEscapeUrlParameterWithSpecialCharactersEncoding() throws Exception {
+    void testEscapeUrlParameterWithSpecialCharactersEncoding() throws Exception
+    {
         Method method = PlaywrightSearchTrainsService.class.getDeclaredMethod("escapeUrlParameter", String.class);
         method.setAccessible(true);
 
         // Test with various special characters that need encoding
         String input = "test value&key=123'quote\"double";
-        String result = (String) method.invoke(service, input);
-        
+        String result = (String)method.invoke(service, input);
+
         // The result should be URL encoded (UTF-8 is always supported in modern JVMs)
         assertNotNull(result);
         // Verify it's encoded (not the same as input)
@@ -329,21 +355,22 @@ class PlaywrightSearchTrainsServiceTest {
 
     @Test
     @DisplayName("escapeUrlParameter should use fallback when UnsupportedEncodingException occurs")
-    void testEscapeUrlParameterWithUnsupportedEncodingException() throws Exception {
+    void testEscapeUrlParameterWithUnsupportedEncodingException() throws Exception
+    {
         Method method = PlaywrightSearchTrainsService.class.getDeclaredMethod("escapeUrlParameter", String.class);
         method.setAccessible(true);
 
         // Test with a string containing all characters that the fallback handles
         String input = "test value&key=123'quote\"double";
-        
+
         // Use try-with-resources to mock URLEncoder.encode statically
         try (var mockedStatic = mockStatic(java.net.URLEncoder.class)) {
             // Make URLEncoder.encode throw UnsupportedEncodingException
             mockedStatic.when(() -> java.net.URLEncoder.encode(anyString(), eq("UTF-8")))
                     .thenThrow(new java.io.UnsupportedEncodingException("UTF-8 not supported"));
-            
-            String result = (String) method.invoke(service, input);
-            
+
+            String result = (String)method.invoke(service, input);
+
             // Verify fallback was used - check that all special characters are replaced
             assertNotNull(result);
             assertEquals("test%20value%26key%3D123%27quote%22double", result);
@@ -357,108 +384,114 @@ class PlaywrightSearchTrainsServiceTest {
 
     @Test
     @DisplayName("escapeUrlParameter fallback should handle space character")
-    void testEscapeUrlParameterFallbackSpace() throws Exception {
+    void testEscapeUrlParameterFallbackSpace() throws Exception
+    {
         Method method = PlaywrightSearchTrainsService.class.getDeclaredMethod("escapeUrlParameter", String.class);
         method.setAccessible(true);
 
         String input = "test value";
-        
+
         try (var mockedStatic = mockStatic(java.net.URLEncoder.class)) {
             mockedStatic.when(() -> java.net.URLEncoder.encode(anyString(), eq("UTF-8")))
                     .thenThrow(new java.io.UnsupportedEncodingException("UTF-8 not supported"));
-            
-            String result = (String) method.invoke(service, input);
-            
+
+            String result = (String)method.invoke(service, input);
+
             assertEquals("test%20value", result);
         }
     }
 
     @Test
     @DisplayName("escapeUrlParameter fallback should handle ampersand character")
-    void testEscapeUrlParameterFallbackAmpersand() throws Exception {
+    void testEscapeUrlParameterFallbackAmpersand() throws Exception
+    {
         Method method = PlaywrightSearchTrainsService.class.getDeclaredMethod("escapeUrlParameter", String.class);
         method.setAccessible(true);
 
         String input = "test&value";
-        
+
         try (var mockedStatic = mockStatic(java.net.URLEncoder.class)) {
             mockedStatic.when(() -> java.net.URLEncoder.encode(anyString(), eq("UTF-8")))
                     .thenThrow(new java.io.UnsupportedEncodingException("UTF-8 not supported"));
-            
-            String result = (String) method.invoke(service, input);
-            
+
+            String result = (String)method.invoke(service, input);
+
             assertEquals("test%26value", result);
         }
     }
 
     @Test
     @DisplayName("escapeUrlParameter fallback should handle equals character")
-    void testEscapeUrlParameterFallbackEquals() throws Exception {
+    void testEscapeUrlParameterFallbackEquals() throws Exception
+    {
         Method method = PlaywrightSearchTrainsService.class.getDeclaredMethod("escapeUrlParameter", String.class);
         method.setAccessible(true);
 
         String input = "key=value";
-        
+
         try (var mockedStatic = mockStatic(java.net.URLEncoder.class)) {
             mockedStatic.when(() -> java.net.URLEncoder.encode(anyString(), eq("UTF-8")))
                     .thenThrow(new java.io.UnsupportedEncodingException("UTF-8 not supported"));
-            
-            String result = (String) method.invoke(service, input);
-            
+
+            String result = (String)method.invoke(service, input);
+
             assertEquals("key%3Dvalue", result);
         }
     }
 
     @Test
     @DisplayName("escapeUrlParameter fallback should handle single quote character")
-    void testEscapeUrlParameterFallbackSingleQuote() throws Exception {
+    void testEscapeUrlParameterFallbackSingleQuote() throws Exception
+    {
         Method method = PlaywrightSearchTrainsService.class.getDeclaredMethod("escapeUrlParameter", String.class);
         method.setAccessible(true);
 
         String input = "test'value";
-        
+
         try (var mockedStatic = mockStatic(java.net.URLEncoder.class)) {
             mockedStatic.when(() -> java.net.URLEncoder.encode(anyString(), eq("UTF-8")))
                     .thenThrow(new java.io.UnsupportedEncodingException("UTF-8 not supported"));
-            
-            String result = (String) method.invoke(service, input);
-            
+
+            String result = (String)method.invoke(service, input);
+
             assertEquals("test%27value", result);
         }
     }
 
     @Test
     @DisplayName("escapeUrlParameter fallback should handle double quote character")
-    void testEscapeUrlParameterFallbackDoubleQuote() throws Exception {
+    void testEscapeUrlParameterFallbackDoubleQuote() throws Exception
+    {
         Method method = PlaywrightSearchTrainsService.class.getDeclaredMethod("escapeUrlParameter", String.class);
         method.setAccessible(true);
 
         String input = "test\"value";
-        
+
         try (var mockedStatic = mockStatic(java.net.URLEncoder.class)) {
             mockedStatic.when(() -> java.net.URLEncoder.encode(anyString(), eq("UTF-8")))
                     .thenThrow(new java.io.UnsupportedEncodingException("UTF-8 not supported"));
-            
-            String result = (String) method.invoke(service, input);
-            
+
+            String result = (String)method.invoke(service, input);
+
             assertEquals("test%22value", result);
         }
     }
 
     @Test
     @DisplayName("escapeUrlParameter fallback should handle string with no special characters")
-    void testEscapeUrlParameterFallbackNoSpecialChars() throws Exception {
+    void testEscapeUrlParameterFallbackNoSpecialChars() throws Exception
+    {
         Method method = PlaywrightSearchTrainsService.class.getDeclaredMethod("escapeUrlParameter", String.class);
         method.setAccessible(true);
 
         String input = "normalstring";
-        
+
         try (var mockedStatic = mockStatic(java.net.URLEncoder.class)) {
             mockedStatic.when(() -> java.net.URLEncoder.encode(anyString(), eq("UTF-8")))
                     .thenThrow(new java.io.UnsupportedEncodingException("UTF-8 not supported"));
-            
-            String result = (String) method.invoke(service, input);
-            
+
+            String result = (String)method.invoke(service, input);
+
             // Should return unchanged since no special characters to replace
             assertEquals("normalstring", result);
         }
@@ -466,18 +499,19 @@ class PlaywrightSearchTrainsServiceTest {
 
     @Test
     @DisplayName("escapeUrlParameter fallback should handle multiple occurrences of same character")
-    void testEscapeUrlParameterFallbackMultipleOccurrences() throws Exception {
+    void testEscapeUrlParameterFallbackMultipleOccurrences() throws Exception
+    {
         Method method = PlaywrightSearchTrainsService.class.getDeclaredMethod("escapeUrlParameter", String.class);
         method.setAccessible(true);
 
         String input = "test value with spaces";
-        
+
         try (var mockedStatic = mockStatic(java.net.URLEncoder.class)) {
             mockedStatic.when(() -> java.net.URLEncoder.encode(anyString(), eq("UTF-8")))
                     .thenThrow(new java.io.UnsupportedEncodingException("UTF-8 not supported"));
-            
-            String result = (String) method.invoke(service, input);
-            
+
+            String result = (String)method.invoke(service, input);
+
             // All spaces should be replaced
             assertEquals("test%20value%20with%20spaces", result);
             assertFalse(result.contains(" ")); // No spaces should remain
@@ -488,40 +522,41 @@ class PlaywrightSearchTrainsServiceTest {
 
     @Test
     @DisplayName("extractResults should wait for selector, get content, and parse trains")
-    void testExtractResultsSuccess() throws Exception {
+    void testExtractResultsSuccess() throws Exception
+    {
         // Arrange
         Page mockPage = mock(Page.class);
         ElementHandle mockElementHandle = mock(ElementHandle.class);
-        
+
         when(config.getTimeoutMs()).thenReturn(30000);
         doReturn(mockElementHandle).when(mockPage).waitForSelector(anyString(), any(Page.WaitForSelectorOptions.class));
         when(mockPage.content()).thenReturn("<html><body>Train HTML content</body></html>");
-        
+
         Train train1 = new Train("TRAIN123", "AVE", "08:00", "12:30", "4h 30m", 45.50);
         Train train2 = new Train("TRAIN456", "ALVIA", "10:00", "15:30", "5h 30m", 67.80);
         List<Train> expectedTrains = Arrays.asList(train1, train2);
-        
+
         when(trainHtmlParser.parseTrainList(anyString())).thenReturn(expectedTrains);
 
         // Act
-        Method method = PlaywrightSearchTrainsService.class.getDeclaredMethod("extractResults", Page.class, String.class);
+        Method method =
+                PlaywrightSearchTrainsService.class.getDeclaredMethod("extractResults", Page.class, String.class);
         method.setAccessible(true);
         @SuppressWarnings("unchecked")
-        List<Train> result = (List<Train>) method.invoke(service, mockPage, "outbound");
+        List<Train> result = (List<Train>)method.invoke(service, mockPage, "outbound");
 
         // Assert
         assertNotNull(result);
         assertEquals(2, result.size());
         assertEquals("TRAIN123", result.get(0).getTrainId());
         assertEquals("TRAIN456", result.get(1).getTrainId());
-        
+
         verify(pageValidator, times(1)).checkForTrainUnavailability(mockPage, "outbound");
-        
+
         // Verify interactions
         verify(mockPage, times(1)).waitForSelector(
                 eq("div.selectedTren[role='listitem']"),
-                any(Page.WaitForSelectorOptions.class)
-        );
+                any(Page.WaitForSelectorOptions.class));
         // waitForTimeout is called once in extractResults
         verify(mockPage, times(1)).waitForTimeout(1000L);
         verify(mockPage, times(1)).content();
@@ -531,33 +566,34 @@ class PlaywrightSearchTrainsServiceTest {
 
     @Test
     @DisplayName("extractResults should handle empty train list")
-    void testExtractResultsWithEmptyList() throws Exception {
+    void testExtractResultsWithEmptyList() throws Exception
+    {
         // Arrange
         Page mockPage = mock(Page.class);
         ElementHandle mockElementHandle = mock(ElementHandle.class);
-        
+
         when(config.getTimeoutMs()).thenReturn(30000);
         doReturn(mockElementHandle).when(mockPage).waitForSelector(anyString(), any(Page.WaitForSelectorOptions.class));
         when(mockPage.content()).thenReturn("<html><body>No trains</body></html>");
-        
+
         when(trainHtmlParser.parseTrainList(anyString())).thenReturn(new ArrayList<>());
 
         // Act
-        Method method = PlaywrightSearchTrainsService.class.getDeclaredMethod("extractResults", Page.class, String.class);
+        Method method =
+                PlaywrightSearchTrainsService.class.getDeclaredMethod("extractResults", Page.class, String.class);
         method.setAccessible(true);
         @SuppressWarnings("unchecked")
-        List<Train> result = (List<Train>) method.invoke(service, mockPage, "outbound");
+        List<Train> result = (List<Train>)method.invoke(service, mockPage, "outbound");
 
         // Assert
         assertNotNull(result);
         assertTrue(result.isEmpty());
-        
+
         verify(pageValidator, times(1)).checkForTrainUnavailability(mockPage, "outbound");
-        
+
         verify(mockPage, times(1)).waitForSelector(
                 eq("div.selectedTren[role='listitem']"),
-                any(Page.WaitForSelectorOptions.class)
-        );
+                any(Page.WaitForSelectorOptions.class));
         // waitForTimeout is called once in extractResults
         verify(mockPage, times(1)).waitForTimeout(1000L);
         verify(mockPage, times(1)).content();
@@ -566,20 +602,22 @@ class PlaywrightSearchTrainsServiceTest {
 
     @Test
     @DisplayName("extractResults should use correct timeout from config")
-    void testExtractResultsUsesConfigTimeout() throws Exception {
+    void testExtractResultsUsesConfigTimeout() throws Exception
+    {
         // Arrange
         Page mockPage = mock(Page.class);
         ElementHandle mockElementHandle = mock(ElementHandle.class);
         int customTimeout = 60000;
-        
+
         when(config.getTimeoutMs()).thenReturn(customTimeout);
         doReturn(mockElementHandle).when(mockPage).waitForSelector(anyString(), any(Page.WaitForSelectorOptions.class));
         when(mockPage.content()).thenReturn("<html><body>Content</body></html>");
-        
+
         when(trainHtmlParser.parseTrainList(anyString())).thenReturn(new ArrayList<>());
 
         // Act
-        Method method = PlaywrightSearchTrainsService.class.getDeclaredMethod("extractResults", Page.class, String.class);
+        Method method =
+                PlaywrightSearchTrainsService.class.getDeclaredMethod("extractResults", Page.class, String.class);
         method.setAccessible(true);
         method.invoke(service, mockPage, "outbound");
 
@@ -588,25 +626,26 @@ class PlaywrightSearchTrainsServiceTest {
         verify(config, times(1)).getTimeoutMs();
         verify(mockPage, times(1)).waitForSelector(
                 eq("div.selectedTren[role='listitem']"),
-                any(Page.WaitForSelectorOptions.class)
-        );
+                any(Page.WaitForSelectorOptions.class));
     }
 
     @Test
     @DisplayName("extractResults should wait for VISIBLE state")
-    void testExtractResultsWaitsForVisibleState() throws Exception {
+    void testExtractResultsWaitsForVisibleState() throws Exception
+    {
         // Arrange
         Page mockPage = mock(Page.class);
         ElementHandle mockElementHandle = mock(ElementHandle.class);
-        
+
         when(config.getTimeoutMs()).thenReturn(30000);
         doReturn(mockElementHandle).when(mockPage).waitForSelector(anyString(), any(Page.WaitForSelectorOptions.class));
         when(mockPage.content()).thenReturn("<html><body>Content</body></html>");
-        
+
         when(trainHtmlParser.parseTrainList(anyString())).thenReturn(new ArrayList<>());
 
         // Act
-        Method method = PlaywrightSearchTrainsService.class.getDeclaredMethod("extractResults", Page.class, String.class);
+        Method method =
+                PlaywrightSearchTrainsService.class.getDeclaredMethod("extractResults", Page.class, String.class);
         method.setAccessible(true);
         method.invoke(service, mockPage, "return");
 
@@ -614,8 +653,7 @@ class PlaywrightSearchTrainsServiceTest {
         verify(pageValidator, times(1)).checkForTrainUnavailability(mockPage, "return");
         verify(mockPage, times(1)).waitForSelector(
                 eq("div.selectedTren[role='listitem']"),
-                any(Page.WaitForSelectorOptions.class)
-        );
+                any(Page.WaitForSelectorOptions.class));
     }
 
     // ========== Tests for checkForQueuePage method moved to RenfePageValidatorTest ==========
@@ -624,7 +662,8 @@ class PlaywrightSearchTrainsServiceTest {
 
     @Test
     @DisplayName("searchTrains should return result with outbound trains when dateReturn is null")
-    void testSearchTrainsWithNullDateReturn() throws Exception {
+    void testSearchTrainsWithNullDateReturn() throws Exception
+    {
         // Arrange
         Playwright mockPlaywright = mock(Playwright.class);
         BrowserType mockBrowserType = mock(BrowserType.class);
@@ -639,7 +678,7 @@ class PlaywrightSearchTrainsServiceTest {
         when(mockBrowserType.launch(any(BrowserType.LaunchOptions.class))).thenReturn(mockBrowser);
         when(mockBrowser.newContext(any(Browser.NewContextOptions.class))).thenReturn(mockContext);
         when(mockContext.newPage()).thenReturn(mockPage);
-        
+
         when(config.getLocale()).thenReturn("es");
         when(config.getViewportWidth()).thenReturn(1920);
         when(config.getViewportHeight()).thenReturn(1080);
@@ -655,7 +694,8 @@ class PlaywrightSearchTrainsServiceTest {
         when(mockPage.waitForSelector(anyString(), any(Page.WaitForSelectorOptions.class)))
                 .thenReturn(mockElementHandle);
         when(mockPage.locator("#onetrust-accept-btn-handler")).thenReturn(mockCookieButton);
-        doThrow(new RuntimeException("Cookie button not found")).when(mockCookieButton).waitFor(any(Locator.WaitForOptions.class));
+        doThrow(new RuntimeException("Cookie button not found")).when(mockCookieButton)
+                .waitFor(any(Locator.WaitForOptions.class));
 
         Train train1 = new Train("TRAIN123", "AVE", "08:00", "12:30", "4h 30m", 45.50);
         when(trainHtmlParser.parseTrainList(anyString())).thenReturn(Arrays.asList(train1));
@@ -665,15 +705,14 @@ class PlaywrightSearchTrainsServiceTest {
                 "MADRID (TODAS)", "BARCELONA (TODAS)",
                 "MADRID (TODAS)", "BARCELONA (TODAS)",
                 "0071,MADRI,null", "0071,BARCE,null",
-                "16/01/2026", null, "2"
-        );
+                "16/01/2026", null, "2");
 
         // Assert
         assertNotNull(result);
         assertNotNull(result.outboundTrains);
         assertEquals(1, result.outboundTrains.size());
         assertNull(result.returnTrains); // Should be null when dateReturn is null
-        
+
         verify(mockPage, times(1)).navigate(anyString(), any(Page.NavigateOptions.class));
         verify(responseStorageService, times(1)).saveResponse(anyString(), eq(200));
         verify(pageValidator, times(1)).checkForQueuePage(mockPage);
@@ -682,7 +721,8 @@ class PlaywrightSearchTrainsServiceTest {
 
     @Test
     @DisplayName("searchTrains should return result with outbound and return trains when dateReturn is provided")
-    void testSearchTrainsWithDateReturn() throws Exception {
+    void testSearchTrainsWithDateReturn() throws Exception
+    {
         // Arrange
         Playwright mockPlaywright = mock(Playwright.class);
         BrowserType mockBrowserType = mock(BrowserType.class);
@@ -698,7 +738,7 @@ class PlaywrightSearchTrainsServiceTest {
         when(mockBrowserType.launch(any(BrowserType.LaunchOptions.class))).thenReturn(mockBrowser);
         when(mockBrowser.newContext(any(Browser.NewContextOptions.class))).thenReturn(mockContext);
         when(mockContext.newPage()).thenReturn(mockPage);
-        
+
         when(config.getLocale()).thenReturn("es");
         when(config.getViewportWidth()).thenReturn(1920);
         when(config.getViewportHeight()).thenReturn(1080);
@@ -714,7 +754,8 @@ class PlaywrightSearchTrainsServiceTest {
         when(mockPage.waitForSelector(anyString(), any(Page.WaitForSelectorOptions.class)))
                 .thenReturn(mockElementHandle);
         when(mockPage.locator("#onetrust-accept-btn-handler")).thenReturn(mockCookieButton);
-        doThrow(new RuntimeException("Cookie button not found")).when(mockCookieButton).waitFor(any(Locator.WaitForOptions.class));
+        doThrow(new RuntimeException("Cookie button not found")).when(mockCookieButton)
+                .waitFor(any(Locator.WaitForOptions.class));
         when(mockPage.locator("[id*='vuelta'], [class*='vuelta'], a:has-text('Vuelta')")).thenReturn(mockVueltaTab);
         when(mockVueltaTab.count()).thenReturn(1);
         when(mockVueltaTab.first()).thenReturn(mockVueltaTab);
@@ -722,7 +763,7 @@ class PlaywrightSearchTrainsServiceTest {
         Train trainOut1 = new Train("TRAIN123", "AVE", "08:00", "12:30", "4h 30m", 45.50);
         Train trainRet1 = new Train("TRAIN456", "AVE", "16:00", "20:30", "4h 30m", 45.50);
         when(trainHtmlParser.parseTrainList(anyString()))
-                .thenReturn(Arrays.asList(trainOut1))  // First call for outbound
+                .thenReturn(Arrays.asList(trainOut1)) // First call for outbound
                 .thenReturn(Arrays.asList(trainRet1)); // Second call for return
 
         // Act
@@ -730,8 +771,7 @@ class PlaywrightSearchTrainsServiceTest {
                 "MADRID (TODAS)", "BARCELONA (TODAS)",
                 "MADRID (TODAS)", "BARCELONA (TODAS)",
                 "0071,MADRI,null", "0071,BARCE,null",
-                "16/01/2026", "18/01/2026", "2"
-        );
+                "16/01/2026", "18/01/2026", "2");
 
         // Assert
         assertNotNull(result);
@@ -739,9 +779,10 @@ class PlaywrightSearchTrainsServiceTest {
         assertEquals(1, result.outboundTrains.size());
         assertNotNull(result.returnTrains); // Should have return trains
         assertEquals(1, result.returnTrains.size());
-        
+
         verify(mockVueltaTab, times(1)).click();
-        // waitForSelector is called: 1 in searchTrains + 1 in extractResults (outbound) + 1 in extractResults (return) = 3
+        // waitForSelector is called: 1 in searchTrains + 1 in extractResults (outbound) + 1 in extractResults (return)
+        // = 3
         verify(mockPage, atLeast(2)).waitForSelector(anyString(), any(Page.WaitForSelectorOptions.class));
         verify(pageValidator, times(1)).checkForQueuePage(mockPage);
         verify(pageValidator, times(2)).checkForTrainUnavailability(mockPage, "outbound");
@@ -750,7 +791,8 @@ class PlaywrightSearchTrainsServiceTest {
 
     @Test
     @DisplayName("searchTrains should handle empty dateReturn string")
-    void testSearchTrainsWithEmptyDateReturn() throws Exception {
+    void testSearchTrainsWithEmptyDateReturn() throws Exception
+    {
         // Arrange
         Playwright mockPlaywright = mock(Playwright.class);
         BrowserType mockBrowserType = mock(BrowserType.class);
@@ -765,7 +807,7 @@ class PlaywrightSearchTrainsServiceTest {
         when(mockBrowserType.launch(any(BrowserType.LaunchOptions.class))).thenReturn(mockBrowser);
         when(mockBrowser.newContext(any(Browser.NewContextOptions.class))).thenReturn(mockContext);
         when(mockContext.newPage()).thenReturn(mockPage);
-        
+
         when(config.getLocale()).thenReturn("es");
         when(config.getViewportWidth()).thenReturn(1920);
         when(config.getViewportHeight()).thenReturn(1080);
@@ -780,7 +822,8 @@ class PlaywrightSearchTrainsServiceTest {
         when(mockPage.waitForSelector(anyString(), any(Page.WaitForSelectorOptions.class)))
                 .thenReturn(mockElementHandle);
         when(mockPage.locator("#onetrust-accept-btn-handler")).thenReturn(mockCookieButton);
-        doThrow(new RuntimeException("Cookie button not found")).when(mockCookieButton).waitFor(any(Locator.WaitForOptions.class));
+        doThrow(new RuntimeException("Cookie button not found")).when(mockCookieButton)
+                .waitFor(any(Locator.WaitForOptions.class));
 
         Train train1 = new Train("TRAIN123", "AVE", "08:00", "12:30", "4h 30m", 45.50);
         when(trainHtmlParser.parseTrainList(anyString())).thenReturn(Arrays.asList(train1));
@@ -790,20 +833,20 @@ class PlaywrightSearchTrainsServiceTest {
                 "MADRID (TODAS)", "BARCELONA (TODAS)",
                 "MADRID (TODAS)", "BARCELONA (TODAS)",
                 "0071,MADRI,null", "0071,BARCE,null",
-                "16/01/2026", "", "2"
-        );
+                "16/01/2026", "", "2");
 
         // Assert
         assertNotNull(result);
         assertNotNull(result.outboundTrains);
         assertNull(result.returnTrains); // Should be null when dateReturn is empty
-        
+
         verify(pageValidator, times(1)).checkForQueuePage(mockPage);
     }
 
     @Test
     @DisplayName("searchTrains should click cookie button when visible")
-    void testSearchTrainsWithCookieButtonVisible() throws Exception {
+    void testSearchTrainsWithCookieButtonVisible() throws Exception
+    {
         // Arrange
         Playwright mockPlaywright = mock(Playwright.class);
         BrowserType mockBrowserType = mock(BrowserType.class);
@@ -818,7 +861,7 @@ class PlaywrightSearchTrainsServiceTest {
         when(mockBrowserType.launch(any(BrowserType.LaunchOptions.class))).thenReturn(mockBrowser);
         when(mockBrowser.newContext(any(Browser.NewContextOptions.class))).thenReturn(mockContext);
         when(mockContext.newPage()).thenReturn(mockPage);
-        
+
         when(config.getLocale()).thenReturn("es");
         when(config.getViewportWidth()).thenReturn(1920);
         when(config.getViewportHeight()).thenReturn(1080);
@@ -844,8 +887,7 @@ class PlaywrightSearchTrainsServiceTest {
                 "MADRID (TODAS)", "BARCELONA (TODAS)",
                 "MADRID (TODAS)", "BARCELONA (TODAS)",
                 "0071,MADRI,null", "0071,BARCE,null",
-                "16/01/2026", null, "2"
-        );
+                "16/01/2026", null, "2");
 
         // Assert
         assertNotNull(result);
@@ -854,7 +896,8 @@ class PlaywrightSearchTrainsServiceTest {
 
     @Test
     @DisplayName("searchTrains should not click cookie button when not visible")
-    void testSearchTrainsWithCookieButtonNotVisible() throws Exception {
+    void testSearchTrainsWithCookieButtonNotVisible() throws Exception
+    {
         // Arrange
         Playwright mockPlaywright = mock(Playwright.class);
         BrowserType mockBrowserType = mock(BrowserType.class);
@@ -869,7 +912,7 @@ class PlaywrightSearchTrainsServiceTest {
         when(mockBrowserType.launch(any(BrowserType.LaunchOptions.class))).thenReturn(mockBrowser);
         when(mockBrowser.newContext(any(Browser.NewContextOptions.class))).thenReturn(mockContext);
         when(mockContext.newPage()).thenReturn(mockPage);
-        
+
         when(config.getLocale()).thenReturn("es");
         when(config.getViewportWidth()).thenReturn(1920);
         when(config.getViewportHeight()).thenReturn(1080);
@@ -895,8 +938,7 @@ class PlaywrightSearchTrainsServiceTest {
                 "MADRID (TODAS)", "BARCELONA (TODAS)",
                 "MADRID (TODAS)", "BARCELONA (TODAS)",
                 "0071,MADRI,null", "0071,BARCE,null",
-                "16/01/2026", null, "2"
-        );
+                "16/01/2026", null, "2");
 
         // Assert
         assertNotNull(result);
@@ -905,7 +947,8 @@ class PlaywrightSearchTrainsServiceTest {
 
     @Test
     @DisplayName("searchTrains should handle exception when cookie button check fails")
-    void testSearchTrainsWithCookieButtonException() throws Exception {
+    void testSearchTrainsWithCookieButtonException() throws Exception
+    {
         // Arrange
         Playwright mockPlaywright = mock(Playwright.class);
         BrowserType mockBrowserType = mock(BrowserType.class);
@@ -920,7 +963,7 @@ class PlaywrightSearchTrainsServiceTest {
         when(mockBrowserType.launch(any(BrowserType.LaunchOptions.class))).thenReturn(mockBrowser);
         when(mockBrowser.newContext(any(Browser.NewContextOptions.class))).thenReturn(mockContext);
         when(mockContext.newPage()).thenReturn(mockPage);
-        
+
         when(config.getLocale()).thenReturn("es");
         when(config.getViewportWidth()).thenReturn(1920);
         when(config.getViewportHeight()).thenReturn(1080);
@@ -935,7 +978,8 @@ class PlaywrightSearchTrainsServiceTest {
         when(mockPage.waitForSelector(anyString(), any(Page.WaitForSelectorOptions.class)))
                 .thenReturn(mockElementHandle);
         when(mockPage.locator("#onetrust-accept-btn-handler")).thenReturn(mockCookieButton);
-        doThrow(new RuntimeException("Cookie button error")).when(mockCookieButton).waitFor(any(Locator.WaitForOptions.class));
+        doThrow(new RuntimeException("Cookie button error")).when(mockCookieButton)
+                .waitFor(any(Locator.WaitForOptions.class));
 
         Train train1 = new Train("TRAIN123", "AVE", "08:00", "12:30", "4h 30m", 45.50);
         when(trainHtmlParser.parseTrainList(anyString())).thenReturn(Arrays.asList(train1));
@@ -945,8 +989,7 @@ class PlaywrightSearchTrainsServiceTest {
                 "MADRID (TODAS)", "BARCELONA (TODAS)",
                 "MADRID (TODAS)", "BARCELONA (TODAS)",
                 "0071,MADRI,null", "0071,BARCE,null",
-                "16/01/2026", null, "2"
-        );
+                "16/01/2026", null, "2");
 
         // Assert
         assertNotNull(result);
@@ -955,7 +998,8 @@ class PlaywrightSearchTrainsServiceTest {
 
     @Test
     @DisplayName("searchTrains should not extract return trains when vueltaTab count is 0")
-    void testSearchTrainsWithVueltaTabCountZero() throws Exception {
+    void testSearchTrainsWithVueltaTabCountZero() throws Exception
+    {
         // Arrange
         Playwright mockPlaywright = mock(Playwright.class);
         BrowserType mockBrowserType = mock(BrowserType.class);
@@ -971,7 +1015,7 @@ class PlaywrightSearchTrainsServiceTest {
         when(mockBrowserType.launch(any(BrowserType.LaunchOptions.class))).thenReturn(mockBrowser);
         when(mockBrowser.newContext(any(Browser.NewContextOptions.class))).thenReturn(mockContext);
         when(mockContext.newPage()).thenReturn(mockPage);
-        
+
         when(config.getLocale()).thenReturn("es");
         when(config.getViewportWidth()).thenReturn(1920);
         when(config.getViewportHeight()).thenReturn(1080);
@@ -986,7 +1030,8 @@ class PlaywrightSearchTrainsServiceTest {
         when(mockPage.waitForSelector(anyString(), any(Page.WaitForSelectorOptions.class)))
                 .thenReturn(mockElementHandle);
         when(mockPage.locator("#onetrust-accept-btn-handler")).thenReturn(mockCookieButton);
-        doThrow(new RuntimeException("Cookie button not found")).when(mockCookieButton).waitFor(any(Locator.WaitForOptions.class));
+        doThrow(new RuntimeException("Cookie button not found")).when(mockCookieButton)
+                .waitFor(any(Locator.WaitForOptions.class));
         when(mockPage.locator("[id*='vuelta'], [class*='vuelta'], a:has-text('Vuelta')")).thenReturn(mockVueltaTab);
         when(mockVueltaTab.count()).thenReturn(0); // No vuelta tab found
 
@@ -998,8 +1043,7 @@ class PlaywrightSearchTrainsServiceTest {
                 "MADRID (TODAS)", "BARCELONA (TODAS)",
                 "MADRID (TODAS)", "BARCELONA (TODAS)",
                 "0071,MADRI,null", "0071,BARCE,null",
-                "16/01/2026", "18/01/2026", "2"
-        );
+                "16/01/2026", "18/01/2026", "2");
 
         // Assert
         assertNotNull(result);
@@ -1010,7 +1054,8 @@ class PlaywrightSearchTrainsServiceTest {
 
     @Test
     @DisplayName("searchTrains should not extract return trains when outbound trains list is empty")
-    void testSearchTrainsWithEmptyOutboundTrains() throws Exception {
+    void testSearchTrainsWithEmptyOutboundTrains() throws Exception
+    {
         // Arrange
         Playwright mockPlaywright = mock(Playwright.class);
         BrowserType mockBrowserType = mock(BrowserType.class);
@@ -1025,7 +1070,7 @@ class PlaywrightSearchTrainsServiceTest {
         when(mockBrowserType.launch(any(BrowserType.LaunchOptions.class))).thenReturn(mockBrowser);
         when(mockBrowser.newContext(any(Browser.NewContextOptions.class))).thenReturn(mockContext);
         when(mockContext.newPage()).thenReturn(mockPage);
-        
+
         when(config.getLocale()).thenReturn("es");
         when(config.getViewportWidth()).thenReturn(1920);
         when(config.getViewportHeight()).thenReturn(1080);
@@ -1040,7 +1085,8 @@ class PlaywrightSearchTrainsServiceTest {
         when(mockPage.waitForSelector(anyString(), any(Page.WaitForSelectorOptions.class)))
                 .thenReturn(mockElementHandle);
         when(mockPage.locator("#onetrust-accept-btn-handler")).thenReturn(mockCookieButton);
-        doThrow(new RuntimeException("Cookie button not found")).when(mockCookieButton).waitFor(any(Locator.WaitForOptions.class));
+        doThrow(new RuntimeException("Cookie button not found")).when(mockCookieButton)
+                .waitFor(any(Locator.WaitForOptions.class));
 
         when(trainHtmlParser.parseTrainList(anyString())).thenReturn(new ArrayList<>()); // Empty list
 
@@ -1049,8 +1095,7 @@ class PlaywrightSearchTrainsServiceTest {
                 "MADRID (TODAS)", "BARCELONA (TODAS)",
                 "MADRID (TODAS)", "BARCELONA (TODAS)",
                 "0071,MADRI,null", "0071,BARCE,null",
-                "16/01/2026", "18/01/2026", "2"
-        );
+                "16/01/2026", "18/01/2026", "2");
 
         // Assert
         assertNotNull(result);
@@ -1061,7 +1106,8 @@ class PlaywrightSearchTrainsServiceTest {
 
     @Test
     @DisplayName("searchTrains should handle exception when extracting return trains")
-    void testSearchTrainsWithExceptionExtractingReturnTrains() throws Exception {
+    void testSearchTrainsWithExceptionExtractingReturnTrains() throws Exception
+    {
         // Arrange
         Playwright mockPlaywright = mock(Playwright.class);
         BrowserType mockBrowserType = mock(BrowserType.class);
@@ -1077,7 +1123,7 @@ class PlaywrightSearchTrainsServiceTest {
         when(mockBrowserType.launch(any(BrowserType.LaunchOptions.class))).thenReturn(mockBrowser);
         when(mockBrowser.newContext(any(Browser.NewContextOptions.class))).thenReturn(mockContext);
         when(mockContext.newPage()).thenReturn(mockPage);
-        
+
         when(config.getLocale()).thenReturn("es");
         when(config.getViewportWidth()).thenReturn(1920);
         when(config.getViewportHeight()).thenReturn(1080);
@@ -1092,7 +1138,8 @@ class PlaywrightSearchTrainsServiceTest {
         when(mockPage.waitForSelector(anyString(), any(Page.WaitForSelectorOptions.class)))
                 .thenReturn(mockElementHandle);
         when(mockPage.locator("#onetrust-accept-btn-handler")).thenReturn(mockCookieButton);
-        doThrow(new RuntimeException("Cookie button not found")).when(mockCookieButton).waitFor(any(Locator.WaitForOptions.class));
+        doThrow(new RuntimeException("Cookie button not found")).when(mockCookieButton)
+                .waitFor(any(Locator.WaitForOptions.class));
         when(mockPage.locator("[id*='vuelta'], [class*='vuelta'], a:has-text('Vuelta')")).thenReturn(mockVueltaTab);
         when(mockVueltaTab.count()).thenReturn(1);
         when(mockVueltaTab.first()).thenReturn(mockVueltaTab);
@@ -1106,8 +1153,7 @@ class PlaywrightSearchTrainsServiceTest {
                 "MADRID (TODAS)", "BARCELONA (TODAS)",
                 "MADRID (TODAS)", "BARCELONA (TODAS)",
                 "0071,MADRI,null", "0071,BARCE,null",
-                "16/01/2026", "18/01/2026", "2"
-        );
+                "16/01/2026", "18/01/2026", "2");
 
         // Assert
         assertNotNull(result);
@@ -1117,20 +1163,21 @@ class PlaywrightSearchTrainsServiceTest {
 
     @Test
     @DisplayName("searchTrains should throw QueueException when queue page is detected")
-    void testSearchTrainsThrowsQueueException() throws Exception {
+    void testSearchTrainsThrowsQueueException() throws Exception
+    {
         // Arrange
         Playwright mockPlaywright = mock(Playwright.class);
         BrowserType mockBrowserType = mock(BrowserType.class);
         Browser mockBrowser = mock(Browser.class);
         BrowserContext mockContext = mock(BrowserContext.class);
         Page mockPage = mock(Page.class);
-        
+
         when(playwrightFactory.create()).thenReturn(mockPlaywright);
         when(mockPlaywright.chromium()).thenReturn(mockBrowserType);
         when(mockBrowserType.launch(any(BrowserType.LaunchOptions.class))).thenReturn(mockBrowser);
         when(mockBrowser.newContext(any(Browser.NewContextOptions.class))).thenReturn(mockContext);
         when(mockContext.newPage()).thenReturn(mockPage);
-        
+
         when(config.getLocale()).thenReturn("es");
         when(config.getViewportWidth()).thenReturn(1920);
         when(config.getViewportHeight()).thenReturn(1080);
@@ -1139,8 +1186,10 @@ class PlaywrightSearchTrainsServiceTest {
         when(config.isHeadless()).thenReturn(true);
         when(config.getSlowMo()).thenReturn(0);
 
-        doThrow(new QueueException("Ticket purchase is queued. The system redirected to a queue management page. Please try again later."))
-                .when(pageValidator).checkForQueuePage(mockPage);
+        doThrow(new QueueException(
+                "Ticket purchase is queued. The system redirected to a queue management page. Please try again later."))
+                .when(pageValidator)
+                .checkForQueuePage(mockPage);
 
         // Act & Assert
         QueueException exception = assertThrows(QueueException.class, () -> {
@@ -1148,16 +1197,16 @@ class PlaywrightSearchTrainsServiceTest {
                     "MADRID (TODAS)", "BARCELONA (TODAS)",
                     "MADRID (TODAS)", "BARCELONA (TODAS)",
                     "0071,MADRI,null", "0071,BARCE,null",
-                    "16/01/2026", null, "2"
-            );
+                    "16/01/2026", null, "2");
         });
-        
+
         assertTrue(exception.getMessage().contains("queued"));
     }
 
     @Test
     @DisplayName("searchTrains should throw RuntimeException when general exception occurs")
-    void testSearchTrainsThrowsRuntimeException() throws Exception {
+    void testSearchTrainsThrowsRuntimeException() throws Exception
+    {
         // Arrange
         lenient().when(playwrightFactory.create()).thenThrow(new RuntimeException("Playwright creation failed"));
 
@@ -1167,10 +1216,9 @@ class PlaywrightSearchTrainsServiceTest {
                     "MADRID (TODAS)", "BARCELONA (TODAS)",
                     "MADRID (TODAS)", "BARCELONA (TODAS)",
                     "0071,MADRI,null", "0071,BARCE,null",
-                    "16/01/2026", null, "2"
-            );
+                    "16/01/2026", null, "2");
         });
-        
+
         // Verify it's a RuntimeException (the message format may vary depending on the original exception)
         assertNotNull(exception);
         // The exception may or may not have a cause depending on how it's wrapped
@@ -1179,7 +1227,8 @@ class PlaywrightSearchTrainsServiceTest {
 
     @Test
     @DisplayName("searchTrains should handle null values in buildFormData")
-    void testSearchTrainsWithNullFormDataValues() throws Exception {
+    void testSearchTrainsWithNullFormDataValues() throws Exception
+    {
         // Arrange
         Playwright mockPlaywright = mock(Playwright.class);
         BrowserType mockBrowserType = mock(BrowserType.class);
@@ -1194,7 +1243,7 @@ class PlaywrightSearchTrainsServiceTest {
         when(mockBrowserType.launch(any(BrowserType.LaunchOptions.class))).thenReturn(mockBrowser);
         when(mockBrowser.newContext(any(Browser.NewContextOptions.class))).thenReturn(mockContext);
         when(mockContext.newPage()).thenReturn(mockPage);
-        
+
         when(config.getLocale()).thenReturn("es");
         when(config.getViewportWidth()).thenReturn(1920);
         when(config.getViewportHeight()).thenReturn(1080);
@@ -1209,7 +1258,8 @@ class PlaywrightSearchTrainsServiceTest {
         when(mockPage.waitForSelector(anyString(), any(Page.WaitForSelectorOptions.class)))
                 .thenReturn(mockElementHandle);
         when(mockPage.locator("#onetrust-accept-btn-handler")).thenReturn(mockCookieButton);
-        doThrow(new RuntimeException("Cookie button not found")).when(mockCookieButton).waitFor(any(Locator.WaitForOptions.class));
+        doThrow(new RuntimeException("Cookie button not found")).when(mockCookieButton)
+                .waitFor(any(Locator.WaitForOptions.class));
 
         Train train1 = new Train("TRAIN123", "AVE", "08:00", "12:30", "4h 30m", 45.50);
         when(trainHtmlParser.parseTrainList(anyString())).thenReturn(Arrays.asList(train1));
@@ -1229,7 +1279,8 @@ class PlaywrightSearchTrainsServiceTest {
 
     @Test
     @DisplayName("searchTrains should handle adults with whitespace")
-    void testSearchTrainsWithAdultsWhitespace() throws Exception {
+    void testSearchTrainsWithAdultsWhitespace() throws Exception
+    {
         // Arrange
         Playwright mockPlaywright = mock(Playwright.class);
         BrowserType mockBrowserType = mock(BrowserType.class);
@@ -1244,7 +1295,7 @@ class PlaywrightSearchTrainsServiceTest {
         when(mockBrowserType.launch(any(BrowserType.LaunchOptions.class))).thenReturn(mockBrowser);
         when(mockBrowser.newContext(any(Browser.NewContextOptions.class))).thenReturn(mockContext);
         when(mockContext.newPage()).thenReturn(mockPage);
-        
+
         when(config.getLocale()).thenReturn("es");
         when(config.getViewportWidth()).thenReturn(1920);
         when(config.getViewportHeight()).thenReturn(1080);
@@ -1259,7 +1310,8 @@ class PlaywrightSearchTrainsServiceTest {
         when(mockPage.waitForSelector(anyString(), any(Page.WaitForSelectorOptions.class)))
                 .thenReturn(mockElementHandle);
         when(mockPage.locator("#onetrust-accept-btn-handler")).thenReturn(mockCookieButton);
-        doThrow(new RuntimeException("Cookie button not found")).when(mockCookieButton).waitFor(any(Locator.WaitForOptions.class));
+        doThrow(new RuntimeException("Cookie button not found")).when(mockCookieButton)
+                .waitFor(any(Locator.WaitForOptions.class));
 
         Train train1 = new Train("TRAIN123", "AVE", "08:00", "12:30", "4h 30m", 45.50);
         when(trainHtmlParser.parseTrainList(anyString())).thenReturn(Arrays.asList(train1));
@@ -1277,4 +1329,3 @@ class PlaywrightSearchTrainsServiceTest {
         // Should trim whitespace from adults (buildFormData uses adults.trim())
     }
 }
-

@@ -1,23 +1,35 @@
+/*
+ * Copyright © ${YEAR} MCP Renfe Navigation Quarkus
+ * All rights reserved.
+ */
+
 package com.delard.renfe.navigation.infrastructure.adapter.input.mcp;
+
+
+import jakarta.enterprise.context.ApplicationScoped;
+import jakarta.inject.Inject;
+
+import io.quarkiverse.mcp.server.TextContent;
+import io.quarkiverse.mcp.server.Tool;
+import io.quarkiverse.mcp.server.ToolArg;
 
 import com.delard.renfe.navigation.application.exception.QueueException;
 import com.delard.renfe.navigation.application.exception.TrainUnavailabilityException;
 import com.delard.renfe.navigation.application.exception.ValidationException;
 import com.delard.renfe.navigation.domain.model.TrainsResponse;
 import com.delard.renfe.navigation.domain.port.input.SearchTrainsUseCase;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import io.quarkiverse.mcp.server.TextContent;
-import io.quarkiverse.mcp.server.Tool;
-import io.quarkiverse.mcp.server.ToolArg;
-import jakarta.enterprise.context.ApplicationScoped;
-import jakarta.inject.Inject;
+
 import org.jboss.logging.Logger;
+
+import com.fasterxml.jackson.databind.ObjectMapper;
+
 
 /**
  * MCP Tool for searching trains between two stations
  */
 @ApplicationScoped
-public class TrainResource {
+public class TrainResource
+{
 
     private static final Logger LOG = Logger.getLogger(TrainResource.class);
 
@@ -29,11 +41,16 @@ public class TrainResource {
     @Tool(description = "Search for train schedules and fares between two stations. Returns available trains with departure/arrival times, prices, and fare options.")
     public TextContent getTrains(
             @ToolArg(required = true, description = "Origin station name (e.g., OURENSE, MADRID)") String origin,
-            @ToolArg(required = true, description = "Destination station name (e.g., MADRID, OURENSE)") String destination,
-            @ToolArg(required = true, description = "Departure date in format YYYY-MM-DD (e.g., 2026-01-16)") String dateOut,
-            @ToolArg(required = false, description = "Return date in format YYYY-MM-DD (e.g., 2026-01-20). Optional for one-way trips.") String dateReturn,
-            @ToolArg(required = false, description = "Number of adult passengers (1-8). Defaults to 1 if not specified.") String adults) {
-        
+            @ToolArg(required = true,
+                    description = "Destination station name (e.g., MADRID, OURENSE)") String destination,
+            @ToolArg(required = true,
+                    description = "Departure date in format YYYY-MM-DD (e.g., 2026-01-16)") String dateOut,
+            @ToolArg(required = false,
+                    description = "Return date in format YYYY-MM-DD (e.g., 2026-01-20). Optional for one-way trips.") String dateReturn,
+            @ToolArg(required = false,
+                    description = "Number of adult passengers (1-8). Defaults to 1 if not specified.") String adults)
+    {
+
         try {
             LOG.infof("[MCP TOOL] Request - getTrains: %s -> %s, dateOut: %s, dateReturn: %s, adults: %s",
                     origin, destination, dateOut, dateReturn, adults);
@@ -67,6 +84,3 @@ public class TrainResource {
         }
     }
 }
-
-
-

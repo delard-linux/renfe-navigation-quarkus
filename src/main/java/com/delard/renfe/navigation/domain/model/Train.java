@@ -1,12 +1,20 @@
+/*
+ * Copyright © ${YEAR} MCP Renfe Navigation Quarkus
+ * All rights reserved.
+ */
+
 package com.delard.renfe.navigation.domain.model;
+
 
 import java.util.ArrayList;
 import java.util.List;
 
+
 /**
  * Train with all fares and details
  */
-public class Train {
+public class Train
+{
     private String trainId;
     private String serviceType;
     private String departureTime;
@@ -20,7 +28,8 @@ public class Train {
     private boolean ecoFriendly;
     private TrainConnection connection;
 
-    public Train() {
+    public Train()
+    {
         this.currency = "EUR";
         this.fares = new ArrayList<>();
         this.badges = new ArrayList<>();
@@ -29,7 +38,8 @@ public class Train {
     }
 
     public Train(String trainId, String serviceType, String departureTime, String arrivalTime,
-                 String duration, double priceFrom) {
+            String duration, double priceFrom)
+    {
         this();
         this.trainId = trainId;
         this.serviceType = serviceType;
@@ -40,100 +50,123 @@ public class Train {
     }
 
     // Getters and Setters
-    public String getTrainId() {
+    public String getTrainId()
+    {
         return trainId;
     }
 
-    public void setTrainId(String trainId) {
+    public void setTrainId(String trainId)
+    {
         this.trainId = trainId;
     }
 
-    public String getServiceType() {
+    public String getServiceType()
+    {
         return serviceType;
     }
 
-    public void setServiceType(String serviceType) {
+    public void setServiceType(String serviceType)
+    {
         this.serviceType = serviceType;
     }
 
-    public String getDepartureTime() {
+    public String getDepartureTime()
+    {
         return departureTime;
     }
 
-    public void setDepartureTime(String departureTime) {
+    public void setDepartureTime(String departureTime)
+    {
         this.departureTime = departureTime;
     }
 
-    public String getArrivalTime() {
+    public String getArrivalTime()
+    {
         return arrivalTime;
     }
 
-    public void setArrivalTime(String arrivalTime) {
+    public void setArrivalTime(String arrivalTime)
+    {
         this.arrivalTime = arrivalTime;
     }
 
-    public String getDuration() {
+    public String getDuration()
+    {
         return duration;
     }
 
-    public void setDuration(String duration) {
+    public void setDuration(String duration)
+    {
         this.duration = duration;
     }
 
-    public double getPriceFrom() {
+    public double getPriceFrom()
+    {
         return priceFrom;
     }
 
-    public void setPriceFrom(double priceFrom) {
+    public void setPriceFrom(double priceFrom)
+    {
         this.priceFrom = priceFrom;
     }
 
-    public String getCurrency() {
+    public String getCurrency()
+    {
         return currency;
     }
 
-    public void setCurrency(String currency) {
+    public void setCurrency(String currency)
+    {
         this.currency = currency;
     }
 
-    public List<FareOption> getFares() {
+    public List<FareOption> getFares()
+    {
         return new ArrayList<>(fares);
     }
 
-    public void setFares(List<FareOption> fares) {
+    public void setFares(List<FareOption> fares)
+    {
         this.fares = fares != null ? new ArrayList<>(fares) : new ArrayList<>();
     }
 
-    public List<String> getBadges() {
+    public List<String> getBadges()
+    {
         return new ArrayList<>(badges);
     }
 
-    public void setBadges(List<String> badges) {
+    public void setBadges(List<String> badges)
+    {
         this.badges = badges != null ? new ArrayList<>(badges) : new ArrayList<>();
     }
 
-    public boolean isAccessible() {
+    public boolean isAccessible()
+    {
         return accessible;
     }
 
-    public void setAccessible(boolean accessible) {
+    public void setAccessible(boolean accessible)
+    {
         this.accessible = accessible;
     }
 
-    public boolean isEcoFriendly() {
+    public boolean isEcoFriendly()
+    {
         return ecoFriendly;
     }
 
-    public void setEcoFriendly(boolean ecoFriendly) {
+    public void setEcoFriendly(boolean ecoFriendly)
+    {
         this.ecoFriendly = ecoFriendly;
     }
 
-    public TrainConnection getConnection() {
+    public TrainConnection getConnection()
+    {
         return connection;
     }
 
-    public void setConnection(TrainConnection connection) {
+    public void setConnection(TrainConnection connection)
+    {
         this.connection = connection;
     }
 }
-

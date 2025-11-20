@@ -1,31 +1,41 @@
+/*
+ * Copyright © ${YEAR} MCP Renfe Navigation Quarkus
+ * All rights reserved.
+ */
+
 package com.delard.renfe.navigation.infrastructure.config;
+
+
+import static org.junit.jupiter.api.Assertions.*;
+
+import java.lang.reflect.Method;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-import java.lang.reflect.Method;
-
-import static org.junit.jupiter.api.Assertions.*;
 
 /**
  * Unit tests for PlaywrightConfig
  */
-class PlaywrightConfigTest {
+class PlaywrightConfigTest
+{
 
     private PlaywrightConfig config;
 
     @BeforeEach
-    void setUp() {
+    void setUp()
+    {
         config = new PlaywrightConfig();
     }
 
     @Test
-    void testGettersWithDefaultValues() {
+    void testGettersWithDefaultValues()
+    {
         // Test that getters exist and can be called without throwing exceptions
         // Note: In unit tests without CDI, the @ConfigProperty values won't be injected
         // so we just verify the getters are accessible
         assertNotNull(config);
-        
+
         // Test getters exist and can be called
         config.isHeadless();
         config.getViewportWidth();
@@ -41,7 +51,8 @@ class PlaywrightConfigTest {
     }
 
     @Test
-    void testIsHeadless() throws Exception {
+    void testIsHeadless() throws Exception
+    {
         setField("headless", true);
         assertTrue(config.isHeadless());
 
@@ -50,7 +61,8 @@ class PlaywrightConfigTest {
     }
 
     @Test
-    void testGetViewportWidth() throws Exception {
+    void testGetViewportWidth() throws Exception
+    {
         setField("viewportWidth", 1920);
         assertEquals(1920, config.getViewportWidth());
 
@@ -59,7 +71,8 @@ class PlaywrightConfigTest {
     }
 
     @Test
-    void testGetViewportHeight() throws Exception {
+    void testGetViewportHeight() throws Exception
+    {
         setField("viewportHeight", 1080);
         assertEquals(1080, config.getViewportHeight());
 
@@ -68,7 +81,8 @@ class PlaywrightConfigTest {
     }
 
     @Test
-    void testGetSlowMo() throws Exception {
+    void testGetSlowMo() throws Exception
+    {
         setField("slowMo", 0);
         assertEquals(0, config.getSlowMo());
 
@@ -77,7 +91,8 @@ class PlaywrightConfigTest {
     }
 
     @Test
-    void testGetLocale() throws Exception {
+    void testGetLocale() throws Exception
+    {
         setField("locale", "es-ES");
         assertEquals("es-ES", config.getLocale());
 
@@ -86,7 +101,8 @@ class PlaywrightConfigTest {
     }
 
     @Test
-    void testGetTimeoutMs() throws Exception {
+    void testGetTimeoutMs() throws Exception
+    {
         setField("timeoutMs", 30000);
         assertEquals(30000, config.getTimeoutMs());
 
@@ -95,7 +111,8 @@ class PlaywrightConfigTest {
     }
 
     @Test
-    void testGetNavigationTimeoutMs() throws Exception {
+    void testGetNavigationTimeoutMs() throws Exception
+    {
         setField("navigationTimeoutMs", 30000);
         assertEquals(30000, config.getNavigationTimeoutMs());
 
@@ -104,7 +121,8 @@ class PlaywrightConfigTest {
     }
 
     @Test
-    void testGetNetworkIdleTimeoutMs() throws Exception {
+    void testGetNetworkIdleTimeoutMs() throws Exception
+    {
         setField("networkIdleTimeoutMs", 30000);
         assertEquals(30000, config.getNetworkIdleTimeoutMs());
 
@@ -113,7 +131,8 @@ class PlaywrightConfigTest {
     }
 
     @Test
-    void testGetShortTimeoutMs() throws Exception {
+    void testGetShortTimeoutMs() throws Exception
+    {
         setField("shortTimeoutMs", 500);
         assertEquals(500, config.getShortTimeoutMs());
 
@@ -122,7 +141,8 @@ class PlaywrightConfigTest {
     }
 
     @Test
-    void testGetRenfeSearchUrl() throws Exception {
+    void testGetRenfeSearchUrl() throws Exception
+    {
         setField("renfeSearchUrl", "https://www.renfe.com");
         assertEquals("https://www.renfe.com", config.getRenfeSearchUrl());
 
@@ -131,7 +151,8 @@ class PlaywrightConfigTest {
     }
 
     @Test
-    void testGetResponsesDir() throws Exception {
+    void testGetResponsesDir() throws Exception
+    {
         setField("responsesDir", "/tmp/responses");
         assertEquals("/tmp/responses", config.getResponsesDir());
 
@@ -140,19 +161,22 @@ class PlaywrightConfigTest {
     }
 
     @Test
-    void testGetRenfeSearchUrlWithNull() throws Exception {
+    void testGetRenfeSearchUrlWithNull() throws Exception
+    {
         setField("renfeSearchUrl", null);
         assertNull(config.getRenfeSearchUrl());
     }
 
     @Test
-    void testGetResponsesDirWithNull() throws Exception {
+    void testGetResponsesDirWithNull() throws Exception
+    {
         setField("responsesDir", null);
         assertNull(config.getResponsesDir());
     }
 
     @Test
-    void testInit() throws Exception {
+    void testInit() throws Exception
+    {
         // Set some values
         setField("headless", true);
         setField("slowMo", 500);
@@ -172,7 +196,8 @@ class PlaywrightConfigTest {
     }
 
     @Test
-    void testAllGettersWithValues() throws Exception {
+    void testAllGettersWithValues() throws Exception
+    {
         // Set all fields with test values
         setField("headless", false);
         setField("viewportWidth", 1280);
@@ -207,10 +232,10 @@ class PlaywrightConfigTest {
      * @param value Value to set
      * @throws Exception if reflection fails
      */
-    private void setField(String fieldName, Object value) throws Exception {
+    private void setField(String fieldName, Object value) throws Exception
+    {
         java.lang.reflect.Field field = PlaywrightConfig.class.getDeclaredField(fieldName);
         field.setAccessible(true);
         field.set(config, value);
     }
 }
-

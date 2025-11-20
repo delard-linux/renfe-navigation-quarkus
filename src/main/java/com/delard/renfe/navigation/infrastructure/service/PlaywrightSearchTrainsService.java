@@ -1,21 +1,32 @@
+/*
+ * Copyright © ${YEAR} MCP Renfe Navigation Quarkus
+ * All rights reserved.
+ */
+
 package com.delard.renfe.navigation.infrastructure.service;
+
+
+import java.util.*;
+import java.util.stream.Collectors;
+
+import jakarta.enterprise.context.ApplicationScoped;
+import jakarta.inject.Inject;
 
 import com.delard.renfe.navigation.application.exception.QueueException;
 import com.delard.renfe.navigation.application.exception.TrainUnavailabilityException;
 import com.delard.renfe.navigation.domain.model.FareOption;
 import com.delard.renfe.navigation.domain.model.Train;
 import com.delard.renfe.navigation.infrastructure.config.PlaywrightConfig;
-import com.microsoft.playwright.*;
-import com.microsoft.playwright.options.WaitUntilState;
-import jakarta.enterprise.context.ApplicationScoped;
-import jakarta.inject.Inject;
+
 import org.jboss.logging.Logger;
 
-import java.util.*;
-import java.util.stream.Collectors;
+import com.microsoft.playwright.*;
+import com.microsoft.playwright.options.WaitUntilState;
+
 
 @ApplicationScoped
-public class PlaywrightSearchTrainsService {
+public class PlaywrightSearchTrainsService
+{
 
     private static final Logger LOG = Logger.getLogger(PlaywrightSearchTrainsService.class);
 
@@ -35,26 +46,26 @@ public class PlaywrightSearchTrainsService {
     RenfePageValidator pageValidator;
 
     public SearchTrainsResult searchTrains(String origin, String destination,
-                                           String originDesgEstacion, String destinationDesgEstacion,
-                                           String originClave, String destinationClave,
-                                           String dateOut, String dateReturn, String adults) {
+            String originDesgEstacion, String destinationDesgEstacion,
+            String originClave, String destinationClave,
+            String dateOut, String dateReturn, String adults)
+    {
         LOG.debugf("Starting Chromium browser");
 
         LOG.debugf("Origin: %s (desgEstacion: %s, clave: %s)", origin, originDesgEstacion, originClave);
-        LOG.debugf("Destination: %s (desgEstacion: %s, clave: %s)", destination, destinationDesgEstacion, destinationClave);
+        LOG.debugf("Destination: %s (desgEstacion: %s, clave: %s)", destination, destinationDesgEstacion,
+                destinationClave);
 
         // Dates are already formatted in application layer (dd/MM/yyyy format)
         String dateReturnFormatted = (dateReturn != null && !dateReturn.isEmpty()) ? dateReturn : "";
 
         Map<String, String> formData = buildFormData(
                 originDesgEstacion, destinationDesgEstacion, originClave, destinationClave,
-                dateOut, dateReturnFormatted, adults
-        );
+                dateOut, dateReturnFormatted, adults);
 
         LOG.debugf("Search parameters: %s -> %s",
                 dateOut,
-                dateReturnFormatted.isEmpty() ? "One way only" : dateReturnFormatted
-        );
+                dateReturnFormatted.isEmpty() ? "One way only" : dateReturnFormatted);
 
         // Log equivalent curl command for debugging
         String curlCommand = buildCurlCommand(formData);
@@ -65,9 +76,8 @@ public class PlaywrightSearchTrainsService {
             try {
                 BrowserContext context = browser.newContext(new Browser.NewContextOptions()
                         .setLocale(config.getLocale())
-                        .setViewportSize(config.getViewportWidth(), config.getViewportHeight())
-                );
-                
+                        .setViewportSize(config.getViewportWidth(), config.getViewportHeight()));
+
                 Page page = context.newPage();
                 try {
                     return executeSearchOnPage(page, formData, dateReturn);
@@ -90,14 +100,14 @@ public class PlaywrightSearchTrainsService {
         }
     }
 
-    private SearchTrainsResult executeSearchOnPage(Page page, Map<String, String> formData, String dateReturn) {
+    private SearchTrainsResult executeSearchOnPage(Page page, Map<String, String> formData, String dateReturn)
+    {
         // Build URL with query string parameters
         String urlWithQueryString = buildUrlWithQueryString(formData);
         LOG.debugf("Navigating to %s", urlWithQueryString);
         page.navigate(urlWithQueryString, new Page.NavigateOptions()
                 .setWaitUntil(WaitUntilState.DOMCONTENTLOADED)
-                .setTimeout(config.getNavigationTimeoutMs())
-        );
+                .setTimeout(config.getNavigationTimeoutMs()));
 
         // Check if the page redirected to a queue management page
         pageValidator.checkForQueuePage(page);
@@ -130,14 +140,14 @@ public class PlaywrightSearchTrainsService {
         }
     }
 
-    private void waitForTrainResults(Page page) {
+    private void waitForTrainResults(Page page)
+    {
         LOG.debug("Waiting for train results to appear...");
         // Wait directly for train results instead of NETWORKIDLE (which may timeout on sites with continuous polling)
         try {
             page.waitForSelector("div.selectedTren[role='listitem']", new Page.WaitForSelectorOptions()
                     .setTimeout(config.getTimeoutMs())
-                    .setState(com.microsoft.playwright.options.WaitForSelectorState.VISIBLE)
-            );
+                    .setState(com.microsoft.playwright.options.WaitForSelectorState.VISIBLE));
         } catch (Exception e) {
             // If waiting for train results times out, check again for unavailability messages
             LOG.debugf("Train results did not appear, checking for error messages: %s", e.getMessage());
@@ -151,7 +161,8 @@ public class PlaywrightSearchTrainsService {
         page.waitForTimeout(1000);
     }
 
-    private void handleCookies(Page page) {
+    private void handleCookies(Page page)
+    {
         try {
             Locator acceptCookiesButton = page.locator("#onetrust-accept-btn-handler");
             // Wait for the button to appear with a short timeout
@@ -171,7 +182,8 @@ public class PlaywrightSearchTrainsService {
         }
     }
 
-    private List<Train> extractReturnResults(Page page) {
+    private List<Train> extractReturnResults(Page page)
+    {
         try {
             LOG.debug("Finding return results");
             Locator vueltaTab = page.locator("[id*='vuelta'], [class*='vuelta'], a:has-text('Vuelta')");
@@ -191,20 +203,22 @@ public class PlaywrightSearchTrainsService {
         return null;
     }
 
-    private Browser createBrowser(Playwright playwright) {
-        return playwright.chromium().launch(new BrowserType.LaunchOptions()
-                .setHeadless(config.isHeadless())
-                .setSlowMo(config.getSlowMo())
-        );
+    private Browser createBrowser(Playwright playwright)
+    {
+        return playwright.chromium()
+                .launch(new BrowserType.LaunchOptions()
+                        .setHeadless(config.isHeadless())
+                        .setSlowMo(config.getSlowMo()));
     }
 
     private Map<String, String> buildFormData(String originDesgEstacion,
-                                              String destinationDesgEstacion,
-                                              String originClave,
-                                              String destinationClave,
-                                              String dateOutFormatted,
-                                              String dateReturnFormatted,
-                                              String adults) {
+            String destinationDesgEstacion,
+            String originClave,
+            String destinationClave,
+            String dateOutFormatted,
+            String dateReturnFormatted,
+            String adults)
+    {
         Map<String, String> formData = new LinkedHashMap<>();
         formData.put("tipoBusqueda", "autocomplete");
         formData.put("currenLocation", "menuBusqueda");
@@ -242,13 +256,14 @@ public class PlaywrightSearchTrainsService {
      * @param formData The form data to convert to query string
      * @return The complete URL with query string parameters
      */
-    private String buildUrlWithQueryString(Map<String, String> formData) {
+    private String buildUrlWithQueryString(Map<String, String> formData)
+    {
         StringBuilder url = new StringBuilder(config.getRenfeSearchUrl());
-        
+
         // Check if URL already has query parameters
         boolean hasQueryParams = url.indexOf("?") != -1;
         String separator = hasQueryParams ? "&" : "?";
-        
+
         boolean first = true;
         for (Map.Entry<String, String> entry : formData.entrySet()) {
             if (first) {
@@ -258,10 +273,10 @@ public class PlaywrightSearchTrainsService {
                 url.append("&");
             }
             url.append(escapeUrlParameter(entry.getKey()))
-               .append("=")
-               .append(escapeUrlParameter(entry.getValue()));
+                    .append("=")
+                    .append(escapeUrlParameter(entry.getValue()));
         }
-        
+
         return url.toString();
     }
 
@@ -272,7 +287,8 @@ public class PlaywrightSearchTrainsService {
      * @param formData The form data to convert to curl command with query string
      * @return A curl command string equivalent to the GET request with query string
      */
-    private String buildCurlCommand(Map<String, String> formData) {
+    private String buildCurlCommand(Map<String, String> formData)
+    {
         String urlWithQueryString = buildUrlWithQueryString(formData);
         return "curl '" + urlWithQueryString + "'";
     }
@@ -283,7 +299,8 @@ public class PlaywrightSearchTrainsService {
      * @param str The string to escape
      * @return The escaped string
      */
-    private String escapeUrlParameter(String str) {
+    private String escapeUrlParameter(String str)
+    {
         if (str == null) {
             return "";
         }
@@ -300,18 +317,18 @@ public class PlaywrightSearchTrainsService {
         }
     }
 
-    private List<Train> extractResults(Page page, String direction) throws InterruptedException {
+    private List<Train> extractResults(Page page, String direction) throws InterruptedException
+    {
         LOG.debugf("Waiting for %s train results to be visible...", direction);
-        
+
         // Check for train unavailability errors before waiting for results
         pageValidator.checkForTrainUnavailability(page, direction);
-        
+
         // Wait for train results to be visible (skip NETWORKIDLE to avoid timeout on pages with continuous polling)
         try {
             page.waitForSelector("div.selectedTren[role='listitem']", new Page.WaitForSelectorOptions()
                     .setTimeout(config.getTimeoutMs())
-                    .setState(com.microsoft.playwright.options.WaitForSelectorState.VISIBLE)
-            );
+                    .setState(com.microsoft.playwright.options.WaitForSelectorState.VISIBLE));
         } catch (Exception e) {
             // If waiting for train results times out, check again for unavailability messages
             LOG.debugf("%s train results did not appear, checking for error messages: %s", direction, e.getMessage());
@@ -319,74 +336,80 @@ public class PlaywrightSearchTrainsService {
             // If no unavailability message found, re-throw the original exception
             throw e;
         }
-        
+
         // Wait a moment for content to stabilize
         page.waitForTimeout(1000);
-        
+
         String html = page.content();
         List<Train> trains = trainHtmlParser.parseTrainList(html);
         LOG.debugf("[PARSER] Extracted %d %s trains", trains.size(), direction);
         return trains;
     }
 
-    public static class SearchTrainsResult {
+    public static class SearchTrainsResult
+    {
         public final List<Train> outboundTrains;
         public final List<Train> returnTrains;
 
-        public SearchTrainsResult(List<Train> outboundTrains, List<Train> returnTrains) {
+        public SearchTrainsResult(List<Train> outboundTrains, List<Train> returnTrains)
+        {
             this.outboundTrains = outboundTrains;
             this.returnTrains = returnTrains;
         }
 
         @Override
-        public String toString() {
+        public String toString()
+        {
             return "SearchTrainsResult{" +
-                "outboundTrains=" + summarize(outboundTrains) +
-                ", returnTrains=" + summarize(returnTrains) +
-                '}';
+                    "outboundTrains=" + summarize(outboundTrains) +
+                    ", returnTrains=" + summarize(returnTrains) +
+                    '}';
         }
 
-        private String summarize(List<Train> trains) {
+        private String summarize(List<Train> trains)
+        {
             if (trains == null || trains.isEmpty()) {
                 return "[]";
             }
             return trains.stream()
-                .map(this::describeTrain)
-                .collect(Collectors.joining(", ", "[", "]"));
+                    .map(this::describeTrain)
+                    .collect(Collectors.joining(", ", "[", "]"));
         }
 
-        private String describeTrain(Train train) {
+        private String describeTrain(Train train)
+        {
             if (train == null) {
                 return "null";
             }
-            
+
             String serviceType = valueOrDefault(train.getServiceType(), "(no-type)");
             String timeRange = String.format("%s-%s",
-                valueOrDefault(train.getDepartureTime(), "--"),
-                valueOrDefault(train.getArrivalTime(), "--"));
-            
+                    valueOrDefault(train.getDepartureTime(), "--"),
+                    valueOrDefault(train.getArrivalTime(), "--"));
+
             String priceRange = getPriceRangeFromFares(train);
-            
+
             return String.format("%s %s %s", serviceType, timeRange, priceRange);
         }
-        
-        private String getPriceRangeFromFares(Train train) {
+
+        private String getPriceRangeFromFares(Train train)
+        {
             List<FareOption> fares = train.getFares();
             if (fares == null || fares.isEmpty()) {
                 // Fallback to priceFrom if no fares available
                 return String.format("%.2f€", train.getPriceFrom());
             }
-            
+
             double minPrice = fares.stream()
-                .mapToDouble(FareOption::getPrice)
-                .min()
-                .orElse(train.getPriceFrom());
-            
+                    .mapToDouble(FareOption::getPrice)
+                    .min()
+                    .orElse(train.getPriceFrom());
+
             double maxPrice = fares.stream()
-                .mapToDouble(FareOption::getPrice)
-                .max()
-                .orElse(train.getPriceFrom());
-            
+                    .mapToDouble(FareOption::getPrice)
+                    .max()
+                    .orElse(train.getPriceFrom());
+
             if (minPrice == maxPrice) {
                 return String.format("%.2f€", minPrice);
             } else {
@@ -394,9 +417,9 @@ public class PlaywrightSearchTrainsService {
             }
         }
 
-        private String valueOrDefault(String value, String fallback) {
+        private String valueOrDefault(String value, String fallback)
+        {
             return (value == null || value.isBlank()) ? fallback : value;
         }
     }
 }
-

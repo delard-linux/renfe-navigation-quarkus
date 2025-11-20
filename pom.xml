@@ -1,474 +1,549 @@
-<?xml version="1.0"?>
-<project
-    xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd"
-    xmlns="http://maven.apache.org/POM/4.0.0"
-    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
-    <modelVersion>4.0.0</modelVersion>
-    <groupId>com.delard.renfe</groupId>
-    <artifactId>renfe-navigation-quarkus</artifactId>
-    <version>1.0.0-SNAPSHOT</version>
-    <name>Renfe Navigation API</name>
-    <description>MCP Server and API for ticket purchasing at RENFE - Hexagonal architecture microservice for search and navigation, Playwright integration for web scraping</description>
-    <url>https://github.com/delard/renfe-navigation-quarkus</url>
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+  <groupId>com.delard.renfe</groupId>
+  <artifactId>renfe-navigation-quarkus</artifactId>
+  <version>1.0.0-SNAPSHOT</version>
+  <name>MCP Renfe Navigation API</name>
+  <description>MCP Server and API for ticket purchasing at RENFE - Hexagonal architecture microservice for search and navigation, Playwright integration for web scraping</description>
+  <url>https://github.com/delard/renfe-navigation-quarkus</url>
 
-    <properties>
-        <compiler-plugin.version>3.11.0</compiler-plugin.version>
-        <maven.compiler.release>21</maven.compiler.release>
-        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
-        <quarkus.platform.artifact-id>quarkus-bom</quarkus.platform.artifact-id>
-        <quarkus.platform.group-id>io.quarkus.platform</quarkus.platform.group-id>
-        <quarkus.platform.version>3.27.0</quarkus.platform.version>
-        <skipITs>true</skipITs>
-        <surefire-plugin.version>3.2.5</surefire-plugin.version>
-        <surefire-report-plugin.version>3.3.0</surefire-report-plugin.version>
-        <failsafe-plugin.version>3.3.0</failsafe-plugin.version>
-        <exec-maven-plugin.version>3.3.0</exec-maven-plugin.version>
-        <build-helper-maven-plugin.version>3.5.0</build-helper-maven-plugin.version>
-        <jacoco-maven-plugin.version>0.8.14</jacoco-maven-plugin.version>
-        <maven-toolchains-plugin.version>3.0.0</maven-toolchains-plugin.version>
-        <maven-project-info-reports-plugin.version>3.4.5</maven-project-info-reports-plugin.version>
-        <playwright.version>1.56.0</playwright.version>
-        <jsoup.version>1.18.1</jsoup.version>
-        <mockito.version>5.20.0</mockito.version>
-    </properties>
+  <properties>
+    <compiler-plugin.version>3.11.0</compiler-plugin.version>
+    <maven.compiler.release>21</maven.compiler.release>
+    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+    <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
+    <quarkus.platform.artifact-id>quarkus-bom</quarkus.platform.artifact-id>
+    <quarkus.platform.group-id>io.quarkus.platform</quarkus.platform.group-id>
+    <quarkus.platform.version>3.27.0</quarkus.platform.version>
+    <skipITs>true</skipITs>
+    <surefire-plugin.version>3.2.5</surefire-plugin.version>
+    <surefire-report-plugin.version>3.3.0</surefire-report-plugin.version>
+    <failsafe-plugin.version>3.3.0</failsafe-plugin.version>
+    <exec-maven-plugin.version>3.3.0</exec-maven-plugin.version>
+    <build-helper-maven-plugin.version>3.5.0</build-helper-maven-plugin.version>
+    <jacoco-maven-plugin.version>0.8.14</jacoco-maven-plugin.version>
+    <maven-toolchains-plugin.version>3.0.0</maven-toolchains-plugin.version>
+    <maven-project-info-reports-plugin.version>3.4.5</maven-project-info-reports-plugin.version>
+    <playwright.version>1.56.0</playwright.version>
+    <jsoup.version>1.18.1</jsoup.version>
+    <mockito.version>5.20.0</mockito.version>
+    <spotless-maven-plugin.version>2.46.1</spotless-maven-plugin.version>
+  </properties>
 
-    <dependencyManagement>
-        <dependencies>
-            <dependency>
-                <groupId>${quarkus.platform.group-id}</groupId>
-                <artifactId>${quarkus.platform.artifact-id}</artifactId>
-                <version>${quarkus.platform.version}</version>
-                <type>pom</type>
-                <scope>import</scope>
-            </dependency>
-            <dependency>
-                <groupId>${quarkus.platform.group-id}</groupId>
-                <artifactId>quarkus-mcp-server-bom</artifactId>
-                <version>${quarkus.platform.version}</version>
-                <type>pom</type>
-                <scope>import</scope>
-            </dependency>
-        </dependencies>
-    </dependencyManagement>
-
+  <dependencyManagement>
     <dependencies>
-        <!-- Quarkus Core -->
-        <dependency>
-            <groupId>io.quarkus</groupId>
-            <artifactId>quarkus-arc</artifactId>
-        </dependency>
-
-        <!-- REST API -->
-        <dependency>
-            <groupId>io.quarkus</groupId>
-            <artifactId>quarkus-rest</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>io.quarkus</groupId>
-            <artifactId>quarkus-rest-jackson</artifactId>
-        </dependency>
-
-        <!-- OpenAPI -->
-        <dependency>
-            <groupId>io.quarkus</groupId>
-            <artifactId>quarkus-smallrye-openapi</artifactId>
-        </dependency>
-
-        <!-- Logging -->
-        <dependency>
-            <groupId>io.quarkus</groupId>
-            <artifactId>quarkus-logging-json</artifactId>
-        </dependency>
-
-        <!-- Validation -->
-        <dependency>
-            <groupId>io.quarkus</groupId>
-            <artifactId>quarkus-hibernate-validator</artifactId>
-        </dependency>
-
-        <!-- MCP Server -->
-        <dependency>
-            <groupId>io.quarkiverse.mcp</groupId>
-            <artifactId>quarkus-mcp-server-sse</artifactId>
-        </dependency>
-
-        <!-- Playwright for Web Scraping -->
-        <dependency>
-            <groupId>com.microsoft.playwright</groupId>
-            <artifactId>playwright</artifactId>
-            <version>${playwright.version}</version>
-        </dependency>
-
-        <!-- HTML Parsing with JSoup -->
-        <dependency>
-            <groupId>org.jsoup</groupId>
-            <artifactId>jsoup</artifactId>
-            <version>${jsoup.version}</version>
-        </dependency>
-
-        <!-- Testing -->
-        <dependency>
-            <groupId>io.quarkus</groupId>
-            <artifactId>quarkus-junit5</artifactId>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>io.rest-assured</groupId>
-            <artifactId>rest-assured</artifactId>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.mockito</groupId>
-            <artifactId>mockito-core</artifactId>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.mockito</groupId>
-            <artifactId>mockito-junit-jupiter</artifactId>
-            <scope>test</scope>
-        </dependency>
+      <dependency>
+        <groupId>${quarkus.platform.group-id}</groupId>
+        <artifactId>${quarkus.platform.artifact-id}</artifactId>
+        <version>${quarkus.platform.version}</version>
+        <type>pom</type>
+        <scope>import</scope>
+      </dependency>
+      <dependency>
+        <groupId>${quarkus.platform.group-id}</groupId>
+        <artifactId>quarkus-mcp-server-bom</artifactId>
+        <version>${quarkus.platform.version}</version>
+        <type>pom</type>
+        <scope>import</scope>
+      </dependency>
     </dependencies>
+  </dependencyManagement>
 
-    <build>
-        <!-- Configure test source directory to unit (default), build-helper will add integration
-        and e2e -->
-        <testSourceDirectory>src/test/java/unit</testSourceDirectory>
-        <plugins>
-            <plugin>
-                <groupId>${quarkus.platform.group-id}</groupId>
-                <artifactId>quarkus-maven-plugin</artifactId>
-                <version>${quarkus.platform.version}</version>
-                <extensions>true</extensions>
-                <executions>
-                    <execution>
-                        <goals>
-                            <goal>build</goal>
-                            <goal>generate-code</goal>
-                            <goal>test</goal>
-                        </goals>
-                    </execution>
-                    <!-- Generate test code after build-helper adds test sources -->
-                    <execution>
-                        <id>generate-test-code</id>
-                        <phase>generate-test-sources</phase>
-                        <goals>
-                            <goal>generate-code-tests</goal>
-                        </goals>
-                    </execution>
-                </executions>
-            </plugin>
-            <plugin>
-                <groupId>org.codehaus.mojo</groupId>
-                <artifactId>exec-maven-plugin</artifactId>
-                <version>${exec-maven-plugin.version}</version>
-            </plugin>
-            <plugin>
-                <artifactId>maven-compiler-plugin</artifactId>
-                <version>${compiler-plugin.version}</version>
-                <configuration>
-                    <compilerArgs>
-                        <arg>-parameters</arg>
-                    </compilerArgs>
-                </configuration>
-            </plugin>
-            <!-- Executes Unit testing and Integration test allow debugging (QuarkusTest) -->
-            <plugin>
-                <artifactId>maven-surefire-plugin</artifactId>
-                <version>${surefire-plugin.version}</version>
-                <configuration>
-                    <!-- Use argLine from JaCoCo for code coverage, plus Mockito agent -->
-                    <argLine>${argLine} --add-opens java.base/java.lang=ALL-UNNAMED -javaagent:${settings.localRepository}/org/mockito/mockito-core/${mockito.version}/mockito-core-${mockito.version}.jar=inline</argLine>
-                    <includes>
-                        <!-- Unit tests: *Test.java (sin anotación especial, depurables) -->
-                        <include>**/*Test.java</include>
-                        <!-- Integration tests: *IT.java con @QuarkusTest (depurables) -->
-                        <include>**/*IT.java</include>
-                    </includes>
-                    <excludes>
-                        <!-- Exclude e2e tests (handled by Failsafe): *E2E.java y *ITCase.java -->
-                        <exclude>**/*E2E.java</exclude>
-                        <exclude>**/*ITCase.java</exclude>
-                    </excludes>
-                    <systemPropertyVariables>
-                        <java.util.logging.manager>org.jboss.logmanager.LogManager</java.util.logging.manager>
-                        <maven.home>${maven.home}</maven.home>
-                        <!-- Enable DisplayName support in console output -->
-                        <junit.platform.output.capture.stdout>true</junit.platform.output.capture.stdout>
-                    </systemPropertyVariables>
-                    <!-- Show test display names in console output -->
-                    <statelessTestsetReporter
-                        implementation="org.apache.maven.plugin.surefire.extensions.junit5.JUnit5Xml30StatelessReporter">
-                        <disable>false</disable>
-                        <version>3.0</version>
-                        <usePhrasedFileName>false</usePhrasedFileName>
-                        <usePhrasedTestSuiteClassName>true</usePhrasedTestSuiteClassName>
-                        <usePhrasedTestCaseClassName>true</usePhrasedTestCaseClassName>
-                        <usePhrasedTestCaseMethodName>true</usePhrasedTestCaseMethodName>
-                    </statelessTestsetReporter>
-                    <!-- Show test names in real-time during execution -->
-                    <statelessTestsetInfoReporter
-                        implementation="org.apache.maven.plugin.surefire.extensions.junit5.JUnit5StatelessTestsetInfoReporter">
-                        <disable>false</disable>
-                        <usePhrasedFileName>false</usePhrasedFileName>
-                        <usePhrasedClassNameInRunning>true</usePhrasedClassNameInRunning>
-                        <usePhrasedClassNameInTestCaseSummary>true</usePhrasedClassNameInTestCaseSummary>
-                    </statelessTestsetInfoReporter>
-                    <!-- Print detailed test information - show each test as it runs -->
-                    <printSummary>true</printSummary>
-                    <!-- Use plain format to show test names -->
-                    <reportFormat>plain</reportFormat>
-                    <!-- Show each test as it runs (output to console in real-time) -->
-                    <useFile>false</useFile>
-                    <!-- Enable detailed output for each test -->
-                    <redirectTestOutputToFile>false</redirectTestOutputToFile>
-                    <!-- Show full stack traces for better debugging -->
-                    <trimStackTrace>false</trimStackTrace>
-                    <!-- Show test names in real-time -->
-                    <forkCount>1</forkCount>
-                    <reuseForks>true</reuseForks>
-                </configuration>
-            </plugin>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-toolchains-plugin</artifactId>
-                <version>${maven-toolchains-plugin.version}</version>
-                <executions>
-                    <execution>
-                        <goals>
-                            <goal>toolchain</goal>
-                        </goals>
-                    </execution>
-                </executions>
-                <configuration>
-                    <toolchains>
-                        <jdk>
-                            <version>21</version>
-                            <vendor>adoptium</vendor>
-                        </jdk>
-                    </toolchains>
-                </configuration>
-            </plugin>
-            <!-- Add test sources for unit, integration, and e2e -->
-            <plugin>
-                <groupId>org.codehaus.mojo</groupId>
-                <artifactId>build-helper-maven-plugin</artifactId>
-                <version>${build-helper-maven-plugin.version}</version>
-                <executions>
-                    <execution>
-                        <id>add-test-sources</id>
-                        <phase>generate-test-sources</phase>
-                        <goals>
-                            <goal>add-test-source</goal>
-                        </goals>
-                        <configuration>
-                            <sources>
-                                <source>src/test/java/unit</source>
-                                <source>src/test/java/integration</source>
-                                <source>src/test/java/e2e</source>
-                            </sources>
-                        </configuration>
-                    </execution>
-                </executions>
-            </plugin>
-            <!-- Executes E2E (@QuarkusIntegrationTest) -->
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-failsafe-plugin</artifactId>
-                <version>${failsafe-plugin.version}</version>
-                <executions>
-                    <execution>
-                        <id>e2e-tests</id>
-                        <goals>
-                            <goal>integration-test</goal>
-                            <goal>verify</goal>
-                        </goals>
-                    </execution>
-                </executions>
-                <configuration>
-                    <!-- Add Mockito agent for E2E tests -->
-                    <argLine>--add-opens java.base/java.lang=ALL-UNNAMED -javaagent:${settings.localRepository}/org/mockito/mockito-core/${mockito.version}/mockito-core-${mockito.version}.jar=inline</argLine>
-                    <includes>
-                        <!-- E2E tests: *E2E.java con @QuarkusIntegrationTest (no depurables) -->
-                        <include>**/*E2E.java</include>
-                        <!-- E2E tests: *ITCase.java con @QuarkusIntegrationTest (no depurables) -->
-                        <include>**/*ITCase.java</include>
-                    </includes>
-                    <excludes>
-                        <!-- Exclude unit tests (handled by Surefire): *Test.java -->
-                        <exclude>**/*Test.java</exclude>
-                        <!-- Exclude integration tests (handled by Surefire): *IT.java -->
-                        <exclude>**/*IT.java</exclude>
-                    </excludes>
-                    <systemPropertyVariables>
-                        <java.util.logging.manager>org.jboss.logmanager.LogManager</java.util.logging.manager>
-                    </systemPropertyVariables>
-                    <!-- Use skipITs property to control e2e tests independently from unit tests -->
-                    <!-- When skipTests is set but skipITs is not, default skipITs to false to allow
+  <dependencies>
+    <!-- Quarkus Core -->
+    <dependency>
+      <groupId>io.quarkus</groupId>
+      <artifactId>quarkus-arc</artifactId>
+    </dependency>
+
+    <!-- REST API -->
+    <dependency>
+      <groupId>io.quarkus</groupId>
+      <artifactId>quarkus-rest</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>io.quarkus</groupId>
+      <artifactId>quarkus-rest-jackson</artifactId>
+    </dependency>
+
+    <!-- OpenAPI -->
+    <dependency>
+      <groupId>io.quarkus</groupId>
+      <artifactId>quarkus-smallrye-openapi</artifactId>
+    </dependency>
+
+    <!-- Logging -->
+    <dependency>
+      <groupId>io.quarkus</groupId>
+      <artifactId>quarkus-logging-json</artifactId>
+    </dependency>
+
+    <!-- Validation -->
+    <dependency>
+      <groupId>io.quarkus</groupId>
+      <artifactId>quarkus-hibernate-validator</artifactId>
+    </dependency>
+
+    <!-- MCP Server -->
+    <dependency>
+      <groupId>io.quarkiverse.mcp</groupId>
+      <artifactId>quarkus-mcp-server-sse</artifactId>
+    </dependency>
+
+    <!-- Playwright for Web Scraping -->
+    <dependency>
+      <groupId>com.microsoft.playwright</groupId>
+      <artifactId>playwright</artifactId>
+      <version>${playwright.version}</version>
+    </dependency>
+
+    <!-- HTML Parsing with JSoup -->
+    <dependency>
+      <groupId>org.jsoup</groupId>
+      <artifactId>jsoup</artifactId>
+      <version>${jsoup.version}</version>
+    </dependency>
+
+    <!-- Testing -->
+    <dependency>
+      <groupId>io.quarkus</groupId>
+      <artifactId>quarkus-junit5</artifactId>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>io.rest-assured</groupId>
+      <artifactId>rest-assured</artifactId>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.mockito</groupId>
+      <artifactId>mockito-core</artifactId>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.mockito</groupId>
+      <artifactId>mockito-junit-jupiter</artifactId>
+      <scope>test</scope>
+    </dependency>
+  </dependencies>
+
+  <build>
+    <plugins>
+      <plugin>
+        <groupId>${quarkus.platform.group-id}</groupId>
+        <artifactId>quarkus-maven-plugin</artifactId>
+        <version>${quarkus.platform.version}</version>
+        <extensions>true</extensions>
+        <executions>
+          <execution>
+            <goals>
+              <goal>build</goal>
+              <goal>generate-code</goal>
+              <goal>test</goal>
+            </goals>
+          </execution>
+          <!-- Generate test code after build-helper adds test sources -->
+          <execution>
+            <id>generate-test-code</id>
+            <goals>
+              <goal>generate-code-tests</goal>
+            </goals>
+            <phase>generate-test-sources</phase>
+          </execution>
+        </executions>
+      </plugin>
+      <plugin>
+        <groupId>org.codehaus.mojo</groupId>
+        <artifactId>exec-maven-plugin</artifactId>
+        <version>${exec-maven-plugin.version}</version>
+      </plugin>
+      <plugin>
+        <artifactId>maven-compiler-plugin</artifactId>
+        <version>${compiler-plugin.version}</version>
+        <configuration>
+          <compilerArgs>
+            <arg>-parameters</arg>
+          </compilerArgs>
+        </configuration>
+      </plugin>
+      <!-- Executes Unit testing and Integration test allow debugging (QuarkusTest) -->
+      <plugin>
+        <artifactId>maven-surefire-plugin</artifactId>
+        <version>${surefire-plugin.version}</version>
+        <configuration>
+          <!-- Use argLine from JaCoCo for code coverage, plus Mockito agent -->
+          <argLine>${argLine} --add-opens java.base/java.lang=ALL-UNNAMED -javaagent:${settings.localRepository}/org/mockito/mockito-core/${mockito.version}/mockito-core-${mockito.version}.jar=inline</argLine>
+          <includes>
+            <!-- Unit tests: *Test.java (sin anotación especial, depurables) -->
+            <include>**/*Test.java</include>
+            <!-- Integration tests: *IT.java con @QuarkusTest (depurables) -->
+            <include>**/*IT.java</include>
+          </includes>
+          <excludes>
+            <!-- Exclude e2e tests (handled by Failsafe): *E2E.java y *ITCase.java -->
+            <exclude>**/*E2E.java</exclude>
+            <exclude>**/*ITCase.java</exclude>
+          </excludes>
+          <systemPropertyVariables>
+            <java.util.logging.manager>org.jboss.logmanager.LogManager</java.util.logging.manager>
+            <maven.home>${maven.home}</maven.home>
+            <!-- Enable DisplayName support in console output -->
+            <junit.platform.output.capture.stdout>true</junit.platform.output.capture.stdout>
+          </systemPropertyVariables>
+          <!-- Show test display names in console output -->
+          <statelessTestsetReporter implementation="org.apache.maven.plugin.surefire.extensions.junit5.JUnit5Xml30StatelessReporter">
+            <disable>false</disable>
+            <version>3.0</version>
+            <usePhrasedFileName>false</usePhrasedFileName>
+            <usePhrasedTestSuiteClassName>true</usePhrasedTestSuiteClassName>
+            <usePhrasedTestCaseClassName>true</usePhrasedTestCaseClassName>
+            <usePhrasedTestCaseMethodName>true</usePhrasedTestCaseMethodName>
+          </statelessTestsetReporter>
+          <!-- Show test names in real-time during execution -->
+          <statelessTestsetInfoReporter implementation="org.apache.maven.plugin.surefire.extensions.junit5.JUnit5StatelessTestsetInfoReporter">
+            <disable>false</disable>
+            <usePhrasedFileName>false</usePhrasedFileName>
+            <usePhrasedClassNameInRunning>true</usePhrasedClassNameInRunning>
+            <usePhrasedClassNameInTestCaseSummary>true</usePhrasedClassNameInTestCaseSummary>
+          </statelessTestsetInfoReporter>
+          <!-- Print detailed test information - show each test as it runs -->
+          <printSummary>true</printSummary>
+          <!-- Use plain format to show test names -->
+          <reportFormat>plain</reportFormat>
+          <!-- Show each test as it runs (output to console in real-time) -->
+          <useFile>false</useFile>
+          <!-- Enable detailed output for each test -->
+          <redirectTestOutputToFile>false</redirectTestOutputToFile>
+          <!-- Show full stack traces for better debugging -->
+          <trimStackTrace>false</trimStackTrace>
+          <!-- Show test names in real-time -->
+          <forkCount>1</forkCount>
+          <reuseForks>true</reuseForks>
+        </configuration>
+      </plugin>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-toolchains-plugin</artifactId>
+        <version>${maven-toolchains-plugin.version}</version>
+        <configuration>
+          <toolchains>
+            <jdk>
+              <version>21</version>
+              <vendor>adoptium</vendor>
+            </jdk>
+          </toolchains>
+        </configuration>
+        <executions>
+          <execution>
+            <goals>
+              <goal>toolchain</goal>
+            </goals>
+          </execution>
+        </executions>
+      </plugin>
+      <!-- Add test sources for unit, integration, and e2e -->
+      <plugin>
+        <groupId>org.codehaus.mojo</groupId>
+        <artifactId>build-helper-maven-plugin</artifactId>
+        <version>${build-helper-maven-plugin.version}</version>
+        <executions>
+          <execution>
+            <id>add-test-sources</id>
+            <goals>
+              <goal>add-test-source</goal>
+            </goals>
+            <phase>generate-test-sources</phase>
+            <configuration>
+              <sources>
+                <source>src/test/java/unit</source>
+                <source>src/test/java/integration</source>
+                <source>src/test/java/e2e</source>
+              </sources>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
+      <!-- Executes E2E (@QuarkusIntegrationTest) -->
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-failsafe-plugin</artifactId>
+        <version>${failsafe-plugin.version}</version>
+        <configuration>
+          <!-- Add Mockito agent for E2E tests -->
+          <argLine>--add-opens java.base/java.lang=ALL-UNNAMED -javaagent:${settings.localRepository}/org/mockito/mockito-core/${mockito.version}/mockito-core-${mockito.version}.jar=inline</argLine>
+          <includes>
+            <!-- E2E tests: *E2E.java con @QuarkusIntegrationTest (no depurables) -->
+            <include>**/*E2E.java</include>
+            <!-- E2E tests: *ITCase.java con @QuarkusIntegrationTest (no depurables) -->
+            <include>**/*ITCase.java</include>
+          </includes>
+          <excludes>
+            <!-- Exclude unit tests (handled by Surefire): *Test.java -->
+            <exclude>**/*Test.java</exclude>
+            <!-- Exclude integration tests (handled by Surefire): *IT.java -->
+            <exclude>**/*IT.java</exclude>
+          </excludes>
+          <systemPropertyVariables>
+            <java.util.logging.manager>org.jboss.logmanager.LogManager</java.util.logging.manager>
+          </systemPropertyVariables>
+          <!-- Use skipITs property to control e2e tests independently from unit tests -->
+          <!-- When skipTests is set but skipITs is not, default skipITs to false to allow
                     e2e tests -->
-                    <skipTests>${skipITs}</skipTests>
-                    <skipITs>${skipITs}</skipITs>
-                </configuration>
-            </plugin>
-            <!-- JaCoCo plugin for unit and integration test coverage -->
-            <plugin>
-                <groupId>org.jacoco</groupId>
-                <artifactId>jacoco-maven-plugin</artifactId>
-                <version>${jacoco-maven-plugin.version}</version>
-                <executions>
-                    <execution>
-                        <id>prepare-agent</id>
-                        <goals>
-                            <goal>prepare-agent</goal>
-                        </goals>
-                    </execution>
-                    <execution>
-                        <id>report</id>
-                        <phase>test</phase>
-                        <goals>
-                            <goal>report</goal>
-                        </goals>
-                        <configuration>
-                            <dataFile>${project.build.directory}/jacoco.exec</dataFile>
-                            <outputDirectory>${project.reporting.outputDirectory}/jacoco</outputDirectory>
-                        </configuration>
-                    </execution>
-                    <execution>
-                        <id>check</id>
-                        <phase>test</phase>
-                        <goals>
-                            <goal>check</goal>
-                        </goals>
-                    </execution>
-                </executions>
-                <configuration>
-                    <!-- Include unit tests and integration tests, exclude e2e tests -->
-                    <excludes>
-                        <exclude>**/e2e/**</exclude>
-                    </excludes>
-                    <!-- Configuration for check goal (available for both lifecycle and direct
+          <skipTests>${skipITs}</skipTests>
+          <skipITs>${skipITs}</skipITs>
+        </configuration>
+        <executions>
+          <execution>
+            <id>e2e-tests</id>
+            <goals>
+              <goal>integration-test</goal>
+              <goal>verify</goal>
+            </goals>
+          </execution>
+        </executions>
+      </plugin>
+      <!-- JaCoCo plugin for unit and integration test coverage -->
+      <plugin>
+        <groupId>org.jacoco</groupId>
+        <artifactId>jacoco-maven-plugin</artifactId>
+        <version>${jacoco-maven-plugin.version}</version>
+        <configuration>
+          <!-- Include unit tests and integration tests, exclude e2e tests -->
+          <excludes>
+            <exclude>**/e2e/**</exclude>
+          </excludes>
+          <!-- Configuration for check goal (available for both lifecycle and direct
                     execution) -->
-                    <haltOnFailure>false</haltOnFailure>
-                    <rules>
-                        <rule>
-                            <element>PACKAGE</element>
-                            <limits>
-                                <limit>
-                                    <counter>LINE</counter>
-                                    <value>COVEREDRATIO</value>
-                                    <minimum>0.80</minimum>
-                                </limit>
-                                <limit>
-                                    <counter>BRANCH</counter>
-                                    <value>COVEREDRATIO</value>
-                                    <minimum>0.80</minimum>
-                                </limit>
-                            </limits>
-                        </rule>
-                        <rule>
-                            <element>BUNDLE</element>
-                            <limits>
-                                <limit>
-                                    <counter>COMPLEXITY</counter>
-                                    <value>COVEREDRATIO</value>
-                                    <minimum>0.60</minimum>
-                                </limit>
-                            </limits>
-                        </rule>
-                        <rule>
-                            <element>CLASS</element>
-                            <limits>
-                                <limit>
-                                    <counter>COMPLEXITY</counter>
-                                    <value>TOTALCOUNT</value>
-                                    <maximum>50</maximum>
-                                </limit>
-                            </limits>
-                        </rule>
-                    </rules>
-                </configuration>
-            </plugin>
-            <!-- Surefire Report Plugin for HTML test reports -->
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-surefire-report-plugin</artifactId>
-                <version>${surefire-report-plugin.version}</version>
-                <executions>
-                    <execution>
-                        <id>generate-test-report</id>
-                        <phase>test</phase>
-                        <goals>
-                            <goal>report-only</goal>
-                        </goals>
-                    </execution>
-                </executions>
-            </plugin>
-            <!-- JXR Plugin for source code cross-references -->
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-jxr-plugin</artifactId>
-                <version>3.5.0</version>
-                <executions>
-                    <execution>
-                        <id>generate-test-xref</id>
-                        <phase>test</phase>
-                        <goals>
-                            <goal>test-jxr</goal>
-                        </goals>
-                    </execution>
-                </executions>
-                <configuration>
-                    <linkJavadoc>false</linkJavadoc>
-                </configuration>
-            </plugin>
-        </plugins>
-    </build>
+          <haltOnFailure>false</haltOnFailure>
+          <rules>
+            <rule>
+              <element>PACKAGE</element>
+              <limits>
+                <limit>
+                  <counter>LINE</counter>
+                  <value>COVEREDRATIO</value>
+                  <minimum>0.80</minimum>
+                </limit>
+                <limit>
+                  <counter>BRANCH</counter>
+                  <value>COVEREDRATIO</value>
+                  <minimum>0.80</minimum>
+                </limit>
+              </limits>
+            </rule>
+            <rule>
+              <element>BUNDLE</element>
+              <limits>
+                <limit>
+                  <counter>COMPLEXITY</counter>
+                  <value>COVEREDRATIO</value>
+                  <minimum>0.60</minimum>
+                </limit>
+              </limits>
+            </rule>
+            <rule>
+              <element>CLASS</element>
+              <limits>
+                <limit>
+                  <counter>COMPLEXITY</counter>
+                  <value>TOTALCOUNT</value>
+                  <maximum>50</maximum>
+                </limit>
+              </limits>
+            </rule>
+          </rules>
+        </configuration>
+        <executions>
+          <execution>
+            <id>prepare-agent</id>
+            <goals>
+              <goal>prepare-agent</goal>
+            </goals>
+          </execution>
+          <execution>
+            <id>report</id>
+            <goals>
+              <goal>report</goal>
+            </goals>
+            <phase>test</phase>
+            <configuration>
+              <dataFile>${project.build.directory}/jacoco.exec</dataFile>
+              <outputDirectory>${project.reporting.outputDirectory}/jacoco</outputDirectory>
+            </configuration>
+          </execution>
+          <execution>
+            <id>check</id>
+            <goals>
+              <goal>check</goal>
+            </goals>
+            <phase>test</phase>
+          </execution>
+        </executions>
+      </plugin>
+      <!-- Surefire Report Plugin for HTML test reports -->
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-surefire-report-plugin</artifactId>
+        <version>${surefire-report-plugin.version}</version>
+        <executions>
+          <execution>
+            <id>generate-test-report</id>
+            <goals>
+              <goal>report-only</goal>
+            </goals>
+            <phase>test</phase>
+          </execution>
+        </executions>
+      </plugin>
+      <!-- JXR Plugin for source code cross-references -->
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-jxr-plugin</artifactId>
+        <version>3.5.0</version>
+        <configuration>
+          <linkJavadoc>false</linkJavadoc>
+        </configuration>
+        <executions>
+          <execution>
+            <id>generate-test-xref</id>
+            <goals>
+              <goal>test-jxr</goal>
+            </goals>
+            <phase>test</phase>
+          </execution>
+        </executions>
+      </plugin>
+      <!-- Spotless Plugin for code formatting -->
+      <plugin>
+        <groupId>com.diffplug.spotless</groupId>
+        <artifactId>spotless-maven-plugin</artifactId>
+        <version>${spotless-maven-plugin.version}</version>
+        <configuration>
+          <encoding>UTF-8</encoding>
+          <formats>
+            <format>
+              <includes>
+                <include>**/*.xml</include>
+              </includes>
+              <excludes>
+                <exclude>**/pom.xml</exclude>
+                <exclude>**/config/spotless/**/*</exclude>
+                <exclude>**/target/**/*</exclude>
+              </excludes>
+              <eclipseWtp>
+                <type>XML</type>
+                <files>
+                  <file>config/spotless/xml.prefs</file>
+                </files>
+              </eclipseWtp>
+              <trimTrailingWhitespace/>
+              <endWithNewline/>
+              <indent>
+                <spaces>true</spaces>
+                <spacesPerTab>2</spacesPerTab>
+              </indent>
+            </format>
+          </formats>
+          <yaml>
+            <includes>
+              <include>**/*.yml</include>
+              <include>**/*.yaml</include>
+            </includes>
+            <excludes>
+              <exclude>**/.github/**/*</exclude>
+            </excludes>
+            <jackson>
+              <yamlFeatures>
+                <WRITE_DOC_START_MARKER>true</WRITE_DOC_START_MARKER>
+                <MINIMIZE_QUOTES>true</MINIMIZE_QUOTES>
+              </yamlFeatures>
+            </jackson>
+          </yaml>
+          <pom>
+            <sortPom>
+              <expandEmptyElements>false</expandEmptyElements>
+              <spaceBeforeCloseEmptyElement>false</spaceBeforeCloseEmptyElement>
+            </sortPom>
+          </pom>
+          <java>
+            <excludes>
+              <exclude>**/target/**/*</exclude>
+              <exclude>**/config/spotless/**/*</exclude>
+            </excludes>
+            <importOrder>
+              <file>config/spotless/imports.importorder</file>
+            </importOrder>
+            <removeUnusedImports/>
+            <toggleOffOn/>
+            <eclipse>
+              <file>config/spotless/formatter.xml</file>
+            </eclipse>
+            <licenseHeader>
+              <file>config/spotless/header.txt</file>
+            </licenseHeader>
+          </java>
+        </configuration>
+        <executions>
+          <execution>
+            <goals>
+              <goal>check</goal>
+            </goals>
+            <phase>verify</phase>
+          </execution>
+        </executions>
+      </plugin>
+    </plugins>
+    <!-- Configure test source directory to unit (default), build-helper will add integration
+        and e2e -->
+    <testSourceDirectory>src/test/java/unit</testSourceDirectory>
+  </build>
 
-    <reporting>
-        <plugins>
-            <!-- Project Info Reports Plugin for project information reports -->
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-project-info-reports-plugin</artifactId>
-                <version>${maven-project-info-reports-plugin.version}</version>
-            </plugin>
-            <!-- JXR Plugin for source code cross-references -->
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-jxr-plugin</artifactId>
-                <version>3.5.0</version>
-                <configuration>
-                    <linkJavadoc>false</linkJavadoc>
-                </configuration>
-            </plugin>
-            <!-- JaCoCo Plugin for code coverage reports -->
-            <plugin>
-                <groupId>org.jacoco</groupId>
-                <artifactId>jacoco-maven-plugin</artifactId>
-                <version>${jacoco-maven-plugin.version}</version>
-                <reportSets>
-                    <reportSet>
-                        <reports>
-                            <report>report</report>
-                        </reports>
-                    </reportSet>
-                </reportSets>
-            </plugin>
-        </plugins>
-    </reporting>
+  <reporting>
+    <plugins>
+      <!-- Project Info Reports Plugin for project information reports -->
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-project-info-reports-plugin</artifactId>
+        <version>${maven-project-info-reports-plugin.version}</version>
+      </plugin>
+      <!-- JXR Plugin for source code cross-references -->
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-jxr-plugin</artifactId>
+        <version>3.5.0</version>
+        <configuration>
+          <linkJavadoc>false</linkJavadoc>
+        </configuration>
+      </plugin>
+      <!-- JaCoCo Plugin for code coverage reports -->
+      <plugin>
+        <groupId>org.jacoco</groupId>
+        <artifactId>jacoco-maven-plugin</artifactId>
+        <version>${jacoco-maven-plugin.version}</version>
+        <reportSets>
+          <reportSet>
+            <reports>
+              <report>report</report>
+            </reports>
+          </reportSet>
+        </reportSets>
+      </plugin>
+    </plugins>
+  </reporting>
 
-    <profiles>
-        <profile>
-            <id>native</id>
-            <activation>
-                <property>
-                    <name>native</name>
-                </property>
-            </activation>
-            <properties>
-                <skipITs>false</skipITs>
-                <quarkus.package.type>native</quarkus.package.type>
-            </properties>
-        </profile>
-    </profiles>
+  <profiles>
+    <profile>
+      <id>native</id>
+      <activation>
+        <property>
+          <name>native</name>
+        </property>
+      </activation>
+      <properties>
+        <skipITs>false</skipITs>
+        <quarkus.package.type>native</quarkus.package.type>
+      </properties>
+    </profile>
+  </profiles>
 </project>

@@ -1,20 +1,30 @@
+/*
+ * Copyright © ${YEAR} MCP Renfe Navigation Quarkus
+ * All rights reserved.
+ */
+
 package com.delard.renfe.navigation.application.service;
 
-import com.delard.renfe.navigation.application.exception.ValidationException;
-import com.delard.renfe.navigation.domain.port.input.PurchaseTicketUseCase;
-import jakarta.enterprise.context.ApplicationScoped;
-import org.jboss.logging.Logger;
 
 import java.time.LocalDate;
 import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
 
+import jakarta.enterprise.context.ApplicationScoped;
+
+import com.delard.renfe.navigation.application.exception.ValidationException;
+import com.delard.renfe.navigation.domain.port.input.PurchaseTicketUseCase;
+
+import org.jboss.logging.Logger;
+
+
 /**
  * Application service responsible for validating ticket purchase data and returning confirmations.
  */
 @ApplicationScoped
-public class PurchaseTicketService implements PurchaseTicketUseCase {
+public class PurchaseTicketService implements PurchaseTicketUseCase
+{
 
     private static final Logger LOG = Logger.getLogger(PurchaseTicketService.class);
 
@@ -25,16 +35,18 @@ public class PurchaseTicketService implements PurchaseTicketUseCase {
 
     @Override
     public String purchaseTicket(String origin,
-                                 String destination,
-                                 String dateOut,
-                                 String dateReturn,
-                                 String adults,
-                                 String userName,
-                                 String serviceType,
-                                 String departureTime,
-                                 String fareName) {
+            String destination,
+            String dateOut,
+            String dateReturn,
+            String adults,
+            String userName,
+            String serviceType,
+            String departureTime,
+            String fareName)
+    {
 
-        LOG.debugf("[REQUEST] Purchase ticket: %s -> %s, dateOut: %s, dateReturn: %s, adults: %s, user: %s, service: %s, departure: %s, fare: %s",
+        LOG.debugf(
+                "[REQUEST] Purchase ticket: %s -> %s, dateOut: %s, dateReturn: %s, adults: %s, user: %s, service: %s, departure: %s, fare: %s",
                 origin, destination, dateOut, dateReturn, adults, userName, serviceType, departureTime, fareName);
 
         String sanitizedOrigin = requireNonBlank(origin, "origin");
@@ -57,8 +69,7 @@ public class PurchaseTicketService implements PurchaseTicketUseCase {
                 sanitizedUser,
                 sanitizedOrigin,
                 sanitizedDestination,
-                formattedDateOut
-        ));
+                formattedDateOut));
 
         if (formattedDateReturn != null) {
             confirmation.append(String.format(" with return on %s", formattedDateReturn));
@@ -69,21 +80,22 @@ public class PurchaseTicketService implements PurchaseTicketUseCase {
                 sanitizedServiceType,
                 sanitizedDepartureTime,
                 sanitizedFareName,
-                sanitizedAdults
-        ));
+                sanitizedAdults));
 
         LOG.infof("[SUCCESS] Ticket purchase simulated for user %s", sanitizedUser);
         return confirmation.toString();
     }
 
-    private String requireNonBlank(String value, String fieldName) {
+    private String requireNonBlank(String value, String fieldName)
+    {
         if (value == null || value.isBlank()) {
             throw new ValidationException(String.format("%s is required", fieldName));
         }
         return value.trim();
     }
 
-    private String validateAdults(String adults) {
+    private String validateAdults(String adults)
+    {
         String sanitized = requireNonBlank(adults, "adults");
         try {
             int adultsInt = Integer.parseInt(sanitized.trim());
@@ -99,7 +111,8 @@ public class PurchaseTicketService implements PurchaseTicketUseCase {
         return sanitized.trim();
     }
 
-    private String validateDepartureTime(String departureTime) {
+    private String validateDepartureTime(String departureTime)
+    {
         String sanitized = requireNonBlank(departureTime, "departureTime");
         try {
             LocalTime.parse(sanitized, DEPARTURE_TIME_FORMAT);
@@ -109,7 +122,8 @@ public class PurchaseTicketService implements PurchaseTicketUseCase {
         return sanitized;
     }
 
-    private String validateAndFormatDate(String dateStr, String fieldName) {
+    private String validateAndFormatDate(String dateStr, String fieldName)
+    {
         if (dateStr == null || dateStr.isBlank()) {
             throw new ValidationException(String.format("%s is required", fieldName));
         }
@@ -129,4 +143,3 @@ public class PurchaseTicketService implements PurchaseTicketUseCase {
         }
     }
 }
-

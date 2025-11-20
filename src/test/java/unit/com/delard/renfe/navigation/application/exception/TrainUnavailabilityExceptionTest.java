@@ -1,16 +1,25 @@
+/*
+ * Copyright © ${YEAR} MCP Renfe Navigation Quarkus
+ * All rights reserved.
+ */
+
 package com.delard.renfe.navigation.application.exception;
+
+
+import static org.junit.jupiter.api.Assertions.*;
 
 import org.junit.jupiter.api.Test;
 
-import static org.junit.jupiter.api.Assertions.*;
 
 /**
  * Unit tests for TrainUnavailabilityException
  */
-class TrainUnavailabilityExceptionTest {
+class TrainUnavailabilityExceptionTest
+{
 
     @Test
-    void testConstructorWithDirectionAndDetailMessage() {
+    void testConstructorWithDirectionAndDetailMessage()
+    {
         String direction = "outbound";
         String detailMessage = "No hay trenes disponibles para la fecha seleccionada";
         TrainUnavailabilityException exception = new TrainUnavailabilityException(direction, detailMessage);
@@ -24,7 +33,8 @@ class TrainUnavailabilityExceptionTest {
     }
 
     @Test
-    void testConstructorWithDirectionDetailMessageAndCause() {
+    void testConstructorWithDirectionDetailMessageAndCause()
+    {
         String direction = "return";
         String detailMessage = "No hay billetes de vuelta disponibles";
         Throwable cause = new RuntimeException("Timeout error");
@@ -39,7 +49,8 @@ class TrainUnavailabilityExceptionTest {
     }
 
     @Test
-    void testConstructorWithNullDirection() {
+    void testConstructorWithNullDirection()
+    {
         String detailMessage = "No trains available";
         TrainUnavailabilityException exception = new TrainUnavailabilityException(null, detailMessage);
 
@@ -51,7 +62,8 @@ class TrainUnavailabilityExceptionTest {
     }
 
     @Test
-    void testConstructorWithEmptyDirection() {
+    void testConstructorWithEmptyDirection()
+    {
         String direction = "";
         String detailMessage = "No trains available";
         TrainUnavailabilityException exception = new TrainUnavailabilityException(direction, detailMessage);
@@ -63,7 +75,8 @@ class TrainUnavailabilityExceptionTest {
     }
 
     @Test
-    void testConstructorWithNullDetailMessage() {
+    void testConstructorWithNullDetailMessage()
+    {
         String direction = "outbound";
         TrainUnavailabilityException exception = new TrainUnavailabilityException(direction, null);
 
@@ -75,7 +88,8 @@ class TrainUnavailabilityExceptionTest {
     }
 
     @Test
-    void testConstructorWithEmptyDetailMessage() {
+    void testConstructorWithEmptyDetailMessage()
+    {
         String direction = "outbound";
         String detailMessage = "";
         TrainUnavailabilityException exception = new TrainUnavailabilityException(direction, detailMessage);
@@ -87,7 +101,8 @@ class TrainUnavailabilityExceptionTest {
     }
 
     @Test
-    void testConstructorWithNullCause() {
+    void testConstructorWithNullCause()
+    {
         String direction = "return";
         String detailMessage = "No trains available";
         TrainUnavailabilityException exception = new TrainUnavailabilityException(direction, detailMessage, null);
@@ -99,7 +114,8 @@ class TrainUnavailabilityExceptionTest {
     }
 
     @Test
-    void testMessageFormatForOutbound() {
+    void testMessageFormatForOutbound()
+    {
         String direction = "outbound";
         String detailMessage = "No hay trenes disponibles para la fecha seleccionada";
         TrainUnavailabilityException exception = new TrainUnavailabilityException(direction, detailMessage);
@@ -109,7 +125,8 @@ class TrainUnavailabilityExceptionTest {
     }
 
     @Test
-    void testMessageFormatForReturn() {
+    void testMessageFormatForReturn()
+    {
         String direction = "return";
         String detailMessage = "No hay billetes de vuelta disponibles";
         TrainUnavailabilityException exception = new TrainUnavailabilityException(direction, detailMessage);
@@ -119,7 +136,8 @@ class TrainUnavailabilityExceptionTest {
     }
 
     @Test
-    void testGetDirectionReturnsCorrectValue() {
+    void testGetDirectionReturnsCorrectValue()
+    {
         String direction = "outbound";
         String detailMessage = "Error message";
         TrainUnavailabilityException exception = new TrainUnavailabilityException(direction, detailMessage);
@@ -128,7 +146,8 @@ class TrainUnavailabilityExceptionTest {
     }
 
     @Test
-    void testGetDetailMessageReturnsCorrectValue() {
+    void testGetDetailMessageReturnsCorrectValue()
+    {
         String direction = "return";
         String detailMessage = "Detailed error message from website";
         TrainUnavailabilityException exception = new TrainUnavailabilityException(direction, detailMessage);
@@ -137,14 +156,16 @@ class TrainUnavailabilityExceptionTest {
     }
 
     @Test
-    void testExceptionIsRuntimeException() {
+    void testExceptionIsRuntimeException()
+    {
         TrainUnavailabilityException exception = new TrainUnavailabilityException("outbound", "Test message");
 
         assertInstanceOf(RuntimeException.class, exception);
     }
 
     @Test
-    void testExceptionCanBeThrown() {
+    void testExceptionCanBeThrown()
+    {
         TrainUnavailabilityException exception = new TrainUnavailabilityException("outbound", "Test message");
 
         assertThrows(TrainUnavailabilityException.class, () -> {
@@ -153,7 +174,8 @@ class TrainUnavailabilityExceptionTest {
     }
 
     @Test
-    void testExceptionWithLongDetailMessage() {
+    void testExceptionWithLongDetailMessage()
+    {
         String direction = "outbound";
         String detailMessage = "Lorem ipsum dolor sit amet, consectetur adipiscing elit. " +
                 "Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. " +
@@ -167,7 +189,8 @@ class TrainUnavailabilityExceptionTest {
     }
 
     @Test
-    void testExceptionWithSpecialCharactersInDetailMessage() {
+    void testExceptionWithSpecialCharactersInDetailMessage()
+    {
         String direction = "return";
         String detailMessage = "Error: ¡No hay billetes! 日本語 @#$%^&*()";
         TrainUnavailabilityException exception = new TrainUnavailabilityException(direction, detailMessage);
@@ -178,4 +201,3 @@ class TrainUnavailabilityExceptionTest {
         assertTrue(exception.getMessage().contains(detailMessage));
     }
 }
-

@@ -1,18 +1,27 @@
+/*
+ * Copyright © ${YEAR} MCP Renfe Navigation Quarkus
+ * All rights reserved.
+ */
+
 package com.delard.renfe.navigation.infrastructure.adapter.input.rest.dto;
+
+
+import static org.junit.jupiter.api.Assertions.*;
 
 import org.junit.jupiter.api.Test;
 
-import static org.junit.jupiter.api.Assertions.*;
 
 /**
  * Unit tests for PurchaseTicketRequestDTO
  */
-class PurchaseTicketRequestDTOTest {
+class PurchaseTicketRequestDTOTest
+{
 
     @Test
-    void testDefaultConstructor() {
+    void testDefaultConstructor()
+    {
         PurchaseTicketRequestDTO dto = new PurchaseTicketRequestDTO();
-        
+
         assertNotNull(dto);
         assertNull(dto.origin);
         assertNull(dto.destination);
@@ -26,9 +35,10 @@ class PurchaseTicketRequestDTOTest {
     }
 
     @Test
-    void testSetAllFields() {
+    void testSetAllFields()
+    {
         PurchaseTicketRequestDTO dto = new PurchaseTicketRequestDTO();
-        
+
         dto.origin = "MADRID (TODAS)";
         dto.destination = "BARCELONA (TODAS)";
         dto.dateOut = "2026-01-16";
@@ -38,7 +48,7 @@ class PurchaseTicketRequestDTOTest {
         dto.serviceType = "AVE";
         dto.departureTime = "08:00";
         dto.fareName = "Básico";
-        
+
         assertEquals("MADRID (TODAS)", dto.origin);
         assertEquals("BARCELONA (TODAS)", dto.destination);
         assertEquals("2026-01-16", dto.dateOut);
@@ -51,9 +61,10 @@ class PurchaseTicketRequestDTOTest {
     }
 
     @Test
-    void testSetFieldsWithNullValues() {
+    void testSetFieldsWithNullValues()
+    {
         PurchaseTicketRequestDTO dto = new PurchaseTicketRequestDTO();
-        
+
         dto.origin = "MADRID";
         dto.destination = "BARCELONA";
         dto.dateOut = "2026-01-16";
@@ -63,7 +74,7 @@ class PurchaseTicketRequestDTOTest {
         dto.serviceType = "ALVIA";
         dto.departureTime = "10:30";
         dto.fareName = "Promo";
-        
+
         assertNotNull(dto.origin);
         assertNotNull(dto.destination);
         assertNotNull(dto.dateOut);
@@ -76,9 +87,10 @@ class PurchaseTicketRequestDTOTest {
     }
 
     @Test
-    void testSetFieldsWithEmptyStrings() {
+    void testSetFieldsWithEmptyStrings()
+    {
         PurchaseTicketRequestDTO dto = new PurchaseTicketRequestDTO();
-        
+
         dto.origin = "";
         dto.destination = "";
         dto.dateOut = "";
@@ -88,7 +100,7 @@ class PurchaseTicketRequestDTOTest {
         dto.serviceType = "";
         dto.departureTime = "";
         dto.fareName = "";
-        
+
         assertEquals("", dto.origin);
         assertEquals("", dto.destination);
         assertEquals("", dto.dateOut);
@@ -100,4 +112,3 @@ class PurchaseTicketRequestDTOTest {
         assertEquals("", dto.fareName);
     }
 }
-

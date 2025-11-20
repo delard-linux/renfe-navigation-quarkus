@@ -1,17 +1,26 @@
+/*
+ * Copyright © ${YEAR} MCP Renfe Navigation Quarkus
+ * All rights reserved.
+ */
+
 package com.delard.renfe.navigation.infrastructure.adapter.input.rest.mapper;
 
-import com.delard.renfe.navigation.domain.model.Station;
-import com.delard.renfe.navigation.infrastructure.adapter.input.rest.dto.StationDTO;
 
 import java.util.List;
 import java.util.stream.Collectors;
 
+import com.delard.renfe.navigation.domain.model.Station;
+import com.delard.renfe.navigation.infrastructure.adapter.input.rest.dto.StationDTO;
+
+
 /**
  * Mapper for converting between Station domain models and DTOs
  */
-public final class StationMapper {
+public final class StationMapper
+{
 
-    private StationMapper() {
+    private StationMapper()
+    {
         // Private constructor to prevent instantiation
     }
 
@@ -21,21 +30,21 @@ public final class StationMapper {
      * @param station Station domain model
      * @return StationDTO or null if input is null
      */
-    public static StationDTO toDTO(Station station) {
+    public static StationDTO toDTO(Station station)
+    {
         if (station == null) {
             return null;
         }
 
         return new StationDTO(
-            station.getStationCode(),
-            station.getAdministrationCode(),
-            station.getPriority(),
-            station.getDescription(),
-            station.getStationName(),
-            station.getUicCode(),
-            station.getKey(),
-            station.getStationNamePlano()
-        );
+                station.getStationCode(),
+                station.getAdministrationCode(),
+                station.getPriority(),
+                station.getDescription(),
+                station.getStationName(),
+                station.getUicCode(),
+                station.getKey(),
+                station.getStationNamePlano());
     }
 
     /**
@@ -44,7 +53,8 @@ public final class StationMapper {
      * @param stations List of Station domain models
      * @return List of StationDTOs
      */
-    public static List<StationDTO> toDTOList(List<Station> stations) {
+    public static List<StationDTO> toDTOList(List<Station> stations)
+    {
         if (stations == null) {
             return List.of();
         }
@@ -53,4 +63,3 @@ public final class StationMapper {
                 .collect(Collectors.toList());
     }
 }
-

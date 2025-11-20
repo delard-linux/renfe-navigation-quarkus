@@ -1,6 +1,20 @@
+/*
+ * Copyright © ${YEAR} MCP Renfe Navigation Quarkus
+ * All rights reserved.
+ */
+
 package com.delard.renfe.navigation.infrastructure.service;
 
+
+import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.Mockito.*;
+
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+
 import com.delard.renfe.navigation.infrastructure.config.PlaywrightConfig;
+
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -9,18 +23,13 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
-import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
-
-import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.Mockito.*;
 
 /**
  * Unit tests for ResponseStorageService
  */
 @ExtendWith(MockitoExtension.class)
-class ResponseStorageServiceTest {
+class ResponseStorageServiceTest
+{
 
     @Mock
     private PlaywrightConfig config;
@@ -32,12 +41,14 @@ class ResponseStorageServiceTest {
     Path tempDir;
 
     @BeforeEach
-    void setUp() {
+    void setUp()
+    {
         when(config.getResponsesDir()).thenReturn(tempDir.toString());
     }
 
     @Test
-    void testSaveResponseWithAllParameters() throws IOException {
+    void testSaveResponseWithAllParameters() throws IOException
+    {
         String content = "<html><body>Test Content</body></html>";
         int statusCode = 200;
         String filenameSuffix = "test.log";
@@ -47,18 +58,19 @@ class ResponseStorageServiceTest {
         assertNotNull(result);
         assertTrue(result.contains(filenameSuffix));
         assertTrue(result.contains(String.valueOf(statusCode)));
-        
+
         // Verify file was created
         Path savedFile = Path.of(result);
         assertTrue(Files.exists(savedFile));
-        
+
         // Verify content
         String savedContent = Files.readString(savedFile);
         assertEquals(content, savedContent);
     }
 
     @Test
-    void testSaveResponseWithDefaultStatusCode() throws IOException {
+    void testSaveResponseWithDefaultStatusCode() throws IOException
+    {
         String content = "Test content";
         String filenameSuffix = "test.log";
 
@@ -70,7 +82,8 @@ class ResponseStorageServiceTest {
     }
 
     @Test
-    void testSaveResponseWithDefaultFilename() throws IOException {
+    void testSaveResponseWithDefaultFilename() throws IOException
+    {
         String content = "Test content";
         int statusCode = 404;
 
@@ -82,7 +95,8 @@ class ResponseStorageServiceTest {
     }
 
     @Test
-    void testSaveResponseWithJustContent() throws IOException {
+    void testSaveResponseWithJustContent() throws IOException
+    {
         String content = "Simple content";
 
         String result = service.saveResponse(content);
@@ -93,7 +107,8 @@ class ResponseStorageServiceTest {
     }
 
     @Test
-    void testSaveResponseCreatesDirectory() {
+    void testSaveResponseCreatesDirectory()
+    {
         Path newDir = tempDir.resolve("new-responses");
         when(config.getResponsesDir()).thenReturn(newDir.toString());
 
@@ -105,7 +120,8 @@ class ResponseStorageServiceTest {
     }
 
     @Test
-    void testSaveResponseWithSpecialCharacters() throws IOException {
+    void testSaveResponseWithSpecialCharacters() throws IOException
+    {
         String content = "Content with special chars: áéíóú € <>&\"'";
         String result = service.saveResponse(content, "special.log");
 
@@ -116,7 +132,8 @@ class ResponseStorageServiceTest {
     }
 
     @Test
-    void testSaveResponseWithEmptyContent() throws IOException {
+    void testSaveResponseWithEmptyContent() throws IOException
+    {
         String result = service.saveResponse("", "empty.log");
 
         assertNotNull(result);
@@ -126,9 +143,10 @@ class ResponseStorageServiceTest {
     }
 
     @Test
-    void testSaveResponseTimestampFormat() {
+    void testSaveResponseTimestampFormat()
+    {
         String result = service.saveResponse("test", "test.log");
-        
+
         assertNotNull(result);
         // Filename should start with timestamp format YYMMDD_HHMMSS
         String filename = Path.of(result).getFileName().toString();
@@ -136,7 +154,8 @@ class ResponseStorageServiceTest {
     }
 
     @Test
-    void testSaveResponseWithIOException() {
+    void testSaveResponseWithIOException()
+    {
         // Arrange - use invalid path that will cause IOException
         when(config.getResponsesDir()).thenReturn("/invalid/path/that/does/not/exist/and/is/too/long/to/create");
 
@@ -148,7 +167,8 @@ class ResponseStorageServiceTest {
     }
 
     @Test
-    void testSaveResponseDirectoryCreationFailure() {
+    void testSaveResponseDirectoryCreationFailure()
+    {
         // Arrange - use path that exists but cannot create subdirectory
         when(config.getResponsesDir()).thenReturn(tempDir.toString());
 
@@ -160,7 +180,8 @@ class ResponseStorageServiceTest {
     }
 
     @Test
-    void testSaveResponseWithVeryLongContent() throws IOException {
+    void testSaveResponseWithVeryLongContent() throws IOException
+    {
         // Arrange
         StringBuilder longContent = new StringBuilder();
         for (int i = 0; i < 10000; i++) {
@@ -180,9 +201,10 @@ class ResponseStorageServiceTest {
     }
 
     @Test
-    void testSaveResponseWithDifferentStatusCodes() {
+    void testSaveResponseWithDifferentStatusCodes()
+    {
         // Arrange
-        int[] statusCodes = {200, 404, 500, 301, 302};
+        int[] statusCodes = { 200, 404, 500, 301, 302 };
 
         // Act & Assert
         for (int statusCode : statusCodes) {
@@ -193,10 +215,11 @@ class ResponseStorageServiceTest {
     }
 
     @Test
-    void testSaveResponseWhenDirectoryAlreadyExists() {
+    void testSaveResponseWhenDirectoryAlreadyExists()
+    {
         // Arrange - directory already exists (should skip creation)
         when(config.getResponsesDir()).thenReturn(tempDir.toString());
-        
+
         // Create a file first to ensure directory exists
         try {
             Files.createFile(tempDir.resolve("existing.txt"));
@@ -213,7 +236,8 @@ class ResponseStorageServiceTest {
     }
 
     @Test
-    void testSaveResponseMultipleCalls() {
+    void testSaveResponseMultipleCalls()
+    {
         // Arrange
         when(config.getResponsesDir()).thenReturn(tempDir.toString());
 
@@ -231,7 +255,8 @@ class ResponseStorageServiceTest {
     }
 
     @Test
-    void testSaveResponseWithEmptyStringContent() {
+    void testSaveResponseWithEmptyStringContent()
+    {
         // Arrange
         when(config.getResponsesDir()).thenReturn(tempDir.toString());
 
@@ -243,4 +268,3 @@ class ResponseStorageServiceTest {
         assertTrue(result.contains("empty.log"));
     }
 }
-

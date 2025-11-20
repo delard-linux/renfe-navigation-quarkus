@@ -1,11 +1,19 @@
+/*
+ * Copyright © ${YEAR} MCP Renfe Navigation Quarkus
+ * All rights reserved.
+ */
+
 package com.delard.renfe.navigation.domain.port.input;
 
+
 import com.delard.renfe.navigation.domain.model.TrainsResponse;
+
 
 /**
  * Input port for searching trains
  */
-public interface SearchTrainsUseCase {
+public interface SearchTrainsUseCase
+{
 
     /**
      * Search trains from origin to destination
@@ -18,6 +26,5 @@ public interface SearchTrainsUseCase {
      * @return TrainsResponse with outbound and optional return trains
      */
     TrainsResponse searchTrains(String origin, String destination, String dateOut,
-                                String dateReturn, String adults);
+            String dateReturn, String adults);
 }
-

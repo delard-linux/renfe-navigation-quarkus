@@ -1,12 +1,21 @@
+/*
+ * Copyright © ${YEAR} MCP Renfe Navigation Quarkus
+ * All rights reserved.
+ */
+
 package com.delard.renfe.navigation.domain.port.output;
 
-import com.delard.renfe.navigation.domain.model.Train;
+
 import java.util.List;
+
+import com.delard.renfe.navigation.domain.model.Train;
+
 
 /**
  * Output port for train scraping operations
  */
-public interface TrainScraperPort {
+public interface TrainScraperPort
+{
 
     /**
      * Scrape train information from Renfe website
@@ -23,8 +32,7 @@ public interface TrainScraperPort {
      * @return List with [trainsOut, trainsReturn]
      */
     List<List<Train>> scrapeTrains(String origin, String destination,
-                                    String originDesgEstacion, String destinationDesgEstacion,
-                                    String originClave, String destinationClave,
-                                    String dateOut, String dateReturn, String adults);
+            String originDesgEstacion, String destinationDesgEstacion,
+            String originClave, String destinationClave,
+            String dateOut, String dateReturn, String adults);
 }
-

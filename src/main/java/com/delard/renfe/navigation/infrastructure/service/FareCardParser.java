@@ -1,20 +1,30 @@
+/*
+ * Copyright © ${YEAR} MCP Renfe Navigation Quarkus
+ * All rights reserved.
+ */
+
 package com.delard.renfe.navigation.infrastructure.service;
 
+
+import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
+import jakarta.enterprise.context.ApplicationScoped;
+
 import com.delard.renfe.navigation.domain.model.FareOption;
+
 import org.jboss.logging.Logger;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 
-import jakarta.enterprise.context.ApplicationScoped;
-import java.util.List;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 /**
  * Parser for extracting fare card information from HTML elements
  */
 @ApplicationScoped
-public class FareCardParser {
+public class FareCardParser
+{
 
     private static final Logger LOG = Logger.getLogger(FareCardParser.class);
 
@@ -26,7 +36,8 @@ public class FareCardParser {
      * @return FareOption object with fare information
      * @throws Exception if there's an error parsing the fare card
      */
-    public FareOption parseFareCard(Element fareCard, String trainId) throws Exception {
+    public FareOption parseFareCard(Element fareCard, String trainId) throws Exception
+    {
         FareOption fare = new FareOption();
 
         // Extract fare name using multiple fallback strategies
@@ -53,7 +64,8 @@ public class FareCardParser {
     /**
      * Extract fare name using multiple fallback strategies
      */
-    private void extractFareName(Element fareCard, FareOption fare) {
+    private void extractFareName(Element fareCard, FareOption fare)
+    {
         // 1. First try data-titulo-tarifa attribute (most reliable)
         if (fareCard.hasAttr("data-titulo-tarifa")) {
             String tituloTarifa = fareCard.attr("data-titulo-tarifa").trim();
@@ -101,7 +113,8 @@ public class FareCardParser {
     /**
      * Extract fare plan/subtitle (e.g., "Con cambios y anulaciones", "La más completa")
      */
-    private void extractFarePlan(Element fareCard, FareOption fare) {
+    private void extractFarePlan(Element fareCard, FareOption fare)
+    {
         Element planElem = fareCard.selectFirst("span[class^='plan']");
         if (planElem != null) {
             String planText = planElem.text().trim();
@@ -114,15 +127,15 @@ public class FareCardParser {
     /**
      * Extract fare price from data-precio-tarifa attribute
      */
-    private void extractFarePrice(Element fareCard, FareOption fare) {
+    private void extractFarePrice(Element fareCard, FareOption fare)
+    {
         if (fareCard.hasAttr("data-precio-tarifa")) {
             try {
                 double price = Double.parseDouble(
-                        fareCard.attr("data-precio-tarifa").replace(",", ".")
-                );
+                        fareCard.attr("data-precio-tarifa").replace(",", "."));
                 fare.setPrice(price);
             } catch (NumberFormatException e) {
-                LOG.warnf("[FARE_CARD_PARSER] Invalid price format: %s", 
+                LOG.warnf("[FARE_CARD_PARSER] Invalid price format: %s",
                         fareCard.attr("data-precio-tarifa"));
             }
         }
@@ -131,7 +144,8 @@ public class FareCardParser {
     /**
      * Extract fare code from data-cod-tarifa attribute
      */
-    private void extractFareCode(Element fareCard, FareOption fare) {
+    private void extractFareCode(Element fareCard, FareOption fare)
+    {
         if (fareCard.hasAttr("data-cod-tarifa")) {
             fare.setCode(fareCard.attr("data-cod-tarifa"));
         }
@@ -140,7 +154,8 @@ public class FareCardParser {
     /**
      * Extract type of connection code from data-cod-tpenlacesilencio attribute
      */
-    private void extractTpEnlace(Element fareCard, FareOption fare) {
+    private void extractTpEnlace(Element fareCard, FareOption fare)
+    {
         if (fareCard.hasAttr("data-cod-tpenlacesilencio")) {
             fare.setTpEnlace(fareCard.attr("data-cod-tpenlacesilencio"));
         }
@@ -149,7 +164,8 @@ public class FareCardParser {
     /**
      * Extract features / amenities from list elements
      */
-    private void extractFeatures(Element fareCard, FareOption fare, String trainId) {
+    private void extractFeatures(Element fareCard, FareOption fare, String trainId)
+    {
         Elements featureElements = fareCard.select("ul.lista-opciones li, ul.list-group li, ul.list-group-flush li");
         List<String> features = fare.getFeatures();
         for (Element feature : featureElements) {
@@ -159,9 +175,8 @@ public class FareCardParser {
             }
         }
         fare.setFeatures(features);
-        
-        LOG.debugf("[FARE_CARD_PARSER] Extracted %d features for fare %s of train %s", 
+
+        LOG.debugf("[FARE_CARD_PARSER] Extracted %d features for fare %s of train %s",
                 fare.getFeatures().size(), fare.getName(), trainId);
     }
 }
-

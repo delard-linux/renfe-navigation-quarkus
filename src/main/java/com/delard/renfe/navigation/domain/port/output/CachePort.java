@@ -1,12 +1,20 @@
+/*
+ * Copyright © ${YEAR} MCP Renfe Navigation Quarkus
+ * All rights reserved.
+ */
+
 package com.delard.renfe.navigation.domain.port.output;
 
+
 import java.util.Optional;
+
 
 /**
  * Output port for caching operations
  * Supports different cache implementations (local, Redis, etc.)
  */
-public interface CachePort {
+public interface CachePort
+{
 
     /**
      * Get a value from cache
@@ -44,4 +52,3 @@ public interface CachePort {
      */
     boolean isEnabled();
 }
-

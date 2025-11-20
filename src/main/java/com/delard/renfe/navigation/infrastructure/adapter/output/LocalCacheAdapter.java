@@ -1,13 +1,22 @@
+/*
+ * Copyright © ${YEAR} MCP Renfe Navigation Quarkus
+ * All rights reserved.
+ */
+
 package com.delard.renfe.navigation.infrastructure.adapter.output;
 
-import com.delard.renfe.navigation.domain.port.output.CachePort;
-import jakarta.enterprise.inject.Vetoed;
-import org.jboss.logging.Logger;
 
 import java.time.Instant;
 import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
+
+import jakarta.enterprise.inject.Vetoed;
+
+import com.delard.renfe.navigation.domain.port.output.CachePort;
+
+import org.jboss.logging.Logger;
+
 
 /**
  * Local in-memory cache adapter implementation
@@ -17,7 +26,8 @@ import java.util.concurrent.ConcurrentHashMap;
  * It should only be used through CacheProducer.produceCachePort()
  */
 @Vetoed
-public class LocalCacheAdapter implements CachePort {
+public class LocalCacheAdapter implements CachePort
+{
 
     private static final Logger LOG = Logger.getLogger(LocalCacheAdapter.class);
 
@@ -32,13 +42,15 @@ public class LocalCacheAdapter implements CachePort {
      * @param cacheEnabled Whether cache is enabled
      * @param defaultTtlSeconds Default TTL in seconds
      */
-    public LocalCacheAdapter(boolean cacheEnabled, long defaultTtlSeconds) {
+    public LocalCacheAdapter(boolean cacheEnabled, long defaultTtlSeconds)
+    {
         this.cacheEnabled = cacheEnabled;
         this.defaultTtlSeconds = defaultTtlSeconds;
     }
 
     @Override
-    public <T> Optional<T> get(String key, Class<T> valueType) {
+    public <T> Optional<T> get(String key, Class<T> valueType)
+    {
         if (!cacheEnabled) {
             LOG.debugf("Cache is disabled, skipping get for key: %s", key);
             return Optional.empty();
@@ -59,7 +71,7 @@ public class LocalCacheAdapter implements CachePort {
 
         try {
             @SuppressWarnings("unchecked")
-            T value = (T) entry.getValue();
+            T value = (T)entry.getValue();
             LOG.debugf("Cache hit for key: %s", key);
             return Optional.of(value);
         } catch (ClassCastException e) {
@@ -70,59 +82,66 @@ public class LocalCacheAdapter implements CachePort {
     }
 
     @Override
-    public <T> void put(String key, T value, long ttlSeconds) {
+    public <T> void put(String key, T value, long ttlSeconds)
+    {
         if (!cacheEnabled) {
             LOG.debugf("Cache is disabled, skipping put for key: %s", key);
             return;
         }
 
         long effectiveTtl = ttlSeconds > 0 ? ttlSeconds : defaultTtlSeconds;
-        Instant expirationTime = effectiveTtl > 0 
-            ? Instant.now().plusSeconds(effectiveTtl) 
-            : null;
+        Instant expirationTime = effectiveTtl > 0
+                ? Instant.now().plusSeconds(effectiveTtl)
+                : null;
 
         cache.put(key, new CacheEntry(value, expirationTime));
         LOG.debugf("Cached value for key: %s with TTL: %d seconds", key, effectiveTtl);
     }
 
     @Override
-    public void evict(String key) {
+    public void evict(String key)
+    {
         if (cache.remove(key) != null) {
             LOG.debugf("Evicted cache entry for key: %s", key);
         }
     }
 
     @Override
-    public void clear() {
+    public void clear()
+    {
         int size = cache.size();
         cache.clear();
         LOG.debugf("Cleared cache, removed %d entries", size);
     }
 
     @Override
-    public boolean isEnabled() {
+    public boolean isEnabled()
+    {
         return cacheEnabled;
     }
 
     /**
      * Internal cache entry with expiration support
      */
-    private static class CacheEntry {
+    private static class CacheEntry
+    {
         private final Object value;
         private final Instant expirationTime;
 
-        CacheEntry(Object value, Instant expirationTime) {
+        CacheEntry(Object value, Instant expirationTime)
+        {
             this.value = value;
             this.expirationTime = expirationTime;
         }
 
-        Object getValue() {
+        Object getValue()
+        {
             return value;
         }
 
-        boolean isExpired() {
+        boolean isExpired()
+        {
             return expirationTime != null && Instant.now().isAfter(expirationTime);
         }
     }
 }
-

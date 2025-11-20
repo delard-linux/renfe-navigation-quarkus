@@ -1,14 +1,25 @@
+/*
+ * Copyright © ${YEAR} MCP Renfe Navigation Quarkus
+ * All rights reserved.
+ */
+
 package com.delard.renfe.navigation.infrastructure.service;
+
+
+import jakarta.enterprise.context.ApplicationScoped;
 
 import com.delard.renfe.navigation.application.exception.QueueException;
 import com.delard.renfe.navigation.application.exception.TrainUnavailabilityException;
-import com.microsoft.playwright.Locator;
-import com.microsoft.playwright.Page;
-import jakarta.enterprise.context.ApplicationScoped;
+
 import org.jboss.logging.Logger;
 
+import com.microsoft.playwright.Locator;
+import com.microsoft.playwright.Page;
+
+
 @ApplicationScoped
-public class RenfePageValidator {
+public class RenfePageValidator
+{
 
     private static final Logger LOG = Logger.getLogger(RenfePageValidator.class);
 
@@ -19,7 +30,8 @@ public class RenfePageValidator {
      * @param page The Playwright page to check
      * @throws QueueException if a queue page is detected
      */
-    public void checkForQueuePage(Page page) {
+    public void checkForQueuePage(Page page)
+    {
         try {
             // Wait a short moment for the page to render
             page.waitForTimeout(2000);
@@ -46,7 +58,9 @@ public class RenfePageValidator {
             // Check for Queue.it elements using locators
             boolean hasQueueItLocators = false;
             try {
-                hasQueueItLocators = page.locator("[class*='queue'], [id*='queue'], img[alt*='queue'], img[src*='queue']").count() > 0;
+                hasQueueItLocators =
+                        page.locator("[class*='queue'], [id*='queue'], img[alt*='queue'], img[src*='queue']")
+                                .count() > 0;
             } catch (Exception e) {
                 // Ignore locator errors
             }
@@ -62,7 +76,8 @@ public class RenfePageValidator {
 
             if (hasQueueText || hasQueueItLocators || hasQueuePageText) {
                 LOG.warn("Queue page detected - ticket purchase is queued");
-                throw new QueueException("Ticket purchase is queued. The system redirected to a queue management page. Please try again later.");
+                throw new QueueException(
+                        "Ticket purchase is queued. The system redirected to a queue management page. Please try again later.");
             }
         } catch (QueueException e) {
             // Re-throw queue exceptions
@@ -81,7 +96,8 @@ public class RenfePageValidator {
      * @param direction The direction being checked ("outbound" or "return")
      * @throws TrainUnavailabilityException if train unavailability is detected
      */
-    public void checkForTrainUnavailability(Page page, String direction) {
+    public void checkForTrainUnavailability(Page page, String direction)
+    {
         try {
             // Wait a short moment for error messages to appear
             page.waitForTimeout(1000);
@@ -117,7 +133,8 @@ public class RenfePageValidator {
         }
     }
 
-    private void checkSpecificError(Page page, String errorSelector, String direction) {
+    private void checkSpecificError(Page page, String errorSelector, String direction)
+    {
         // Check if the specific error message exists
         Locator errorElement = page.locator(errorSelector);
         if (errorElement.count() > 0 && errorElement.isVisible()) {
@@ -129,7 +146,8 @@ public class RenfePageValidator {
         }
     }
 
-    private void checkGenericErrors(Page page, String tabSelector, String direction) {
+    private void checkGenericErrors(Page page, String tabSelector, String direction)
+    {
         // Check for any other error messages with class msjErrorTrenes in the appropriate tab
         Locator tabElement = page.locator(tabSelector);
         if (tabElement.count() > 0) {
@@ -141,7 +159,8 @@ public class RenfePageValidator {
                         String errorMessage = errorElem.textContent();
                         String errorId = errorElem.getAttribute("id");
                         if (errorMessage != null && !errorMessage.trim().isEmpty()) {
-                            LOG.warnf("Train error detected for %s (id: %s): %s", direction, errorId, errorMessage.trim());
+                            LOG.warnf("Train error detected for %s (id: %s): %s", direction, errorId,
+                                    errorMessage.trim());
                             throw new TrainUnavailabilityException(direction, errorMessage.trim());
                         }
                     }
@@ -150,4 +169,3 @@ public class RenfePageValidator {
         }
     }
 }
-

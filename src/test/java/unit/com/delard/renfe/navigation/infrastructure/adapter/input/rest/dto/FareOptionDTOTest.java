@@ -1,29 +1,37 @@
+/*
+ * Copyright © ${YEAR} MCP Renfe Navigation Quarkus
+ * All rights reserved.
+ */
+
 package com.delard.renfe.navigation.infrastructure.adapter.input.rest.dto;
 
-import org.junit.jupiter.api.Test;
+
+import static org.junit.jupiter.api.Assertions.*;
 
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-import static org.junit.jupiter.api.Assertions.*;
+import org.junit.jupiter.api.Test;
+
 
 /**
  * Unit tests for FareOptionDTO
  */
-class FareOptionDTOTest {
+class FareOptionDTOTest
+{
 
     @Test
-    void testRecordCreation() {
+    void testRecordCreation()
+    {
         FareOptionDTO dto = new FareOptionDTO(
-            "Basic Fare",
-            45.50,
-            "EUR",
-            "BASIC",
-            "https://example.com/link",
-            null,
-            new ArrayList<>()
-        );
+                "Basic Fare",
+                45.50,
+                "EUR",
+                "BASIC",
+                "https://example.com/link",
+                null,
+                new ArrayList<>());
         assertNotNull(dto);
         assertEquals("Basic Fare", dto.name());
         assertEquals(45.50, dto.price(), 0.01);
@@ -35,49 +43,49 @@ class FareOptionDTOTest {
     }
 
     @Test
-    void testDefaultCurrency() {
+    void testDefaultCurrency()
+    {
         FareOptionDTO dto = new FareOptionDTO(
-            "Test",
-            10.0,
-            null, // null currency should default to EUR
-            "CODE",
-            "link",
-            null,
-            new ArrayList<>()
-        );
+                "Test",
+                10.0,
+                null, // null currency should default to EUR
+                "CODE",
+                "link",
+                null,
+                new ArrayList<>());
         assertEquals("EUR", dto.currency());
     }
 
     @Test
-    void testNullPrice() {
+    void testNullPrice()
+    {
         FareOptionDTO dto = new FareOptionDTO(
-            "Test",
-            null,
-            "EUR",
-            "CODE",
-            "link",
-            null,
-            new ArrayList<>()
-        );
+                "Test",
+                null,
+                "EUR",
+                "CODE",
+                "link",
+                null,
+                new ArrayList<>());
         assertNull(dto.price());
     }
 
     @Test
-    void testFeaturesDefensiveCopy() {
+    void testFeaturesDefensiveCopy()
+    {
         List<String> originalFeatures = new ArrayList<>(Arrays.asList("WIFI", "POWER"));
         FareOptionDTO dto = new FareOptionDTO(
-            "Test",
-            10.0,
-            "EUR",
-            "CODE",
-            "link",
-            null,
-            originalFeatures
-        );
-        
+                "Test",
+                10.0,
+                "EUR",
+                "CODE",
+                "link",
+                null,
+                originalFeatures);
+
         // Modify original list
         originalFeatures.add("NEW_FEATURE");
-        
+
         // DTO features should not be affected
         assertEquals(2, dto.features().size());
         assertTrue(dto.features().contains("WIFI"));
@@ -86,32 +94,32 @@ class FareOptionDTOTest {
     }
 
     @Test
-    void testNullFeaturesDefaultsToEmpty() {
+    void testNullFeaturesDefaultsToEmpty()
+    {
         FareOptionDTO dto = new FareOptionDTO(
-            "Test",
-            10.0,
-            "EUR",
-            "CODE",
-            "link",
-            null,
-            null
-        );
+                "Test",
+                10.0,
+                "EUR",
+                "CODE",
+                "link",
+                null,
+                null);
         assertNotNull(dto.features());
         assertTrue(dto.features().isEmpty());
     }
 
     @Test
-    void testAllFields() {
+    void testAllFields()
+    {
         List<String> features = Arrays.asList("WIFI", "MEAL");
         FareOptionDTO dto = new FareOptionDTO(
-            "Premium Fare",
-            89.90,
-            "GBP",
-            "PREMIUM",
-            "https://example.com/premium",
-            "PLAN123",
-            features
-        );
+                "Premium Fare",
+                89.90,
+                "GBP",
+                "PREMIUM",
+                "https://example.com/premium",
+                "PLAN123",
+                features);
 
         assertEquals("Premium Fare", dto.name());
         assertEquals(89.90, dto.price(), 0.01);
@@ -123,13 +131,13 @@ class FareOptionDTOTest {
     }
 
     @Test
-    void testConvenienceConstructor() {
+    void testConvenienceConstructor()
+    {
         FareOptionDTO dto = new FareOptionDTO(
-            "Basic",
-            45.50,
-            "BASIC",
-            "link"
-        );
+                "Basic",
+                45.50,
+                "BASIC",
+                "link");
         assertEquals("Basic", dto.name());
         assertEquals(45.50, dto.price(), 0.01);
         assertEquals("EUR", dto.currency()); // Default currency

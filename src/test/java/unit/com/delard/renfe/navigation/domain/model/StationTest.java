@@ -1,27 +1,36 @@
+/*
+ * Copyright © ${YEAR} MCP Renfe Navigation Quarkus
+ * All rights reserved.
+ */
+
 package com.delard.renfe.navigation.domain.model;
+
+
+import static org.junit.jupiter.api.Assertions.*;
 
 import org.junit.jupiter.api.Test;
 
-import static org.junit.jupiter.api.Assertions.*;
 
 /**
  * Unit tests for Station domain model
  */
-class StationTest {
+class StationTest
+{
 
     @Test
-    void testStationConstructor() {
+    void testStationConstructor()
+    {
         Station station = new Station();
         assertNotNull(station);
     }
 
     @Test
-    void testStationConstructorWithParameters() {
+    void testStationConstructorWithParameters()
+    {
         Station station = new Station(
                 "MADRI", "0071", 1, null,
                 "MADRID (TODAS)", null,
-                "0071,MADRI,null", "MADRID (TODAS)"
-        );
+                "0071,MADRI,null", "MADRID (TODAS)");
 
         assertEquals("MADRI", station.getStationCode());
         assertEquals("0071", station.getAdministrationCode());
@@ -34,9 +43,10 @@ class StationTest {
     }
 
     @Test
-    void testStationGettersAndSetters() {
+    void testStationGettersAndSetters()
+    {
         Station station = new Station();
-        
+
         station.setStationCode("BARCE");
         station.setAdministrationCode("0071");
         station.setPriority(3);
@@ -57,7 +67,8 @@ class StationTest {
     }
 
     @Test
-    void testStationEquals() {
+    void testStationEquals()
+    {
         Station station1 = new Station("MADRI", "0071", 1, null,
                 "MADRID (TODAS)", null, "0071,MADRI,null", "MADRID (TODAS)");
         Station station2 = new Station("MADRI", "0071", 1, null,
@@ -71,23 +82,24 @@ class StationTest {
     }
 
     @Test
-    void testStationEqualsWithNull() {
+    void testStationEqualsWithNull()
+    {
         Station station = new Station("MADRI", "0071", 1, null,
                 "MADRID (TODAS)", null, "0071,MADRI,null", "MADRID (TODAS)");
-        
+
         assertNotEquals(station, null);
         assertNotEquals(station, "not a station");
     }
 
     @Test
-    void testStationToString() {
+    void testStationToString()
+    {
         Station station = new Station("MADRI", "0071", 1, null,
                 "MADRID (TODAS)", null, "0071,MADRI,null", "MADRID (TODAS)");
-        
+
         String toString = station.toString();
         assertNotNull(toString);
         assertTrue(toString.contains("MADRI"));
         assertTrue(toString.contains("MADRID (TODAS)"));
     }
 }
-

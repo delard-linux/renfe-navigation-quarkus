@@ -1,7 +1,22 @@
+/*
+ * Copyright © ${YEAR} MCP Renfe Navigation Quarkus
+ * All rights reserved.
+ */
+
 package com.delard.renfe.navigation.infrastructure.adapter.output;
+
+
+import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.ArgumentMatchers.*;
+import static org.mockito.Mockito.*;
+
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 
 import com.delard.renfe.navigation.domain.model.Train;
 import com.delard.renfe.navigation.infrastructure.service.PlaywrightSearchTrainsService;
+
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -9,19 +24,13 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-
-import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.ArgumentMatchers.*;
-import static org.mockito.Mockito.*;
 
 /**
  * Unit tests for TrainScraperAdapter
  */
 @ExtendWith(MockitoExtension.class)
-class TrainScraperAdapterTest {
+class TrainScraperAdapterTest
+{
 
     @Mock
     private PlaywrightSearchTrainsService playwrightSearchTrainsService;
@@ -30,7 +39,8 @@ class TrainScraperAdapterTest {
     private TrainScraperAdapter adapter;
 
     @BeforeEach
-    void setUp() {
+    void setUp()
+    {
         adapter = new TrainScraperAdapter();
         // Use reflection to inject the mock
         try {
@@ -43,7 +53,8 @@ class TrainScraperAdapterTest {
     }
 
     @Test
-    void testScrapeTrainsWithReturnTrains() {
+    void testScrapeTrainsWithReturnTrains()
+    {
         String origin = "OURENSE";
         String destination = "MADRID";
         String originDesgEstacion = "OURENSE";
@@ -62,7 +73,7 @@ class TrainScraperAdapterTest {
         List<Train> trainsReturn = Arrays.asList(trainRet1);
 
         PlaywrightSearchTrainsService.SearchTrainsResult result =
-            new PlaywrightSearchTrainsService.SearchTrainsResult(trainsOut, trainsReturn);
+                new PlaywrightSearchTrainsService.SearchTrainsResult(trainsOut, trainsReturn);
 
         when(playwrightSearchTrainsService.searchTrains(origin, destination,
                 originDesgEstacion, destinationDesgEstacion,
@@ -89,7 +100,8 @@ class TrainScraperAdapterTest {
     }
 
     @Test
-    void testScrapeTrainsWithoutReturnTrains() {
+    void testScrapeTrainsWithoutReturnTrains()
+    {
         String origin = "OURENSE";
         String destination = "MADRID";
         String originDesgEstacion = "OURENSE";
@@ -104,7 +116,7 @@ class TrainScraperAdapterTest {
         List<Train> trainsOut = Arrays.asList(trainOut1);
 
         PlaywrightSearchTrainsService.SearchTrainsResult result =
-            new PlaywrightSearchTrainsService.SearchTrainsResult(trainsOut, null);
+                new PlaywrightSearchTrainsService.SearchTrainsResult(trainsOut, null);
 
         when(playwrightSearchTrainsService.searchTrains(origin, destination,
                 originDesgEstacion, destinationDesgEstacion,
@@ -129,7 +141,8 @@ class TrainScraperAdapterTest {
     }
 
     @Test
-    void testScrapeTrainsWithNullOutboundTrains() {
+    void testScrapeTrainsWithNullOutboundTrains()
+    {
         String origin = "OURENSE";
         String destination = "MADRID";
         String originDesgEstacion = "OURENSE";
@@ -141,7 +154,7 @@ class TrainScraperAdapterTest {
         String adults = "1";
 
         PlaywrightSearchTrainsService.SearchTrainsResult result =
-            new PlaywrightSearchTrainsService.SearchTrainsResult(null, null);
+                new PlaywrightSearchTrainsService.SearchTrainsResult(null, null);
 
         when(playwrightSearchTrainsService.searchTrains(origin, destination,
                 originDesgEstacion, destinationDesgEstacion,
@@ -161,7 +174,8 @@ class TrainScraperAdapterTest {
     }
 
     @Test
-    void testScrapeTrainsWithEmptyOutboundTrains() {
+    void testScrapeTrainsWithEmptyOutboundTrains()
+    {
         String origin = "OURENSE";
         String destination = "MADRID";
         String originDesgEstacion = "OURENSE";
@@ -174,7 +188,7 @@ class TrainScraperAdapterTest {
 
         List<Train> emptyTrainsOut = new ArrayList<>();
         PlaywrightSearchTrainsService.SearchTrainsResult result =
-            new PlaywrightSearchTrainsService.SearchTrainsResult(emptyTrainsOut, null);
+                new PlaywrightSearchTrainsService.SearchTrainsResult(emptyTrainsOut, null);
 
         when(playwrightSearchTrainsService.searchTrains(origin, destination,
                 originDesgEstacion, destinationDesgEstacion,
@@ -193,7 +207,8 @@ class TrainScraperAdapterTest {
     }
 
     @Test
-    void testScrapeTrainsWithEmptyReturnTrains() {
+    void testScrapeTrainsWithEmptyReturnTrains()
+    {
         String origin = "OURENSE";
         String destination = "MADRID";
         String originDesgEstacion = "OURENSE";
@@ -209,7 +224,7 @@ class TrainScraperAdapterTest {
         List<Train> emptyTrainsReturn = new ArrayList<>();
 
         PlaywrightSearchTrainsService.SearchTrainsResult result =
-            new PlaywrightSearchTrainsService.SearchTrainsResult(trainsOut, emptyTrainsReturn);
+                new PlaywrightSearchTrainsService.SearchTrainsResult(trainsOut, emptyTrainsReturn);
 
         when(playwrightSearchTrainsService.searchTrains(origin, destination,
                 originDesgEstacion, destinationDesgEstacion,
@@ -229,7 +244,8 @@ class TrainScraperAdapterTest {
     }
 
     @Test
-    void testScrapeTrainsThrowsException() {
+    void testScrapeTrainsThrowsException()
+    {
         String origin = "OURENSE";
         String destination = "MADRID";
         String originDesgEstacion = "OURENSE";
@@ -265,7 +281,8 @@ class TrainScraperAdapterTest {
     }
 
     @Test
-    void testScrapeTrainsWithDifferentAdults() {
+    void testScrapeTrainsWithDifferentAdults()
+    {
         String origin = "OURENSE";
         String destination = "MADRID";
         String originDesgEstacion = "OURENSE";
@@ -279,7 +296,7 @@ class TrainScraperAdapterTest {
         List<Train> trainsOut = Arrays.asList(trainOut1);
 
         PlaywrightSearchTrainsService.SearchTrainsResult result =
-            new PlaywrightSearchTrainsService.SearchTrainsResult(trainsOut, null);
+                new PlaywrightSearchTrainsService.SearchTrainsResult(trainsOut, null);
 
         when(playwrightSearchTrainsService.searchTrains(eq(origin), eq(destination),
                 eq(originDesgEstacion), eq(destinationDesgEstacion),
@@ -314,14 +331,17 @@ class TrainScraperAdapterTest {
     }
 
     @Test
-    void testScrapeTrainsWithNullValues() {
+    void testScrapeTrainsWithNullValues()
+    {
         Train trainOut1 = createTrain("T123", "AVE", "08:00", "10:00", "2h", 25.0);
         List<Train> trainsOut = Arrays.asList(trainOut1);
 
         PlaywrightSearchTrainsService.SearchTrainsResult result =
-            new PlaywrightSearchTrainsService.SearchTrainsResult(trainsOut, null);
+                new PlaywrightSearchTrainsService.SearchTrainsResult(trainsOut, null);
 
-        lenient().when(playwrightSearchTrainsService.searchTrains(any(), any(), any(), any(), any(), any(), any(), any(), anyString()))
+        lenient()
+                .when(playwrightSearchTrainsService.searchTrains(any(), any(), any(), any(), any(), any(), any(), any(),
+                        anyString()))
                 .thenReturn(result);
 
         List<List<Train>> scraperResult = adapter.scrapeTrains(null, null, null, null, null, null, null, null, "0");
@@ -331,7 +351,8 @@ class TrainScraperAdapterTest {
     }
 
     private Train createTrain(String trainId, String serviceType, String departureTime,
-                              String arrivalTime, String duration, double priceFrom) {
+            String arrivalTime, String duration, double priceFrom)
+    {
         Train train = new Train();
         train.setTrainId(trainId);
         train.setServiceType(serviceType);
@@ -342,4 +363,3 @@ class TrainScraperAdapterTest {
         return train;
     }
 }
-

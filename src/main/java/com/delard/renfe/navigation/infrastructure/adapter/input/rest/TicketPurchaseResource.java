@@ -1,9 +1,11 @@
+/*
+ * Copyright © ${YEAR} MCP Renfe Navigation Quarkus
+ * All rights reserved.
+ */
+
 package com.delard.renfe.navigation.infrastructure.adapter.input.rest;
 
-import com.delard.renfe.navigation.application.exception.ValidationException;
-import com.delard.renfe.navigation.domain.port.input.PurchaseTicketUseCase;
-import com.delard.renfe.navigation.infrastructure.adapter.input.rest.dto.PurchaseTicketRequestDTO;
-import com.delard.renfe.navigation.infrastructure.adapter.input.rest.dto.PurchaseTicketResponseDTO;
+
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import jakarta.ws.rs.Consumes;
@@ -12,10 +14,17 @@ import jakarta.ws.rs.Path;
 import jakarta.ws.rs.Produces;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
+
+import com.delard.renfe.navigation.application.exception.ValidationException;
+import com.delard.renfe.navigation.domain.port.input.PurchaseTicketUseCase;
+import com.delard.renfe.navigation.infrastructure.adapter.input.rest.dto.PurchaseTicketRequestDTO;
+import com.delard.renfe.navigation.infrastructure.adapter.input.rest.dto.PurchaseTicketResponseDTO;
+
 import org.eclipse.microprofile.openapi.annotations.Operation;
 import org.eclipse.microprofile.openapi.annotations.responses.APIResponse;
 import org.eclipse.microprofile.openapi.annotations.tags.Tag;
 import org.jboss.logging.Logger;
+
 
 /**
  * REST resource for purchasing tickets.
@@ -25,7 +34,8 @@ import org.jboss.logging.Logger;
 @Tag(name = "Ticket Purchase", description = "Operations for purchasing train tickets")
 @Consumes(MediaType.APPLICATION_JSON)
 @Produces(MediaType.APPLICATION_JSON)
-public class TicketPurchaseResource {
+public class TicketPurchaseResource
+{
 
     private static final Logger LOG = Logger.getLogger(TicketPurchaseResource.class);
 
@@ -38,7 +48,8 @@ public class TicketPurchaseResource {
     @APIResponse(responseCode = "200", description = "Ticket purchased successfully")
     @APIResponse(responseCode = "400", description = "Validation error")
     @APIResponse(responseCode = "500", description = "Internal server error")
-    public Response purchaseTicket(PurchaseTicketRequestDTO request) {
+    public Response purchaseTicket(PurchaseTicketRequestDTO request)
+    {
         try {
             if (request == null) {
                 throw new ValidationException("Request body is required");
@@ -53,8 +64,7 @@ public class TicketPurchaseResource {
                     request.userName,
                     request.serviceType,
                     request.departureTime,
-                    request.fareName
-            );
+                    request.fareName);
 
             return Response.ok(new PurchaseTicketResponseDTO(confirmation)).build();
 
@@ -71,4 +81,3 @@ public class TicketPurchaseResource {
         }
     }
 }
-

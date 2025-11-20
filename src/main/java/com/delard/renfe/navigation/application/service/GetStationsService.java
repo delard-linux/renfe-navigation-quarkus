@@ -1,20 +1,30 @@
+/*
+ * Copyright © ${YEAR} MCP Renfe Navigation Quarkus
+ * All rights reserved.
+ */
+
 package com.delard.renfe.navigation.application.service;
+
+
+import java.util.List;
+
+import jakarta.enterprise.context.ApplicationScoped;
+import jakarta.inject.Inject;
 
 import com.delard.renfe.navigation.application.exception.ValidationException;
 import com.delard.renfe.navigation.domain.model.Station;
 import com.delard.renfe.navigation.domain.port.input.GetStationsUseCase;
 import com.delard.renfe.navigation.domain.port.output.StationRepository;
-import jakarta.enterprise.context.ApplicationScoped;
-import jakarta.inject.Inject;
+
 import org.jboss.logging.Logger;
 
-import java.util.List;
 
 /**
  * Application service for getting stations
  */
 @ApplicationScoped
-public class GetStationsService implements GetStationsUseCase {
+public class GetStationsService implements GetStationsUseCase
+{
 
     private static final Logger LOG = Logger.getLogger(GetStationsService.class);
 
@@ -22,9 +32,10 @@ public class GetStationsService implements GetStationsUseCase {
     StationRepository stationRepository;
 
     @Override
-    public List<Station> getAllStations() {
+    public List<Station> getAllStations()
+    {
         LOG.debug("[REQUEST] Getting all stations");
-        
+
         try {
             List<Station> stations = stationRepository.loadAllStations();
             if (stations == null) {
@@ -40,12 +51,13 @@ public class GetStationsService implements GetStationsUseCase {
     }
 
     @Override
-    public List<Station> searchStations(String searchText) {
+    public List<Station> searchStations(String searchText)
+    {
         LOG.debugf("[REQUEST] Searching stations with text: %s", searchText);
-        
+
         // Validate search text
         validateSearchText(searchText);
-        
+
         try {
             List<Station> stations = stationRepository.searchStations(searchText);
             if (stations == null) {
@@ -73,7 +85,8 @@ public class GetStationsService implements GetStationsUseCase {
      * @param searchText Search text to validate
      * @throws ValidationException if validation fails
      */
-    private void validateSearchText(String searchText) {
+    private void validateSearchText(String searchText)
+    {
         if (searchText == null || searchText.isBlank()) {
             throw new ValidationException("Search text is required");
         }
@@ -98,11 +111,11 @@ public class GetStationsService implements GetStationsUseCase {
             for (String word : words) {
                 if (word.length() < 3) {
                     throw new ValidationException(
-                        String.format("Each word in the search text must have at least 3 characters. Found word with %d characters: '%s'", 
-                            word.length(), word));
+                            String.format(
+                                    "Each word in the search text must have at least 3 characters. Found word with %d characters: '%s'",
+                                    word.length(), word));
                 }
             }
         }
     }
 }
-

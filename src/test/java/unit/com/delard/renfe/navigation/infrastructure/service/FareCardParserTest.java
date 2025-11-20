@@ -1,6 +1,15 @@
+/*
+ * Copyright © ${YEAR} MCP Renfe Navigation Quarkus
+ * All rights reserved.
+ */
+
 package com.delard.renfe.navigation.infrastructure.service;
 
+
+import static org.junit.jupiter.api.Assertions.*;
+
 import com.delard.renfe.navigation.domain.model.FareOption;
+
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Element;
 import org.junit.jupiter.api.BeforeEach;
@@ -9,64 +18,68 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.junit.jupiter.MockitoExtension;
 
-import static org.junit.jupiter.api.Assertions.*;
 
 /**
  * Unit tests for FareCardParser
  */
 @ExtendWith(MockitoExtension.class)
-class FareCardParserTest {
+class FareCardParserTest
+{
 
     private FareCardParser parser;
 
     @BeforeEach
-    void setUp() {
+    void setUp()
+    {
         parser = new FareCardParser();
     }
 
     @Test
     @DisplayName("parseFareCard should extract fare name from data-titulo-tarifa attribute")
-    void testExtractFareNameFromDataAttribute() throws Exception {
+    void testExtractFareNameFromDataAttribute() throws Exception
+    {
         String html = """
-            <div class="seleccion-resumen-bottom card" data-titulo-tarifa="Basic" data-precio-tarifa="45,50">
-            </div>
-            """;
+                <div class="seleccion-resumen-bottom card" data-titulo-tarifa="Basic" data-precio-tarifa="45,50">
+                </div>
+                """;
         Element fareCard = Jsoup.parse(html).selectFirst("div.card");
-        
+
         FareOption fare = parser.parseFareCard(fareCard, "TRAIN1");
-        
+
         assertEquals("Basic", fare.getName());
     }
 
     @Test
     @DisplayName("parseFareCard should extract fare name from span with padding-right style")
-    void testExtractFareNameFromSpan() throws Exception {
+    void testExtractFareNameFromSpan() throws Exception
+    {
         String html = """
-            <div class="card">
-                <div class="card-header">
-                    <span style="padding-right: 10px">Premium</span>
+                <div class="card">
+                    <div class="card-header">
+                        <span style="padding-right: 10px">Premium</span>
+                    </div>
                 </div>
-            </div>
-            """;
+                """;
         Element fareCard = Jsoup.parse(html).selectFirst("div.card");
-        
+
         FareOption fare = parser.parseFareCard(fareCard, "TRAIN1");
-        
+
         assertEquals("Premium", fare.getName());
     }
 
     @Test
     @DisplayName("parseFareCard should extract fare name from header text before price")
-    void testExtractFareNameFromHeaderText() throws Exception {
+    void testExtractFareNameFromHeaderText() throws Exception
+    {
         String html = """
-            <div class="card">
-                <div class="card-header">Premium 45,50 €</div>
-            </div>
-            """;
+                <div class="card">
+                    <div class="card-header">Premium 45,50 €</div>
+                </div>
+                """;
         Element fareCard = Jsoup.parse(html).selectFirst("div.card");
-        
+
         FareOption fare = parser.parseFareCard(fareCard, "TRAIN1");
-        
+
         // The parser extracts text before the price using regex
         // If regex doesn't match perfectly, it falls back to ownText() which may return partial text
         assertNotNull(fare.getName());
@@ -75,104 +88,111 @@ class FareCardParserTest {
 
     @Test
     @DisplayName("parseFareCard should use 'Unknown' as fallback when name cannot be extracted")
-    void testExtractFareNameFallback() throws Exception {
+    void testExtractFareNameFallback() throws Exception
+    {
         String html = """
-            <div class="card">
-            </div>
-            """;
+                <div class="card">
+                </div>
+                """;
         Element fareCard = Jsoup.parse(html).selectFirst("div.card");
-        
+
         FareOption fare = parser.parseFareCard(fareCard, "TRAIN1");
-        
+
         assertEquals("Unknown", fare.getName());
     }
 
     @Test
     @DisplayName("parseFareCard should extract fare plan")
-    void testExtractFarePlan() throws Exception {
+    void testExtractFarePlan() throws Exception
+    {
         String html = """
-            <div class="card" data-titulo-tarifa="Basic">
-                <span class="plan-elige">Con cambios y anulaciones</span>
-            </div>
-            """;
+                <div class="card" data-titulo-tarifa="Basic">
+                    <span class="plan-elige">Con cambios y anulaciones</span>
+                </div>
+                """;
         Element fareCard = Jsoup.parse(html).selectFirst("div.card");
-        
+
         FareOption fare = parser.parseFareCard(fareCard, "TRAIN1");
-        
+
         assertEquals("Con cambios y anulaciones", fare.getPlan());
     }
 
     @Test
     @DisplayName("parseFareCard should extract fare price from data-precio-tarifa")
-    void testExtractFarePrice() throws Exception {
+    void testExtractFarePrice() throws Exception
+    {
         String html = """
-            <div class="card" data-titulo-tarifa="Basic" data-precio-tarifa="45,50">
-            </div>
-            """;
+                <div class="card" data-titulo-tarifa="Basic" data-precio-tarifa="45,50">
+                </div>
+                """;
         Element fareCard = Jsoup.parse(html).selectFirst("div.card");
-        
+
         FareOption fare = parser.parseFareCard(fareCard, "TRAIN1");
-        
+
         assertEquals(45.50, fare.getPrice(), 0.01);
     }
 
     @Test
     @DisplayName("parseFareCard should handle invalid price format gracefully")
-    void testExtractFarePriceInvalidFormat() throws Exception {
+    void testExtractFarePriceInvalidFormat() throws Exception
+    {
         String html = """
-            <div class="card" data-titulo-tarifa="Basic" data-precio-tarifa="invalid">
-            </div>
-            """;
+                <div class="card" data-titulo-tarifa="Basic" data-precio-tarifa="invalid">
+                </div>
+                """;
         Element fareCard = Jsoup.parse(html).selectFirst("div.card");
-        
+
         FareOption fare = parser.parseFareCard(fareCard, "TRAIN1");
-        
+
         assertEquals(0.0, fare.getPrice(), 0.01);
     }
 
     @Test
     @DisplayName("parseFareCard should extract fare code")
-    void testExtractFareCode() throws Exception {
+    void testExtractFareCode() throws Exception
+    {
         String html = """
-            <div class="card" data-titulo-tarifa="Basic" data-cod-tarifa="BASIC">
-            </div>
-            """;
+                <div class="card" data-titulo-tarifa="Basic" data-cod-tarifa="BASIC">
+                </div>
+                """;
         Element fareCard = Jsoup.parse(html).selectFirst("div.card");
-        
+
         FareOption fare = parser.parseFareCard(fareCard, "TRAIN1");
-        
+
         assertEquals("BASIC", fare.getCode());
     }
 
     @Test
     @DisplayName("parseFareCard should extract tpEnlace")
-    void testExtractTpEnlace() throws Exception {
+    void testExtractTpEnlace() throws Exception
+    {
         String html = """
-            <div class="card" data-titulo-tarifa="Basic" data-cod-tpenlacesilencio="LINK123">
-            </div>
-            """;
+                <div class="card" data-titulo-tarifa="Basic" data-cod-tpenlacesilencio="LINK123">
+                </div>
+                """;
         Element fareCard = Jsoup.parse(html).selectFirst("div.card");
-        
+
         FareOption fare = parser.parseFareCard(fareCard, "TRAIN1");
-        
+
         assertEquals("LINK123", fare.getTpEnlace());
     }
 
     @Test
     @DisplayName("parseFareCard should extract features from lista-opciones")
-    void testExtractFeaturesFromListaOpciones() throws Exception {
+    void testExtractFeaturesFromListaOpciones() throws Exception
+    {
         String html = """
-            <div class="card" data-titulo-tarifa="Basic">
-                <ul class="lista-opciones">
-                    <li>WIFI</li>
-                    <li>Power</li>
-                </ul>
-            </div>
-            """;
+                <div class="card" data-titulo-tarifa="Basic">
+                    <ul class="lista-opciones">
+                        <li>WIFI</li>
+                        <li>Power</li>
+                    </ul>
+                </div>
+                """;
         Element fareCard = Jsoup.parse(html).selectFirst("div.card");
-        
+
         FareOption fare = parser.parseFareCard(fareCard, "TRAIN1");
-        
+
         assertEquals(2, fare.getFeatures().size());
         assertTrue(fare.getFeatures().contains("WIFI"));
         assertTrue(fare.getFeatures().contains("Power"));
@@ -180,19 +200,20 @@ class FareCardParserTest {
 
     @Test
     @DisplayName("parseFareCard should extract features from list-group")
-    void testExtractFeaturesFromListGroup() throws Exception {
+    void testExtractFeaturesFromListGroup() throws Exception
+    {
         String html = """
-            <div class="card" data-titulo-tarifa="Basic">
-                <ul class="list-group">
-                    <li>Feature 1</li>
-                    <li>Feature 2</li>
-                </ul>
-            </div>
-            """;
+                <div class="card" data-titulo-tarifa="Basic">
+                    <ul class="list-group">
+                        <li>Feature 1</li>
+                        <li>Feature 2</li>
+                    </ul>
+                </div>
+                """;
         Element fareCard = Jsoup.parse(html).selectFirst("div.card");
-        
+
         FareOption fare = parser.parseFareCard(fareCard, "TRAIN1");
-        
+
         assertEquals(2, fare.getFeatures().size());
         assertTrue(fare.getFeatures().contains("Feature 1"));
         assertTrue(fare.getFeatures().contains("Feature 2"));
@@ -200,56 +221,59 @@ class FareCardParserTest {
 
     @Test
     @DisplayName("parseFareCard should extract features from list-group-flush")
-    void testExtractFeaturesFromListGroupFlush() throws Exception {
+    void testExtractFeaturesFromListGroupFlush() throws Exception
+    {
         String html = """
-            <div class="card" data-titulo-tarifa="Basic">
-                <ul class="list-group-flush">
-                    <li>Feature A</li>
-                </ul>
-            </div>
-            """;
+                <div class="card" data-titulo-tarifa="Basic">
+                    <ul class="list-group-flush">
+                        <li>Feature A</li>
+                    </ul>
+                </div>
+                """;
         Element fareCard = Jsoup.parse(html).selectFirst("div.card");
-        
+
         FareOption fare = parser.parseFareCard(fareCard, "TRAIN1");
-        
+
         assertEquals(1, fare.getFeatures().size());
         assertTrue(fare.getFeatures().contains("Feature A"));
     }
 
     @Test
     @DisplayName("parseFareCard should handle empty data-titulo-tarifa")
-    void testExtractFareNameWithEmptyDataAttribute() throws Exception {
+    void testExtractFareNameWithEmptyDataAttribute() throws Exception
+    {
         String html = """
-            <div class="card" data-titulo-tarifa="">
-                <div class="card-header">
-                    <span style="padding-right: 10px">Premium</span>
+                <div class="card" data-titulo-tarifa="">
+                    <div class="card-header">
+                        <span style="padding-right: 10px">Premium</span>
+                    </div>
                 </div>
-            </div>
-            """;
+                """;
         Element fareCard = Jsoup.parse(html).selectFirst("div.card");
-        
+
         FareOption fare = parser.parseFareCard(fareCard, "TRAIN1");
-        
+
         assertEquals("Premium", fare.getName());
     }
 
     @Test
     @DisplayName("parseFareCard should handle complete fare card")
-    void testParseCompleteFareCard() throws Exception {
+    void testParseCompleteFareCard() throws Exception
+    {
         String html = """
-            <div class="card" data-titulo-tarifa="Premium" data-precio-tarifa="89,90" 
-                 data-cod-tarifa="PREMIUM" data-cod-tpenlacesilencio="LINK456">
-                <span class="plan-premium">La más completa</span>
-                <ul class="lista-opciones">
-                    <li>WIFI</li>
-                    <li>MEAL</li>
-                </ul>
-            </div>
-            """;
+                <div class="card" data-titulo-tarifa="Premium" data-precio-tarifa="89,90"
+                     data-cod-tarifa="PREMIUM" data-cod-tpenlacesilencio="LINK456">
+                    <span class="plan-premium">La más completa</span>
+                    <ul class="lista-opciones">
+                        <li>WIFI</li>
+                        <li>MEAL</li>
+                    </ul>
+                </div>
+                """;
         Element fareCard = Jsoup.parse(html).selectFirst("div.card");
-        
+
         FareOption fare = parser.parseFareCard(fareCard, "TRAIN1");
-        
+
         assertEquals("Premium", fare.getName());
         assertEquals(89.90, fare.getPrice(), 0.01);
         assertEquals("PREMIUM", fare.getCode());
@@ -260,15 +284,16 @@ class FareCardParserTest {
 
     @Test
     @DisplayName("parseFareCard should handle missing elements gracefully")
-    void testParseFareCardWithMissingElements() throws Exception {
+    void testParseFareCardWithMissingElements() throws Exception
+    {
         String html = """
-            <div class="card">
-            </div>
-            """;
+                <div class="card">
+                </div>
+                """;
         Element fareCard = Jsoup.parse(html).selectFirst("div.card");
-        
+
         FareOption fare = parser.parseFareCard(fareCard, "TRAIN1");
-        
+
         assertNotNull(fare);
         assertEquals("Unknown", fare.getName());
         assertEquals(0.0, fare.getPrice(), 0.01);
@@ -278,4 +303,3 @@ class FareCardParserTest {
         assertTrue(fare.getFeatures().isEmpty());
     }
 }
-
