@@ -30,6 +30,7 @@
         <maven-project-info-reports-plugin.version>3.4.5</maven-project-info-reports-plugin.version>
         <playwright.version>1.56.0</playwright.version>
         <jsoup.version>1.18.1</jsoup.version>
+        <mockito.version>5.20.0</mockito.version>
     </properties>
 
     <dependencyManagement>
@@ -176,8 +177,8 @@
                 <artifactId>maven-surefire-plugin</artifactId>
                 <version>${surefire-plugin.version}</version>
                 <configuration>
-                    <!-- Use argLine from JaCoCo for code coverage -->
-                    <argLine>${argLine}</argLine>
+                    <!-- Use argLine from JaCoCo for code coverage, plus Mockito agent -->
+                    <argLine>${argLine} --add-opens java.base/java.lang=ALL-UNNAMED -javaagent:${settings.localRepository}/org/mockito/mockito-core/${mockito.version}/mockito-core-${mockito.version}.jar=inline</argLine>
                     <includes>
                         <!-- Unit tests: *Test.java (sin anotación especial, depurables) -->
                         <include>**/*Test.java</include>
@@ -285,6 +286,8 @@
                     </execution>
                 </executions>
                 <configuration>
+                    <!-- Add Mockito agent for E2E tests -->
+                    <argLine>--add-opens java.base/java.lang=ALL-UNNAMED -javaagent:${settings.localRepository}/org/mockito/mockito-core/${mockito.version}/mockito-core-${mockito.version}.jar=inline</argLine>
                     <includes>
                         <!-- E2E tests: *E2E.java con @QuarkusIntegrationTest (no depurables) -->
                         <include>**/*E2E.java</include>

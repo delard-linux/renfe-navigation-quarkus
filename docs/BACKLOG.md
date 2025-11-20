@@ -34,11 +34,12 @@
 - Revisar tests de IT deshabilitados de PlaywrightSearchTrainsServiceIT
 - Opciones de headless=false no funcionan
 - Scaffolding de tool MCP para compra de billetes
-- Incluir la visualición de billetes con enlaces
+- Incluir la visualización de billetes con enlaces
+- Warnings de agente mockito en el arranque
 
 ## Current pending
 
-
+- spotless para formatear con maven
 
 ## Next
 
@@ -50,12 +51,3 @@
 - Linting integration
 - Security validation
 
-
-## Warnings to be reviewed
-
-- Mockito is currently self-attaching to enable the inline-mock-maker. This will no longer work in future releases of the JDK. Please add Mockito as an agent to your build as described in Mockito's documentation: https://javadoc.io/doc/org.mockito/mockito-core/latest/org.mockito/org/mockito/Mockito.html#0.3
-- OpenJDK 64-Bit Server VM warning: Sharing is only supported for boot loader classes because bootstrap classpath has been appended
-- WARNING: A Java agent has been loaded dynamically (/home/daviddrosadelgado/.m2/repository/net/bytebuddy/byte-buddy-agent/1.17.5/byte-buddy-agent-1.17.5.jar)
-- WARNING: If a serviceability tool is in use, please run with -XX:+EnableDynamicAgentLoading to hide this warning
-- WARNING: If a serviceability tool is not in use, please run with -Djdk.instrument.traceUsage for more information
-- WARNING: Dynamic loading of agents will be disallowed by default in a future release
