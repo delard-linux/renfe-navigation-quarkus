@@ -2,6 +2,7 @@ package com.delard.renfe.navigation.infrastructure.service;
 
 import com.delard.renfe.navigation.domain.model.FareOption;
 import com.delard.renfe.navigation.domain.model.Train;
+import com.delard.renfe.navigation.domain.model.TrainConnection;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -21,10 +22,33 @@ import static org.junit.jupiter.api.Assertions.*;
 class TrainHtmlParserTest {
 
     private TrainHtmlParser parser;
+    private TrainRowParser trainRowParser;
+    private FareCardParser fareCardParser;
+    private TrainConnectionParser trainConnectionParser;
 
     @BeforeEach
     void setUp() {
+        trainRowParser = new TrainRowParser();
+        fareCardParser = new FareCardParser();
+        trainConnectionParser = new TrainConnectionParser();
+        
         parser = new TrainHtmlParser();
+        // Manually inject dependencies using reflection
+        try {
+            java.lang.reflect.Field trainRowParserField = TrainHtmlParser.class.getDeclaredField("trainRowParser");
+            trainRowParserField.setAccessible(true);
+            trainRowParserField.set(parser, trainRowParser);
+            
+            java.lang.reflect.Field fareCardParserField = TrainHtmlParser.class.getDeclaredField("fareCardParser");
+            fareCardParserField.setAccessible(true);
+            fareCardParserField.set(parser, fareCardParser);
+            
+            java.lang.reflect.Field trainConnectionParserField = TrainHtmlParser.class.getDeclaredField("trainConnectionParser");
+            trainConnectionParserField.setAccessible(true);
+            trainConnectionParserField.set(parser, trainConnectionParser);
+        } catch (Exception e) {
+            throw new RuntimeException("Failed to inject dependencies", e);
+        }
     }
 
     @Test
@@ -784,6 +808,153 @@ class TrainHtmlParserTest {
         assertEquals(2, train.getFares().size());
         assertEquals(1, train.getFares().get(0).getFeatures().size());
         assertEquals(1, train.getFares().get(1).getFeatures().size());
+    }
+
+    @Test
+    void testParseTrainWithoutConnection() {
+        // Train without connection (aria-hidden="true" on reorder-trenes-enlaces)
+        String html = """
+            <html>
+            <body>
+                <div class="selectedTren" role="listitem" id="tren_i_1">
+                    <div class="reorder-trenes-enlaces col-lg-8" aria-hidden="true">
+                        <div class="col-md-8 principal-tren-enlace">
+                            <div class="trenes-enlaces">
+                                <img alt="Imagen de Tren. Tipo de tren AVE" />
+                            </div>
+                        </div>
+                    </div>
+                    <h5 aria-hidden="true">08:00</h5>
+                    <h5 aria-hidden="true">12:30</h5>
+                </div>
+            </body>
+            </html>
+            """;
+
+        List<Train> trains = parser.parseTrainList(html);
+        assertEquals(1, trains.size());
+        Train train = trains.get(0);
+        assertNull(train.getConnection(), "Train without connection should have null connection");
+    }
+
+    @Test
+    void testParseTrainWithConnection() {
+        // Train with connection (no aria-hidden, has enlace-tren span)
+        String html = """
+            <html>
+            <body>
+                <div class="selectedTren" role="listitem" id="tren_i_1">
+                    <div class="reorder-trenes-enlaces col-lg-8">
+                        <div class="col-md principal-tren-enlace">
+                            <div class="trenes-enlaces">
+                                <img alt="Imagen de Tren. Tipo de tren REG.EXP." />
+                            </div>
+                        </div>
+                        <div>
+                            <span class="enlace-tren" aria-label="Tren enlazado">Enlace</span>
+                            <hr class="linea-divisoria-enlace" />
+                            <span class="enlace-tren-min" aria-label="Duracion de transbordo">1 horas 10 minutos</span>
+                        </div>
+                        <div class="col-md principal-tren-enlace-2">
+                            <div class="trenes-enlaces">
+                                <img alt="Imagen de Tren. Tipo de tren AVE" />
+                            </div>
+                        </div>
+                    </div>
+                    <h5 aria-hidden="true">08:00</h5>
+                    <h5 aria-hidden="true">12:30</h5>
+                </div>
+            </body>
+            </html>
+            """;
+
+        List<Train> trains = parser.parseTrainList(html);
+        assertEquals(1, trains.size());
+        Train train = trains.get(0);
+        
+        assertNotNull(train.getConnection(), "Train with connection should have a connection");
+        TrainConnection connection = train.getConnection();
+        assertEquals("1 horas 10 minutos", connection.getDuration());
+        assertEquals("REG.EXP.", connection.getFirstTrainType());
+        assertEquals("AVE", connection.getSecondTrainType());
+    }
+
+    @Test
+    void testParseTrainWithConnectionDifferentTrainTypes() {
+        // Test with different train types
+        String html = """
+            <html>
+            <body>
+                <div class="selectedTren" role="listitem" id="tren_i_1">
+                    <div class="reorder-trenes-enlaces col-lg-8">
+                        <div class="col-md principal-tren-enlace">
+                            <div class="trenes-enlaces">
+                                <img alt="Imagen de Tren. Tipo de tren ALVIA" />
+                            </div>
+                        </div>
+                        <div>
+                            <span class="enlace-tren">Enlace</span>
+                            <span class="enlace-tren-min">45 minutos</span>
+                        </div>
+                        <div class="col-md principal-tren-enlace-2">
+                            <div class="trenes-enlaces">
+                                <img alt="Imagen de Tren. Tipo de tren EUROMED" />
+                            </div>
+                        </div>
+                    </div>
+                    <h5 aria-hidden="true">10:00</h5>
+                    <h5 aria-hidden="true">15:00</h5>
+                </div>
+            </body>
+            </html>
+            """;
+
+        List<Train> trains = parser.parseTrainList(html);
+        assertEquals(1, trains.size());
+        Train train = trains.get(0);
+        
+        assertNotNull(train.getConnection());
+        TrainConnection connection = train.getConnection();
+        assertEquals("45 minutos", connection.getDuration());
+        assertEquals("ALVIA", connection.getFirstTrainType());
+        assertEquals("EUROMED", connection.getSecondTrainType());
+    }
+
+    @Test
+    void testParseTrainWithConnectionMissingDuration() {
+        // Connection found but duration is missing - should not create connection
+        String html = """
+            <html>
+            <body>
+                <div class="selectedTren" role="listitem" id="tren_i_1">
+                    <div class="reorder-trenes-enlaces col-lg-8">
+                        <div class="col-md principal-tren-enlace">
+                            <div class="trenes-enlaces">
+                                <img alt="Imagen de Tren. Tipo de tren AVE" />
+                            </div>
+                        </div>
+                        <div>
+                            <span class="enlace-tren">Enlace</span>
+                            <!-- Missing enlace-tren-min -->
+                        </div>
+                        <div class="col-md principal-tren-enlace-2">
+                            <div class="trenes-enlaces">
+                                <img alt="Imagen de Tren. Tipo de tren AVE" />
+                            </div>
+                        </div>
+                    </div>
+                    <h5 aria-hidden="true">08:00</h5>
+                    <h5 aria-hidden="true">12:30</h5>
+                </div>
+            </body>
+            </html>
+            """;
+
+        List<Train> trains = parser.parseTrainList(html);
+        assertEquals(1, trains.size());
+        Train train = trains.get(0);
+        // Connection should be null because duration is missing
+        assertNull(train.getConnection());
     }
 }
 

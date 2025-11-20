@@ -2,8 +2,10 @@ package com.delard.renfe.navigation.infrastructure.adapter.input.rest.mapper;
 
 import com.delard.renfe.navigation.domain.model.FareOption;
 import com.delard.renfe.navigation.domain.model.Train;
+import com.delard.renfe.navigation.domain.model.TrainConnection;
 import com.delard.renfe.navigation.domain.model.TrainsResponse;
 import com.delard.renfe.navigation.infrastructure.adapter.input.rest.dto.FareOptionDTO;
+import com.delard.renfe.navigation.infrastructure.adapter.input.rest.dto.TrainConnectionDTO;
 import com.delard.renfe.navigation.infrastructure.adapter.input.rest.dto.TrainDTO;
 import com.delard.renfe.navigation.infrastructure.adapter.input.rest.dto.TrainsResponseDTO;
 import org.junit.jupiter.api.Test;
@@ -260,6 +262,82 @@ class TrainMapperTest {
         assertEquals("B", dto.destination());
         assertEquals("2025-01-01", dto.dateOut());
         assertEquals("1", dto.adults());
+    }
+
+    @Test
+    void testToDTOWithTrainWithConnection() {
+        Train train = createCompleteTrain();
+        TrainConnection connection = new TrainConnection();
+        connection.setDuration("1 horas 10 minutos");
+        connection.setFirstTrainType("REG.EXP.");
+        connection.setSecondTrainType("AVE");
+        train.setConnection(connection);
+
+        TrainsResponse domain = new TrainsResponse();
+        domain.setOrigin("OURENSE");
+        domain.setDestination("MADRID");
+        domain.setDateOut("2025-12-01");
+        domain.setAdults("1");
+        domain.setTrainsOut(Arrays.asList(train));
+        domain.setTrainsReturn(null);
+
+        TrainsResponseDTO dto = TrainMapper.toDTO(domain);
+        assertNotNull(dto);
+        TrainDTO trainDTO = dto.trainsOut().get(0);
+        
+        assertNotNull(trainDTO.connection());
+        TrainConnectionDTO connectionDTO = trainDTO.connection();
+        assertEquals("1 horas 10 minutos", connectionDTO.duration());
+        assertEquals("REG.EXP.", connectionDTO.firstTrainType());
+        assertEquals("AVE", connectionDTO.secondTrainType());
+    }
+
+    @Test
+    void testToDTOWithTrainWithoutConnection() {
+        Train train = createCompleteTrain();
+        train.setConnection(null);
+
+        TrainsResponse domain = new TrainsResponse();
+        domain.setOrigin("OURENSE");
+        domain.setDestination("MADRID");
+        domain.setDateOut("2025-12-01");
+        domain.setAdults("1");
+        domain.setTrainsOut(Arrays.asList(train));
+        domain.setTrainsReturn(null);
+
+        TrainsResponseDTO dto = TrainMapper.toDTO(domain);
+        assertNotNull(dto);
+        TrainDTO trainDTO = dto.trainsOut().get(0);
+        
+        assertNull(trainDTO.connection());
+    }
+
+    @Test
+    void testToDTOWithTrainWithConnectionDifferentTypes() {
+        Train train = createCompleteTrain();
+        TrainConnection connection = new TrainConnection();
+        connection.setDuration("45 minutos");
+        connection.setFirstTrainType("ALVIA");
+        connection.setSecondTrainType("EUROMED");
+        train.setConnection(connection);
+
+        TrainsResponse domain = new TrainsResponse();
+        domain.setOrigin("OURENSE");
+        domain.setDestination("MADRID");
+        domain.setDateOut("2025-12-01");
+        domain.setAdults("1");
+        domain.setTrainsOut(Arrays.asList(train));
+        domain.setTrainsReturn(null);
+
+        TrainsResponseDTO dto = TrainMapper.toDTO(domain);
+        assertNotNull(dto);
+        TrainDTO trainDTO = dto.trainsOut().get(0);
+        
+        assertNotNull(trainDTO.connection());
+        TrainConnectionDTO connectionDTO = trainDTO.connection();
+        assertEquals("45 minutos", connectionDTO.duration());
+        assertEquals("ALVIA", connectionDTO.firstTrainType());
+        assertEquals("EUROMED", connectionDTO.secondTrainType());
     }
 
     private TrainsResponse createCompleteTrainsResponse() {

@@ -18,7 +18,8 @@ public record TrainDTO(
     List<FareOptionDTO> fares,
     List<String> badges,
     boolean accessible,
-    @JsonProperty("eco_friendly") boolean ecoFriendly
+    @JsonProperty("eco_friendly") boolean ecoFriendly,
+    TrainConnectionDTO connection
 ) {
     /**
      * Compact constructor for default values and defensive copying

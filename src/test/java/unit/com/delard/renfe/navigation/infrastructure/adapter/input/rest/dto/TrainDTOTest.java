@@ -26,7 +26,8 @@ class TrainDTOTest {
             new ArrayList<>(),
             new ArrayList<>(),
             false,
-            false
+            false,
+            null
         );
         assertNotNull(dto);
         assertEquals("TRAIN123", dto.trainId());
@@ -57,7 +58,8 @@ class TrainDTOTest {
             new ArrayList<>(),
             new ArrayList<>(),
             false,
-            false
+            false,
+            null
         );
         assertEquals("EUR", dto.currency());
     }
@@ -78,7 +80,8 @@ class TrainDTOTest {
             originalFares,
             new ArrayList<>(),
             false,
-            false
+            false,
+            null
         );
         
         // Modify original list
@@ -102,7 +105,8 @@ class TrainDTOTest {
             null,
             new ArrayList<>(),
             false,
-            false
+            false,
+            null
         );
         assertNotNull(dto.fares());
         assertTrue(dto.fares().isEmpty());
@@ -123,7 +127,8 @@ class TrainDTOTest {
             new ArrayList<>(),
             originalBadges,
             false,
-            false
+            false,
+            null
         );
         
         // Modify original list
@@ -149,7 +154,8 @@ class TrainDTOTest {
             new ArrayList<>(),
             null,
             false,
-            false
+            false,
+            null
         );
         assertNotNull(dto.badges());
         assertTrue(dto.badges().isEmpty());
@@ -173,7 +179,8 @@ class TrainDTOTest {
             fares,
             badges,
             true,
-            true
+            true,
+            null
         );
 
         assertEquals("TRAIN456", dto.trainId());
