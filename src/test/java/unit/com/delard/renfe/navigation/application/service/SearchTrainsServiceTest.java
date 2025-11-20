@@ -1,6 +1,7 @@
 package com.delard.renfe.navigation.application.service;
 
 import com.delard.renfe.navigation.application.exception.QueueException;
+import com.delard.renfe.navigation.application.exception.TrainUnavailabilityException;
 import com.delard.renfe.navigation.application.exception.ValidationException;
 import com.delard.renfe.navigation.domain.model.Station;
 import com.delard.renfe.navigation.domain.model.Train;
@@ -1013,6 +1014,70 @@ class SearchTrainsServiceTest {
                 REAL_ORIGIN_DESG_ESTACION, REAL_DESTINATION_DESG_ESTACION,
                 REAL_ORIGIN_CLAVE, REAL_DESTINATION_CLAVE,
                 FORMATTED_DATE_OUT, null, adults);
+    }
+
+    @Test
+    @DisplayName("Should re-throw TrainUnavailabilityException when scraper throws TrainUnavailabilityException")
+    void shouldReThrowTrainUnavailabilityExceptionWhenScraperThrowsTrainUnavailabilityException() {
+        String origin = REAL_ORIGIN;
+        String destination = REAL_DESTINATION;
+        String dateOut = REAL_DATE_OUT;
+        String dateReturn = REAL_DATE_RETURN;
+        String adults = "2";
+        String direction = "outbound";
+        String detailMessage = "No hay trenes disponibles para la fecha seleccionada";
+
+        when(trainScraperPort.scrapeTrains(REAL_ORIGIN_STATION_NAME, REAL_DESTINATION_STATION_NAME,
+                REAL_ORIGIN_DESG_ESTACION, REAL_DESTINATION_DESG_ESTACION,
+                REAL_ORIGIN_CLAVE, REAL_DESTINATION_CLAVE,
+                FORMATTED_DATE_OUT, FORMATTED_DATE_RETURN, adults))
+                .thenThrow(new TrainUnavailabilityException(direction, detailMessage));
+
+        TrainUnavailabilityException exception = assertThrows(TrainUnavailabilityException.class, () -> {
+            service.searchTrains(origin, destination, dateOut, dateReturn, adults);
+        });
+
+        assertEquals(direction, exception.getDirection());
+        assertEquals(detailMessage, exception.getDetailMessage());
+        assertTrue(exception.getMessage().contains(direction));
+        assertTrue(exception.getMessage().contains(detailMessage));
+        assertNull(exception.getCause());
+
+        verify(trainScraperPort, times(1)).scrapeTrains(REAL_ORIGIN_STATION_NAME, REAL_DESTINATION_STATION_NAME,
+                REAL_ORIGIN_DESG_ESTACION, REAL_DESTINATION_DESG_ESTACION,
+                REAL_ORIGIN_CLAVE, REAL_DESTINATION_CLAVE,
+                FORMATTED_DATE_OUT, FORMATTED_DATE_RETURN, adults);
+    }
+
+    @Test
+    @DisplayName("Should re-throw TrainUnavailabilityException for return trains")
+    void shouldReThrowTrainUnavailabilityExceptionForReturnTrains() {
+        String origin = REAL_ORIGIN;
+        String destination = REAL_DESTINATION;
+        String dateOut = REAL_DATE_OUT;
+        String dateReturn = REAL_DATE_RETURN;
+        String adults = "1";
+        String direction = "return";
+        String detailMessage = "No hay billetes de vuelta disponibles";
+
+        when(trainScraperPort.scrapeTrains(REAL_ORIGIN_STATION_NAME, REAL_DESTINATION_STATION_NAME,
+                REAL_ORIGIN_DESG_ESTACION, REAL_DESTINATION_DESG_ESTACION,
+                REAL_ORIGIN_CLAVE, REAL_DESTINATION_CLAVE,
+                FORMATTED_DATE_OUT, FORMATTED_DATE_RETURN, adults))
+                .thenThrow(new TrainUnavailabilityException(direction, detailMessage));
+
+        TrainUnavailabilityException exception = assertThrows(TrainUnavailabilityException.class, () -> {
+            service.searchTrains(origin, destination, dateOut, dateReturn, adults);
+        });
+
+        assertEquals(direction, exception.getDirection());
+        assertEquals(detailMessage, exception.getDetailMessage());
+        assertTrue(exception.getMessage().contains("Error searching trains for return"));
+        
+        verify(trainScraperPort, times(1)).scrapeTrains(REAL_ORIGIN_STATION_NAME, REAL_DESTINATION_STATION_NAME,
+                REAL_ORIGIN_DESG_ESTACION, REAL_DESTINATION_DESG_ESTACION,
+                REAL_ORIGIN_CLAVE, REAL_DESTINATION_CLAVE,
+                FORMATTED_DATE_OUT, FORMATTED_DATE_RETURN, adults);
     }
 
     private Train createTrain(String trainId, String serviceType, String departureTime,

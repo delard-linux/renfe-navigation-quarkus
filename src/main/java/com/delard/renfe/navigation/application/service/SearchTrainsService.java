@@ -1,6 +1,7 @@
 package com.delard.renfe.navigation.application.service;
 
 import com.delard.renfe.navigation.application.exception.QueueException;
+import com.delard.renfe.navigation.application.exception.TrainUnavailabilityException;
 import com.delard.renfe.navigation.application.exception.ValidationException;
 import com.delard.renfe.navigation.domain.model.Station;
 import com.delard.renfe.navigation.domain.model.Train;
@@ -88,6 +89,12 @@ public class SearchTrainsService implements SearchTrainsUseCase {
             Duration elapsed = Duration.between(startTime, Instant.now());
             LOG.warnf("[WARN] Queue detected after %.2fs: %s",
                     elapsed.toMillis() / 1000.0, e.getMessage());
+            throw e;
+        } catch (TrainUnavailabilityException e) {
+            // Re-throw train unavailability exceptions as-is
+            Duration elapsed = Duration.between(startTime, Instant.now());
+            LOG.warnf("[WARN] No trains available after %.2fs - %s: %s",
+                    elapsed.toMillis() / 1000.0, e.getDirection(), e.getDetailMessage());
             throw e;
         } catch (Exception e) {
             Duration elapsed = Duration.between(startTime, Instant.now());

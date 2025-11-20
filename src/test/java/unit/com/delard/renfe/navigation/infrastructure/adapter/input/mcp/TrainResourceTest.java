@@ -1,6 +1,7 @@
 package com.delard.renfe.navigation.infrastructure.adapter.input.mcp;
 
 import com.delard.renfe.navigation.application.exception.QueueException;
+import com.delard.renfe.navigation.application.exception.TrainUnavailabilityException;
 import com.delard.renfe.navigation.application.exception.ValidationException;
 import com.delard.renfe.navigation.domain.model.FareOption;
 import com.delard.renfe.navigation.domain.model.Train;
@@ -309,6 +310,54 @@ class TrainResourceTest {
         assertNotNull(result.text());
         // Verify that "3" was passed to use case (not defaulted to "1")
         verify(searchTrainsUseCase, times(1)).searchTrains(ORIGIN, DESTINATION, DATE_OUT, DATE_RETURN, "3");
+    }
+
+    @Test
+    @DisplayName("getTrains should return error message when TrainUnavailabilityException is thrown for outbound")
+    void testGetTrainsWithTrainUnavailabilityExceptionOutbound() throws Exception {
+        // Arrange
+        String direction = "outbound";
+        String detailMessage = "No hay trenes disponibles para la fecha seleccionada";
+        TrainUnavailabilityException exception = new TrainUnavailabilityException(direction, detailMessage);
+        
+        when(searchTrainsUseCase.searchTrains(anyString(), anyString(), anyString(), anyString(), anyString()))
+                .thenThrow(exception);
+
+        // Act
+        TextContent result = trainResource.getTrains(ORIGIN, DESTINATION, DATE_OUT, DATE_RETURN, ADULTS);
+
+        // Assert
+        assertNotNull(result);
+        assertNotNull(result.text());
+        assertTrue(result.text().contains("Error:"));
+        assertTrue(result.text().contains("Error searching trains for outbound"));
+        assertTrue(result.text().contains(detailMessage));
+        
+        verify(searchTrainsUseCase, times(1)).searchTrains(ORIGIN, DESTINATION, DATE_OUT, DATE_RETURN, ADULTS);
+    }
+
+    @Test
+    @DisplayName("getTrains should return error message when TrainUnavailabilityException is thrown for return")
+    void testGetTrainsWithTrainUnavailabilityExceptionReturn() throws Exception {
+        // Arrange
+        String direction = "return";
+        String detailMessage = "No hay billetes de vuelta disponibles";
+        TrainUnavailabilityException exception = new TrainUnavailabilityException(direction, detailMessage);
+        
+        when(searchTrainsUseCase.searchTrains(anyString(), anyString(), anyString(), anyString(), anyString()))
+                .thenThrow(exception);
+
+        // Act
+        TextContent result = trainResource.getTrains(ORIGIN, DESTINATION, DATE_OUT, DATE_RETURN, ADULTS);
+
+        // Assert
+        assertNotNull(result);
+        assertNotNull(result.text());
+        assertTrue(result.text().contains("Error:"));
+        assertTrue(result.text().contains("Error searching trains for return"));
+        assertTrue(result.text().contains(detailMessage));
+        
+        verify(searchTrainsUseCase, times(1)).searchTrains(ORIGIN, DESTINATION, DATE_OUT, DATE_RETURN, ADULTS);
     }
 }
 

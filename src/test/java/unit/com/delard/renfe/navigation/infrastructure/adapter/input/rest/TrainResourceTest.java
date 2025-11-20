@@ -1,10 +1,14 @@
 package com.delard.renfe.navigation.infrastructure.adapter.input.rest;
 
+import com.delard.renfe.navigation.application.exception.TrainUnavailabilityException;
+import com.delard.renfe.navigation.application.exception.ValidationException;
+import com.delard.renfe.navigation.application.exception.QueueException;
 import com.delard.renfe.navigation.domain.model.Train;
 import com.delard.renfe.navigation.domain.model.TrainsResponse;
 import com.delard.renfe.navigation.domain.port.input.SearchTrainsUseCase;
 import jakarta.ws.rs.core.Response;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -228,6 +232,132 @@ class TrainResourceTest {
         // Assert
         assertNotNull(errorResponse);
         assertEquals("", errorResponse.getError());
+    }
+
+    @Test
+    @DisplayName("Should return HTTP 404 when TrainUnavailabilityException is thrown for outbound trains")
+    void testGetTrainsWithTrainUnavailabilityExceptionOutbound() {
+        // Arrange
+        String origin = "MADRID-RECOLETOS";
+        String destination = "BARCELONA (TODAS)";
+        String dateOut = "2025-12-01";
+        String dateReturn = "2025-12-05";
+        String adults = "1";
+        
+        String direction = "outbound";
+        String detailMessage = "No hay trenes disponibles para la fecha seleccionada";
+        TrainUnavailabilityException exception = new TrainUnavailabilityException(direction, detailMessage);
+        
+        when(searchTrainsUseCase.searchTrains(eq(origin), eq(destination), eq(dateOut), eq(dateReturn), eq(adults)))
+                .thenThrow(exception);
+
+        // Act
+        Response response = trainResource.getTrains(origin, destination, dateOut, dateReturn, adults);
+
+        // Assert
+        assertNotNull(response);
+        assertEquals(Response.Status.NOT_FOUND.getStatusCode(), response.getStatus());
+        assertNotNull(response.getEntity());
+        
+        TrainResource.ErrorResponse errorResponse = (TrainResource.ErrorResponse) response.getEntity();
+        assertNotNull(errorResponse.getError());
+        assertTrue(errorResponse.getError().contains("Error searching trains for outbound"));
+        assertTrue(errorResponse.getError().contains(detailMessage));
+        
+        verify(searchTrainsUseCase, times(1))
+                .searchTrains(origin, destination, dateOut, dateReturn, adults);
+    }
+
+    @Test
+    @DisplayName("Should return HTTP 404 when TrainUnavailabilityException is thrown for return trains")
+    void testGetTrainsWithTrainUnavailabilityExceptionReturn() {
+        // Arrange
+        String origin = "MADRID (TODAS)";
+        String destination = "BARCELONA (TODAS)";
+        String dateOut = "2025-12-01";
+        String dateReturn = "2025-12-05";
+        String adults = "2";
+        
+        String direction = "return";
+        String detailMessage = "No hay billetes de vuelta disponibles";
+        TrainUnavailabilityException exception = new TrainUnavailabilityException(direction, detailMessage);
+        
+        when(searchTrainsUseCase.searchTrains(eq(origin), eq(destination), eq(dateOut), eq(dateReturn), eq(adults)))
+                .thenThrow(exception);
+
+        // Act
+        Response response = trainResource.getTrains(origin, destination, dateOut, dateReturn, adults);
+
+        // Assert
+        assertNotNull(response);
+        assertEquals(Response.Status.NOT_FOUND.getStatusCode(), response.getStatus());
+        assertNotNull(response.getEntity());
+        
+        TrainResource.ErrorResponse errorResponse = (TrainResource.ErrorResponse) response.getEntity();
+        assertNotNull(errorResponse.getError());
+        assertTrue(errorResponse.getError().contains("Error searching trains for return"));
+        assertTrue(errorResponse.getError().contains(detailMessage));
+        
+        verify(searchTrainsUseCase, times(1))
+                .searchTrains(origin, destination, dateOut, dateReturn, adults);
+    }
+
+    @Test
+    @DisplayName("Should return HTTP 400 when ValidationException is thrown")
+    void testGetTrainsWithValidationException() {
+        // Arrange
+        String origin = "OURENSE";
+        String destination = "MADRID";
+        String dateOut = "invalid-date";
+        String dateReturn = null;
+        String adults = "1";
+        
+        ValidationException exception = new ValidationException("Invalid date format");
+        when(searchTrainsUseCase.searchTrains(eq(origin), eq(destination), eq(dateOut), eq(dateReturn), eq(adults)))
+                .thenThrow(exception);
+
+        // Act
+        Response response = trainResource.getTrains(origin, destination, dateOut, dateReturn, adults);
+
+        // Assert
+        assertNotNull(response);
+        assertEquals(Response.Status.BAD_REQUEST.getStatusCode(), response.getStatus());
+        assertNotNull(response.getEntity());
+        
+        TrainResource.ErrorResponse errorResponse = (TrainResource.ErrorResponse) response.getEntity();
+        assertEquals("Invalid date format", errorResponse.getError());
+        
+        verify(searchTrainsUseCase, times(1))
+                .searchTrains(origin, destination, dateOut, dateReturn, adults);
+    }
+
+    @Test
+    @DisplayName("Should return HTTP 503 when QueueException is thrown")
+    void testGetTrainsWithQueueException() {
+        // Arrange
+        String origin = "OURENSE";
+        String destination = "MADRID";
+        String dateOut = "2025-12-01";
+        String dateReturn = null;
+        String adults = "1";
+        
+        QueueException exception = new QueueException("Ticket purchase is queued");
+        when(searchTrainsUseCase.searchTrains(eq(origin), eq(destination), eq(dateOut), eq(dateReturn), eq(adults)))
+                .thenThrow(exception);
+
+        // Act
+        Response response = trainResource.getTrains(origin, destination, dateOut, dateReturn, adults);
+
+        // Assert
+        assertNotNull(response);
+        assertEquals(Response.Status.SERVICE_UNAVAILABLE.getStatusCode(), response.getStatus());
+        assertNotNull(response.getEntity());
+        
+        TrainResource.ErrorResponse errorResponse = (TrainResource.ErrorResponse) response.getEntity();
+        assertEquals("Ticket purchase is queued", errorResponse.getError());
+        
+        verify(searchTrainsUseCase, times(1))
+                .searchTrains(origin, destination, dateOut, dateReturn, adults);
     }
 
     private TrainsResponse createMockTrainsResponse() {

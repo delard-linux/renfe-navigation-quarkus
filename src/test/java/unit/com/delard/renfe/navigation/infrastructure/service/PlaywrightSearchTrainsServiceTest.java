@@ -13,7 +13,6 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
-import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -41,6 +40,9 @@ class PlaywrightSearchTrainsServiceTest {
 
     @Mock
     private PlaywrightFactory playwrightFactory;
+
+    @Mock
+    private RenfePageValidator pageValidator;
 
     @InjectMocks
     private PlaywrightSearchTrainsService service;
@@ -502,10 +504,10 @@ class PlaywrightSearchTrainsServiceTest {
         when(trainHtmlParser.parseTrainList(anyString())).thenReturn(expectedTrains);
 
         // Act
-        Method method = PlaywrightSearchTrainsService.class.getDeclaredMethod("extractResults", Page.class);
+        Method method = PlaywrightSearchTrainsService.class.getDeclaredMethod("extractResults", Page.class, String.class);
         method.setAccessible(true);
         @SuppressWarnings("unchecked")
-        List<Train> result = (List<Train>) method.invoke(service, mockPage);
+        List<Train> result = (List<Train>) method.invoke(service, mockPage, "outbound");
 
         // Assert
         assertNotNull(result);
@@ -513,11 +515,14 @@ class PlaywrightSearchTrainsServiceTest {
         assertEquals("TRAIN123", result.get(0).getTrainId());
         assertEquals("TRAIN456", result.get(1).getTrainId());
         
+        verify(pageValidator, times(1)).checkForTrainUnavailability(mockPage, "outbound");
+        
         // Verify interactions
         verify(mockPage, times(1)).waitForSelector(
                 eq("div.selectedTren[role='listitem']"),
                 any(Page.WaitForSelectorOptions.class)
         );
+        // waitForTimeout is called once in extractResults
         verify(mockPage, times(1)).waitForTimeout(1000L);
         verify(mockPage, times(1)).content();
         verify(trainHtmlParser, times(1)).parseTrainList("<html><body>Train HTML content</body></html>");
@@ -538,19 +543,22 @@ class PlaywrightSearchTrainsServiceTest {
         when(trainHtmlParser.parseTrainList(anyString())).thenReturn(new ArrayList<>());
 
         // Act
-        Method method = PlaywrightSearchTrainsService.class.getDeclaredMethod("extractResults", Page.class);
+        Method method = PlaywrightSearchTrainsService.class.getDeclaredMethod("extractResults", Page.class, String.class);
         method.setAccessible(true);
         @SuppressWarnings("unchecked")
-        List<Train> result = (List<Train>) method.invoke(service, mockPage);
+        List<Train> result = (List<Train>) method.invoke(service, mockPage, "outbound");
 
         // Assert
         assertNotNull(result);
         assertTrue(result.isEmpty());
         
+        verify(pageValidator, times(1)).checkForTrainUnavailability(mockPage, "outbound");
+        
         verify(mockPage, times(1)).waitForSelector(
                 eq("div.selectedTren[role='listitem']"),
                 any(Page.WaitForSelectorOptions.class)
         );
+        // waitForTimeout is called once in extractResults
         verify(mockPage, times(1)).waitForTimeout(1000L);
         verify(mockPage, times(1)).content();
         verify(trainHtmlParser, times(1)).parseTrainList("<html><body>No trains</body></html>");
@@ -567,14 +575,16 @@ class PlaywrightSearchTrainsServiceTest {
         when(config.getTimeoutMs()).thenReturn(customTimeout);
         doReturn(mockElementHandle).when(mockPage).waitForSelector(anyString(), any(Page.WaitForSelectorOptions.class));
         when(mockPage.content()).thenReturn("<html><body>Content</body></html>");
+        
         when(trainHtmlParser.parseTrainList(anyString())).thenReturn(new ArrayList<>());
 
         // Act
-        Method method = PlaywrightSearchTrainsService.class.getDeclaredMethod("extractResults", Page.class);
+        Method method = PlaywrightSearchTrainsService.class.getDeclaredMethod("extractResults", Page.class, String.class);
         method.setAccessible(true);
-        method.invoke(service, mockPage);
+        method.invoke(service, mockPage, "outbound");
 
         // Assert
+        verify(pageValidator, times(1)).checkForTrainUnavailability(mockPage, "outbound");
         verify(config, times(1)).getTimeoutMs();
         verify(mockPage, times(1)).waitForSelector(
                 eq("div.selectedTren[role='listitem']"),
@@ -592,464 +602,23 @@ class PlaywrightSearchTrainsServiceTest {
         when(config.getTimeoutMs()).thenReturn(30000);
         doReturn(mockElementHandle).when(mockPage).waitForSelector(anyString(), any(Page.WaitForSelectorOptions.class));
         when(mockPage.content()).thenReturn("<html><body>Content</body></html>");
+        
         when(trainHtmlParser.parseTrainList(anyString())).thenReturn(new ArrayList<>());
 
         // Act
-        Method method = PlaywrightSearchTrainsService.class.getDeclaredMethod("extractResults", Page.class);
+        Method method = PlaywrightSearchTrainsService.class.getDeclaredMethod("extractResults", Page.class, String.class);
         method.setAccessible(true);
-        method.invoke(service, mockPage);
+        method.invoke(service, mockPage, "return");
 
         // Assert - Verify waitForSelector was called with VISIBLE state
+        verify(pageValidator, times(1)).checkForTrainUnavailability(mockPage, "return");
         verify(mockPage, times(1)).waitForSelector(
                 eq("div.selectedTren[role='listitem']"),
                 any(Page.WaitForSelectorOptions.class)
         );
     }
 
-    // ========== Tests for checkForQueuePage method ==========
-
-    @Test
-    @DisplayName("checkForQueuePage should throw QueueException when page contains 'estás en la cola'")
-    void testCheckForQueuePageWithEstasEnLaCola() throws Exception {
-        // Arrange
-        Page mockPage = mock(Page.class);
-        Locator mockBodyLocator = mock(Locator.class);
-        
-        when(mockPage.locator("body")).thenReturn(mockBodyLocator);
-        when(mockBodyLocator.textContent()).thenReturn("Estás en la cola de espera");
-
-        // Act & Assert
-        Method method = PlaywrightSearchTrainsService.class.getDeclaredMethod("checkForQueuePage", Page.class);
-        method.setAccessible(true);
-        
-        Exception exception = assertThrows(Exception.class, () -> {
-            method.invoke(service, mockPage);
-        });
-        
-        // Extract the actual exception from InvocationTargetException
-        Throwable cause = exception instanceof InvocationTargetException 
-                ? ((InvocationTargetException) exception).getCause() 
-                : exception;
-        
-        assertTrue(cause instanceof QueueException, "Expected QueueException but got: " + cause.getClass());
-        assertTrue(cause.getMessage().contains("queued"));
-        verify(mockPage, times(1)).waitForTimeout(500L);
-        verify(mockPage, times(1)).locator("body");
-    }
-
-    @Test
-    @DisplayName("checkForQueuePage should throw QueueException when page contains 'cola para comprar'")
-    void testCheckForQueuePageWithColaParaComprar() throws Exception {
-        // Arrange
-        Page mockPage = mock(Page.class);
-        Locator mockBodyLocator = mock(Locator.class);
-        
-        when(mockPage.locator("body")).thenReturn(mockBodyLocator);
-        when(mockBodyLocator.textContent()).thenReturn("Estás en la cola para comprar billetes");
-
-        // Act & Assert
-        Method method = PlaywrightSearchTrainsService.class.getDeclaredMethod("checkForQueuePage", Page.class);
-        method.setAccessible(true);
-        
-        Exception exception = assertThrows(Exception.class, () -> {
-            method.invoke(service, mockPage);
-        });
-        
-        Throwable cause = exception instanceof InvocationTargetException 
-                ? ((InvocationTargetException) exception).getCause() 
-                : exception;
-        
-        assertTrue(cause instanceof QueueException, "Expected QueueException but got: " + cause.getClass());
-        assertTrue(cause.getMessage().contains("queued"));
-    }
-
-    @Test
-    @DisplayName("checkForQueuePage should throw QueueException when page contains 'cuando sea tu turno'")
-    void testCheckForQueuePageWithCuandoSeaTuTurno() throws Exception {
-        // Arrange
-        Page mockPage = mock(Page.class);
-        Locator mockBodyLocator = mock(Locator.class);
-        
-        when(mockPage.locator("body")).thenReturn(mockBodyLocator);
-        when(mockBodyLocator.textContent()).thenReturn("Cuando sea tu turno te redirigiremos");
-
-        // Act & Assert
-        Method method = PlaywrightSearchTrainsService.class.getDeclaredMethod("checkForQueuePage", Page.class);
-        method.setAccessible(true);
-        
-        Exception exception = assertThrows(Exception.class, () -> {
-            method.invoke(service, mockPage);
-        });
-        
-        Throwable cause = exception instanceof InvocationTargetException 
-                ? ((InvocationTargetException) exception).getCause() 
-                : exception;
-        
-        assertTrue(cause instanceof QueueException, "Expected QueueException but got: " + cause.getClass());
-        assertTrue(cause.getMessage().contains("queued"));
-    }
-
-    @Test
-    @DisplayName("checkForQueuePage should throw QueueException when page contains 'te redirigiremos'")
-    void testCheckForQueuePageWithTeRedirigiremos() throws Exception {
-        // Arrange
-        Page mockPage = mock(Page.class);
-        Locator mockBodyLocator = mock(Locator.class);
-        
-        when(mockPage.locator("body")).thenReturn(mockBodyLocator);
-        when(mockBodyLocator.textContent()).thenReturn("Te redirigiremos cuando sea tu turno");
-
-        // Act & Assert
-        Method method = PlaywrightSearchTrainsService.class.getDeclaredMethod("checkForQueuePage", Page.class);
-        method.setAccessible(true);
-        
-        Exception exception = assertThrows(Exception.class, () -> {
-            method.invoke(service, mockPage);
-        });
-        
-        Throwable cause = exception instanceof InvocationTargetException 
-                ? ((InvocationTargetException) exception).getCause() 
-                : exception;
-        
-        assertTrue(cause instanceof QueueException, "Expected QueueException but got: " + cause.getClass());
-        assertTrue(cause.getMessage().contains("queued"));
-    }
-
-    @Test
-    @DisplayName("checkForQueuePage should throw QueueException when queue locators find queue.it elements")
-    void testCheckForQueuePageWithQueueItInHtml() throws Exception {
-        // Arrange
-        Page mockPage = mock(Page.class);
-        Locator mockBodyLocator = mock(Locator.class);
-        Locator mockQueueLocator = mock(Locator.class);
-        
-        when(mockPage.locator("body")).thenReturn(mockBodyLocator);
-        when(mockBodyLocator.textContent()).thenReturn("Normal page content");
-        when(mockPage.locator("[class*='queue'], [id*='queue'], img[alt*='queue'], img[src*='queue']"))
-                .thenReturn(mockQueueLocator);
-        when(mockQueueLocator.count()).thenReturn(1); // Found queue element
-
-        // Act & Assert
-        Method method = PlaywrightSearchTrainsService.class.getDeclaredMethod("checkForQueuePage", Page.class);
-        method.setAccessible(true);
-        
-        Exception exception = assertThrows(Exception.class, () -> {
-            method.invoke(service, mockPage);
-        });
-        
-        Throwable cause = exception instanceof InvocationTargetException 
-                ? ((InvocationTargetException) exception).getCause() 
-                : exception;
-        
-        assertTrue(cause instanceof QueueException, "Expected QueueException but got: " + cause.getClass());
-        assertTrue(cause.getMessage().contains("queued"));
-    }
-
-    @Test
-    @DisplayName("checkForQueuePage should throw QueueException when queue locators find queueit elements")
-    void testCheckForQueuePageWithQueueitInHtml() throws Exception {
-        // Arrange
-        Page mockPage = mock(Page.class);
-        Locator mockBodyLocator = mock(Locator.class);
-        Locator mockQueueLocator = mock(Locator.class);
-        
-        when(mockPage.locator("body")).thenReturn(mockBodyLocator);
-        when(mockBodyLocator.textContent()).thenReturn("Normal page content");
-        when(mockPage.locator("[class*='queue'], [id*='queue'], img[alt*='queue'], img[src*='queue']"))
-                .thenReturn(mockQueueLocator);
-        when(mockQueueLocator.count()).thenReturn(1); // Found queueit element
-
-        // Act & Assert
-        Method method = PlaywrightSearchTrainsService.class.getDeclaredMethod("checkForQueuePage", Page.class);
-        method.setAccessible(true);
-        
-        Exception exception = assertThrows(Exception.class, () -> {
-            method.invoke(service, mockPage);
-        });
-        
-        Throwable cause = exception instanceof InvocationTargetException 
-                ? ((InvocationTargetException) exception).getCause() 
-                : exception;
-        
-        assertTrue(cause instanceof QueueException, "Expected QueueException but got: " + cause.getClass());
-        assertTrue(cause.getMessage().contains("queued"));
-    }
-
-    @Test
-    @DisplayName("checkForQueuePage should throw QueueException when queue locators are found")
-    void testCheckForQueuePageWithQueueLocators() throws Exception {
-        // Arrange
-        Page mockPage = mock(Page.class);
-        Locator mockBodyLocator = mock(Locator.class);
-        Locator mockQueueLocator = mock(Locator.class);
-        
-        when(mockPage.locator("body")).thenReturn(mockBodyLocator);
-        when(mockBodyLocator.textContent()).thenReturn("Normal page content");
-        when(mockPage.locator("[class*='queue'], [id*='queue'], img[alt*='queue'], img[src*='queue']"))
-                .thenReturn(mockQueueLocator);
-        when(mockQueueLocator.count()).thenReturn(1);
-
-        // Act & Assert
-        Method method = PlaywrightSearchTrainsService.class.getDeclaredMethod("checkForQueuePage", Page.class);
-        method.setAccessible(true);
-        
-        Exception exception = assertThrows(Exception.class, () -> {
-            method.invoke(service, mockPage);
-        });
-        
-        Throwable cause = exception instanceof InvocationTargetException 
-                ? ((InvocationTargetException) exception).getCause() 
-                : exception;
-        
-        assertTrue(cause instanceof QueueException, "Expected QueueException but got: " + cause.getClass());
-        assertTrue(cause.getMessage().contains("queued"));
-    }
-
-    @Test
-    @DisplayName("checkForQueuePage should throw QueueException when queue page text locators are found")
-    void testCheckForQueuePageWithQueuePageTextLocators() throws Exception {
-        // Arrange
-        Page mockPage = mock(Page.class);
-        Locator mockBodyLocator = mock(Locator.class);
-        Locator mockColaLocator = mock(Locator.class);
-        
-        when(mockPage.locator("body")).thenReturn(mockBodyLocator);
-        when(mockBodyLocator.textContent()).thenReturn("Normal page content");
-        when(mockPage.content()).thenReturn("<html><body>Normal page</body></html>");
-        when(mockPage.locator("text=/cola/i")).thenReturn(mockColaLocator);
-        when(mockColaLocator.count()).thenReturn(1);
-
-        // Act & Assert
-        Method method = PlaywrightSearchTrainsService.class.getDeclaredMethod("checkForQueuePage", Page.class);
-        method.setAccessible(true);
-        
-        Exception exception = assertThrows(Exception.class, () -> {
-            method.invoke(service, mockPage);
-        });
-        
-        Throwable cause = exception instanceof InvocationTargetException 
-                ? ((InvocationTargetException) exception).getCause() 
-                : exception;
-        
-        assertTrue(cause instanceof QueueException, "Expected QueueException but got: " + cause.getClass());
-        assertTrue(cause.getMessage().contains("queued"));
-    }
-
-    @Test
-    @DisplayName("checkForQueuePage should throw QueueException when turno text locator is found")
-    void testCheckForQueuePageWithTurnoTextLocator() throws Exception {
-        // Arrange
-        Page mockPage = mock(Page.class);
-        Locator mockBodyLocator = mock(Locator.class);
-        Locator mockColaLocator = mock(Locator.class);
-        Locator mockTurnoLocator = mock(Locator.class);
-        
-        when(mockPage.locator("body")).thenReturn(mockBodyLocator);
-        when(mockBodyLocator.textContent()).thenReturn("Normal page content");
-        when(mockPage.content()).thenReturn("<html><body>Normal page</body></html>");
-        when(mockPage.locator("text=/cola/i")).thenReturn(mockColaLocator);
-        when(mockColaLocator.count()).thenReturn(0);
-        when(mockPage.locator("text=/turno/i")).thenReturn(mockTurnoLocator);
-        when(mockTurnoLocator.count()).thenReturn(1);
-
-        // Act & Assert
-        Method method = PlaywrightSearchTrainsService.class.getDeclaredMethod("checkForQueuePage", Page.class);
-        method.setAccessible(true);
-        
-        Exception exception = assertThrows(Exception.class, () -> {
-            method.invoke(service, mockPage);
-        });
-        
-        Throwable cause = exception instanceof InvocationTargetException 
-                ? ((InvocationTargetException) exception).getCause() 
-                : exception;
-        
-        assertTrue(cause instanceof QueueException, "Expected QueueException but got: " + cause.getClass());
-        assertTrue(cause.getMessage().contains("queued"));
-    }
-
-    @Test
-    @DisplayName("checkForQueuePage should not throw when page is normal")
-    void testCheckForQueuePageWithNormalPage() throws Exception {
-        // Arrange
-        Page mockPage = mock(Page.class);
-        Locator mockBodyLocator = mock(Locator.class);
-        Locator mockQueueLocator = mock(Locator.class);
-        Locator mockColaLocator = mock(Locator.class);
-        Locator mockTurnoLocator = mock(Locator.class);
-        
-        when(mockPage.locator("body")).thenReturn(mockBodyLocator);
-        when(mockBodyLocator.textContent()).thenReturn("Normal train search page");
-        when(mockPage.locator("[class*='queue'], [id*='queue'], img[alt*='queue'], img[src*='queue']"))
-                .thenReturn(mockQueueLocator);
-        when(mockQueueLocator.count()).thenReturn(0);
-        when(mockPage.locator("text=/cola/i")).thenReturn(mockColaLocator);
-        when(mockColaLocator.count()).thenReturn(0);
-        when(mockPage.locator("text=/turno/i")).thenReturn(mockTurnoLocator);
-        when(mockTurnoLocator.count()).thenReturn(0);
-
-        // Act & Assert - Should not throw
-        Method method = PlaywrightSearchTrainsService.class.getDeclaredMethod("checkForQueuePage", Page.class);
-        method.setAccessible(true);
-        
-        assertDoesNotThrow(() -> {
-            method.invoke(service, mockPage);
-        });
-        
-        verify(mockPage, times(1)).waitForTimeout(500L);
-    }
-
-    @Test
-    @DisplayName("checkForQueuePage should handle null bodyText gracefully")
-    void testCheckForQueuePageWithNullBodyText() throws Exception {
-        // Arrange
-        Page mockPage = mock(Page.class);
-        Locator mockBodyLocator = mock(Locator.class);
-        Locator mockQueueLocator = mock(Locator.class);
-        Locator mockColaLocator = mock(Locator.class);
-        Locator mockTurnoLocator = mock(Locator.class);
-        
-        when(mockPage.locator("body")).thenReturn(mockBodyLocator);
-        when(mockBodyLocator.textContent()).thenReturn(null); // null bodyText
-        when(mockPage.locator("[class*='queue'], [id*='queue'], img[alt*='queue'], img[src*='queue']"))
-                .thenReturn(mockQueueLocator);
-        when(mockQueueLocator.count()).thenReturn(0);
-        when(mockPage.locator("text=/cola/i")).thenReturn(mockColaLocator);
-        when(mockColaLocator.count()).thenReturn(0);
-        when(mockPage.locator("text=/turno/i")).thenReturn(mockTurnoLocator);
-        when(mockTurnoLocator.count()).thenReturn(0);
-
-        // Act & Assert - Should not throw (null bodyText is handled)
-        Method method = PlaywrightSearchTrainsService.class.getDeclaredMethod("checkForQueuePage", Page.class);
-        method.setAccessible(true);
-        
-        assertDoesNotThrow(() -> {
-            method.invoke(service, mockPage);
-        });
-    }
-
-    @Test
-    @DisplayName("checkForQueuePage should handle exception when getting page content")
-    void testCheckForQueuePageWithExceptionGettingContent() throws Exception {
-        // Arrange
-        Page mockPage = mock(Page.class);
-        Locator mockBodyLocator = mock(Locator.class);
-        Locator mockQueueLocator = mock(Locator.class);
-        Locator mockColaLocator = mock(Locator.class);
-        Locator mockTurnoLocator = mock(Locator.class);
-        
-        when(mockPage.locator("body")).thenReturn(mockBodyLocator);
-        when(mockBodyLocator.textContent()).thenThrow(new RuntimeException("Error getting content"));
-        when(mockPage.locator("[class*='queue'], [id*='queue'], img[alt*='queue'], img[src*='queue']"))
-                .thenReturn(mockQueueLocator);
-        when(mockQueueLocator.count()).thenReturn(0);
-        when(mockPage.locator("text=/cola/i")).thenReturn(mockColaLocator);
-        when(mockColaLocator.count()).thenReturn(0);
-        when(mockPage.locator("text=/turno/i")).thenReturn(mockTurnoLocator);
-        when(mockTurnoLocator.count()).thenReturn(0);
-
-        // Act & Assert - Should not throw (exception is caught and logged)
-        Method method = PlaywrightSearchTrainsService.class.getDeclaredMethod("checkForQueuePage", Page.class);
-        method.setAccessible(true);
-        
-        assertDoesNotThrow(() -> {
-            method.invoke(service, mockPage);
-        });
-        
-        verify(mockPage, times(1)).waitForTimeout(500L);
-    }
-
-    @Test
-    @DisplayName("checkForQueuePage should handle exception when checking queue locators")
-    void testCheckForQueuePageWithExceptionInQueueLocators() throws Exception {
-        // Arrange
-        Page mockPage = mock(Page.class);
-        Locator mockBodyLocator = mock(Locator.class);
-        Locator mockColaLocator = mock(Locator.class);
-        Locator mockTurnoLocator = mock(Locator.class);
-        
-        when(mockPage.locator("body")).thenReturn(mockBodyLocator);
-        when(mockBodyLocator.textContent()).thenReturn("Normal page");
-        when(mockPage.locator("[class*='queue'], [id*='queue'], img[alt*='queue'], img[src*='queue']"))
-                .thenThrow(new RuntimeException("Error with locator"));
-        when(mockPage.locator("text=/cola/i")).thenReturn(mockColaLocator);
-        when(mockColaLocator.count()).thenReturn(0);
-        when(mockPage.locator("text=/turno/i")).thenReturn(mockTurnoLocator);
-        when(mockTurnoLocator.count()).thenReturn(0);
-
-        // Act & Assert - Should not throw (exception is caught and ignored)
-        Method method = PlaywrightSearchTrainsService.class.getDeclaredMethod("checkForQueuePage", Page.class);
-        method.setAccessible(true);
-        
-        assertDoesNotThrow(() -> {
-            method.invoke(service, mockPage);
-        });
-    }
-
-    @Test
-    @DisplayName("checkForQueuePage should handle exception when checking queue page text locators")
-    void testCheckForQueuePageWithExceptionInQueuePageTextLocators() throws Exception {
-        // Arrange
-        Page mockPage = mock(Page.class);
-        Locator mockBodyLocator = mock(Locator.class);
-        Locator mockQueueLocator = mock(Locator.class);
-        
-        when(mockPage.locator("body")).thenReturn(mockBodyLocator);
-        when(mockBodyLocator.textContent()).thenReturn("Normal page");
-        when(mockPage.locator("[class*='queue'], [id*='queue'], img[alt*='queue'], img[src*='queue']"))
-                .thenReturn(mockQueueLocator);
-        when(mockQueueLocator.count()).thenReturn(0);
-        when(mockPage.locator("text=/cola/i")).thenThrow(new RuntimeException("Error with text locator"));
-
-        // Act & Assert - Should not throw (exception is caught and ignored)
-        Method method = PlaywrightSearchTrainsService.class.getDeclaredMethod("checkForQueuePage", Page.class);
-        method.setAccessible(true);
-        
-        assertDoesNotThrow(() -> {
-            method.invoke(service, mockPage);
-        });
-    }
-
-    @Test
-    @DisplayName("checkForQueuePage should re-throw QueueException")
-    void testCheckForQueuePageReThrowsQueueException() throws Exception {
-        // Arrange
-        Page mockPage = mock(Page.class);
-        
-        doThrow(new QueueException("Already queued")).when(mockPage).waitForTimeout(500L);
-
-        // Act & Assert
-        Method method = PlaywrightSearchTrainsService.class.getDeclaredMethod("checkForQueuePage", Page.class);
-        method.setAccessible(true);
-        
-        Exception exception = assertThrows(Exception.class, () -> {
-            method.invoke(service, mockPage);
-        });
-        
-        Throwable cause = exception instanceof InvocationTargetException 
-                ? ((InvocationTargetException) exception).getCause() 
-                : exception;
-        
-        assertTrue(cause instanceof QueueException, "Expected QueueException but got: " + cause.getClass());
-        assertEquals("Already queued", cause.getMessage());
-    }
-
-    @Test
-    @DisplayName("checkForQueuePage should handle general exception and continue")
-    void testCheckForQueuePageWithGeneralException() throws Exception {
-        // Arrange
-        Page mockPage = mock(Page.class);
-        
-        doThrow(new RuntimeException("General error")).when(mockPage).waitForTimeout(500L);
-
-        // Act & Assert - Should not throw (exception is caught and logged)
-        Method method = PlaywrightSearchTrainsService.class.getDeclaredMethod("checkForQueuePage", Page.class);
-        method.setAccessible(true);
-        
-        assertDoesNotThrow(() -> {
-            method.invoke(service, mockPage);
-        });
-    }
+    // ========== Tests for checkForQueuePage method moved to RenfePageValidatorTest ==========
 
     // ========== Tests for searchTrains method ==========
 
@@ -1063,10 +632,6 @@ class PlaywrightSearchTrainsServiceTest {
         BrowserContext mockContext = mock(BrowserContext.class);
         Page mockPage = mock(Page.class);
         ElementHandle mockElementHandle = mock(ElementHandle.class);
-        Locator mockBodyLocator = mock(Locator.class);
-        Locator mockQueueLocator = mock(Locator.class);
-        Locator mockColaLocator = mock(Locator.class);
-        Locator mockTurnoLocator = mock(Locator.class);
         Locator mockCookieButton = mock(Locator.class);
 
         when(playwrightFactory.create()).thenReturn(mockPlaywright);
@@ -1086,18 +651,9 @@ class PlaywrightSearchTrainsServiceTest {
         when(config.getSlowMo()).thenReturn(0);
 
         // Mock page interactions
-        when(mockPage.locator("body")).thenReturn(mockBodyLocator);
-        when(mockBodyLocator.textContent()).thenReturn("Normal page");
         when(mockPage.content()).thenReturn("<html><body>Train results</body></html>");
         when(mockPage.waitForSelector(anyString(), any(Page.WaitForSelectorOptions.class)))
                 .thenReturn(mockElementHandle);
-        when(mockPage.locator("[class*='queue'], [id*='queue'], img[alt*='queue'], img[src*='queue']"))
-                .thenReturn(mockQueueLocator);
-        when(mockQueueLocator.count()).thenReturn(0);
-        when(mockPage.locator("text=/cola/i")).thenReturn(mockColaLocator);
-        when(mockColaLocator.count()).thenReturn(0);
-        when(mockPage.locator("text=/turno/i")).thenReturn(mockTurnoLocator);
-        when(mockTurnoLocator.count()).thenReturn(0);
         when(mockPage.locator("#onetrust-accept-btn-handler")).thenReturn(mockCookieButton);
         doThrow(new RuntimeException("Cookie button not found")).when(mockCookieButton).waitFor(any(Locator.WaitForOptions.class));
 
@@ -1120,6 +676,8 @@ class PlaywrightSearchTrainsServiceTest {
         
         verify(mockPage, times(1)).navigate(anyString(), any(Page.NavigateOptions.class));
         verify(responseStorageService, times(1)).saveResponse(anyString(), eq(200));
+        verify(pageValidator, times(1)).checkForQueuePage(mockPage);
+        verify(pageValidator, times(2)).checkForTrainUnavailability(mockPage, "outbound");
     }
 
     @Test
@@ -1132,10 +690,6 @@ class PlaywrightSearchTrainsServiceTest {
         BrowserContext mockContext = mock(BrowserContext.class);
         Page mockPage = mock(Page.class);
         ElementHandle mockElementHandle = mock(ElementHandle.class);
-        Locator mockBodyLocator = mock(Locator.class);
-        Locator mockQueueLocator = mock(Locator.class);
-        Locator mockColaLocator = mock(Locator.class);
-        Locator mockTurnoLocator = mock(Locator.class);
         Locator mockCookieButton = mock(Locator.class);
         Locator mockVueltaTab = mock(Locator.class);
 
@@ -1156,18 +710,9 @@ class PlaywrightSearchTrainsServiceTest {
         when(config.getSlowMo()).thenReturn(0);
 
         // Mock page interactions
-        when(mockPage.locator("body")).thenReturn(mockBodyLocator);
-        when(mockBodyLocator.textContent()).thenReturn("Normal page");
         when(mockPage.content()).thenReturn("<html><body>Train results</body></html>");
         when(mockPage.waitForSelector(anyString(), any(Page.WaitForSelectorOptions.class)))
                 .thenReturn(mockElementHandle);
-        when(mockPage.locator("[class*='queue'], [id*='queue'], img[alt*='queue'], img[src*='queue']"))
-                .thenReturn(mockQueueLocator);
-        when(mockQueueLocator.count()).thenReturn(0);
-        when(mockPage.locator("text=/cola/i")).thenReturn(mockColaLocator);
-        when(mockColaLocator.count()).thenReturn(0);
-        when(mockPage.locator("text=/turno/i")).thenReturn(mockTurnoLocator);
-        when(mockTurnoLocator.count()).thenReturn(0);
         when(mockPage.locator("#onetrust-accept-btn-handler")).thenReturn(mockCookieButton);
         doThrow(new RuntimeException("Cookie button not found")).when(mockCookieButton).waitFor(any(Locator.WaitForOptions.class));
         when(mockPage.locator("[id*='vuelta'], [class*='vuelta'], a:has-text('Vuelta')")).thenReturn(mockVueltaTab);
@@ -1198,6 +743,9 @@ class PlaywrightSearchTrainsServiceTest {
         verify(mockVueltaTab, times(1)).click();
         // waitForSelector is called: 1 in searchTrains + 1 in extractResults (outbound) + 1 in extractResults (return) = 3
         verify(mockPage, atLeast(2)).waitForSelector(anyString(), any(Page.WaitForSelectorOptions.class));
+        verify(pageValidator, times(1)).checkForQueuePage(mockPage);
+        verify(pageValidator, times(2)).checkForTrainUnavailability(mockPage, "outbound");
+        verify(pageValidator, times(1)).checkForTrainUnavailability(mockPage, "return");
     }
 
     @Test
@@ -1210,10 +758,6 @@ class PlaywrightSearchTrainsServiceTest {
         BrowserContext mockContext = mock(BrowserContext.class);
         Page mockPage = mock(Page.class);
         ElementHandle mockElementHandle = mock(ElementHandle.class);
-        Locator mockBodyLocator = mock(Locator.class);
-        Locator mockQueueLocator = mock(Locator.class);
-        Locator mockColaLocator = mock(Locator.class);
-        Locator mockTurnoLocator = mock(Locator.class);
         Locator mockCookieButton = mock(Locator.class);
 
         when(playwrightFactory.create()).thenReturn(mockPlaywright);
@@ -1232,18 +776,9 @@ class PlaywrightSearchTrainsServiceTest {
         when(config.isHeadless()).thenReturn(true);
         when(config.getSlowMo()).thenReturn(0);
 
-        when(mockPage.locator("body")).thenReturn(mockBodyLocator);
-        when(mockBodyLocator.textContent()).thenReturn("Normal page");
         when(mockPage.content()).thenReturn("<html><body>Train results</body></html>");
         when(mockPage.waitForSelector(anyString(), any(Page.WaitForSelectorOptions.class)))
                 .thenReturn(mockElementHandle);
-        when(mockPage.locator("[class*='queue'], [id*='queue'], img[alt*='queue'], img[src*='queue']"))
-                .thenReturn(mockQueueLocator);
-        when(mockQueueLocator.count()).thenReturn(0);
-        when(mockPage.locator("text=/cola/i")).thenReturn(mockColaLocator);
-        when(mockColaLocator.count()).thenReturn(0);
-        when(mockPage.locator("text=/turno/i")).thenReturn(mockTurnoLocator);
-        when(mockTurnoLocator.count()).thenReturn(0);
         when(mockPage.locator("#onetrust-accept-btn-handler")).thenReturn(mockCookieButton);
         doThrow(new RuntimeException("Cookie button not found")).when(mockCookieButton).waitFor(any(Locator.WaitForOptions.class));
 
@@ -1262,6 +797,8 @@ class PlaywrightSearchTrainsServiceTest {
         assertNotNull(result);
         assertNotNull(result.outboundTrains);
         assertNull(result.returnTrains); // Should be null when dateReturn is empty
+        
+        verify(pageValidator, times(1)).checkForQueuePage(mockPage);
     }
 
     @Test
@@ -1274,10 +811,6 @@ class PlaywrightSearchTrainsServiceTest {
         BrowserContext mockContext = mock(BrowserContext.class);
         Page mockPage = mock(Page.class);
         ElementHandle mockElementHandle = mock(ElementHandle.class);
-        Locator mockBodyLocator = mock(Locator.class);
-        Locator mockQueueLocator = mock(Locator.class);
-        Locator mockColaLocator = mock(Locator.class);
-        Locator mockTurnoLocator = mock(Locator.class);
         Locator mockCookieButton = mock(Locator.class);
 
         when(playwrightFactory.create()).thenReturn(mockPlaywright);
@@ -1296,18 +829,9 @@ class PlaywrightSearchTrainsServiceTest {
         when(config.isHeadless()).thenReturn(true);
         when(config.getSlowMo()).thenReturn(0);
 
-        when(mockPage.locator("body")).thenReturn(mockBodyLocator);
-        when(mockBodyLocator.textContent()).thenReturn("Normal page");
         when(mockPage.content()).thenReturn("<html><body>Train results</body></html>");
         when(mockPage.waitForSelector(anyString(), any(Page.WaitForSelectorOptions.class)))
                 .thenReturn(mockElementHandle);
-        when(mockPage.locator("[class*='queue'], [id*='queue'], img[alt*='queue'], img[src*='queue']"))
-                .thenReturn(mockQueueLocator);
-        when(mockQueueLocator.count()).thenReturn(0);
-        when(mockPage.locator("text=/cola/i")).thenReturn(mockColaLocator);
-        when(mockColaLocator.count()).thenReturn(0);
-        when(mockPage.locator("text=/turno/i")).thenReturn(mockTurnoLocator);
-        when(mockTurnoLocator.count()).thenReturn(0);
         when(mockPage.locator("#onetrust-accept-btn-handler")).thenReturn(mockCookieButton);
         doNothing().when(mockCookieButton).waitFor(any(Locator.WaitForOptions.class));
         when(mockCookieButton.isVisible()).thenReturn(true);
@@ -1338,10 +862,6 @@ class PlaywrightSearchTrainsServiceTest {
         BrowserContext mockContext = mock(BrowserContext.class);
         Page mockPage = mock(Page.class);
         ElementHandle mockElementHandle = mock(ElementHandle.class);
-        Locator mockBodyLocator = mock(Locator.class);
-        Locator mockQueueLocator = mock(Locator.class);
-        Locator mockColaLocator = mock(Locator.class);
-        Locator mockTurnoLocator = mock(Locator.class);
         Locator mockCookieButton = mock(Locator.class);
 
         when(playwrightFactory.create()).thenReturn(mockPlaywright);
@@ -1360,18 +880,9 @@ class PlaywrightSearchTrainsServiceTest {
         when(config.isHeadless()).thenReturn(true);
         when(config.getSlowMo()).thenReturn(0);
 
-        when(mockPage.locator("body")).thenReturn(mockBodyLocator);
-        when(mockBodyLocator.textContent()).thenReturn("Normal page");
         when(mockPage.content()).thenReturn("<html><body>Train results</body></html>");
         when(mockPage.waitForSelector(anyString(), any(Page.WaitForSelectorOptions.class)))
                 .thenReturn(mockElementHandle);
-        when(mockPage.locator("[class*='queue'], [id*='queue'], img[alt*='queue'], img[src*='queue']"))
-                .thenReturn(mockQueueLocator);
-        when(mockQueueLocator.count()).thenReturn(0);
-        when(mockPage.locator("text=/cola/i")).thenReturn(mockColaLocator);
-        when(mockColaLocator.count()).thenReturn(0);
-        when(mockPage.locator("text=/turno/i")).thenReturn(mockTurnoLocator);
-        when(mockTurnoLocator.count()).thenReturn(0);
         when(mockPage.locator("#onetrust-accept-btn-handler")).thenReturn(mockCookieButton);
         doNothing().when(mockCookieButton).waitFor(any(Locator.WaitForOptions.class));
         when(mockCookieButton.isVisible()).thenReturn(false); // Not visible
@@ -1402,10 +913,6 @@ class PlaywrightSearchTrainsServiceTest {
         BrowserContext mockContext = mock(BrowserContext.class);
         Page mockPage = mock(Page.class);
         ElementHandle mockElementHandle = mock(ElementHandle.class);
-        Locator mockBodyLocator = mock(Locator.class);
-        Locator mockQueueLocator = mock(Locator.class);
-        Locator mockColaLocator = mock(Locator.class);
-        Locator mockTurnoLocator = mock(Locator.class);
         Locator mockCookieButton = mock(Locator.class);
 
         when(playwrightFactory.create()).thenReturn(mockPlaywright);
@@ -1424,18 +931,9 @@ class PlaywrightSearchTrainsServiceTest {
         when(config.isHeadless()).thenReturn(true);
         when(config.getSlowMo()).thenReturn(0);
 
-        when(mockPage.locator("body")).thenReturn(mockBodyLocator);
-        when(mockBodyLocator.textContent()).thenReturn("Normal page");
         when(mockPage.content()).thenReturn("<html><body>Train results</body></html>");
         when(mockPage.waitForSelector(anyString(), any(Page.WaitForSelectorOptions.class)))
                 .thenReturn(mockElementHandle);
-        when(mockPage.locator("[class*='queue'], [id*='queue'], img[alt*='queue'], img[src*='queue']"))
-                .thenReturn(mockQueueLocator);
-        when(mockQueueLocator.count()).thenReturn(0);
-        when(mockPage.locator("text=/cola/i")).thenReturn(mockColaLocator);
-        when(mockColaLocator.count()).thenReturn(0);
-        when(mockPage.locator("text=/turno/i")).thenReturn(mockTurnoLocator);
-        when(mockTurnoLocator.count()).thenReturn(0);
         when(mockPage.locator("#onetrust-accept-btn-handler")).thenReturn(mockCookieButton);
         doThrow(new RuntimeException("Cookie button error")).when(mockCookieButton).waitFor(any(Locator.WaitForOptions.class));
 
@@ -1465,10 +963,6 @@ class PlaywrightSearchTrainsServiceTest {
         BrowserContext mockContext = mock(BrowserContext.class);
         Page mockPage = mock(Page.class);
         ElementHandle mockElementHandle = mock(ElementHandle.class);
-        Locator mockBodyLocator = mock(Locator.class);
-        Locator mockQueueLocator = mock(Locator.class);
-        Locator mockColaLocator = mock(Locator.class);
-        Locator mockTurnoLocator = mock(Locator.class);
         Locator mockCookieButton = mock(Locator.class);
         Locator mockVueltaTab = mock(Locator.class);
 
@@ -1488,18 +982,9 @@ class PlaywrightSearchTrainsServiceTest {
         when(config.isHeadless()).thenReturn(true);
         when(config.getSlowMo()).thenReturn(0);
 
-        when(mockPage.locator("body")).thenReturn(mockBodyLocator);
-        when(mockBodyLocator.textContent()).thenReturn("Normal page");
         when(mockPage.content()).thenReturn("<html><body>Train results</body></html>");
         when(mockPage.waitForSelector(anyString(), any(Page.WaitForSelectorOptions.class)))
                 .thenReturn(mockElementHandle);
-        when(mockPage.locator("[class*='queue'], [id*='queue'], img[alt*='queue'], img[src*='queue']"))
-                .thenReturn(mockQueueLocator);
-        when(mockQueueLocator.count()).thenReturn(0);
-        when(mockPage.locator("text=/cola/i")).thenReturn(mockColaLocator);
-        when(mockColaLocator.count()).thenReturn(0);
-        when(mockPage.locator("text=/turno/i")).thenReturn(mockTurnoLocator);
-        when(mockTurnoLocator.count()).thenReturn(0);
         when(mockPage.locator("#onetrust-accept-btn-handler")).thenReturn(mockCookieButton);
         doThrow(new RuntimeException("Cookie button not found")).when(mockCookieButton).waitFor(any(Locator.WaitForOptions.class));
         when(mockPage.locator("[id*='vuelta'], [class*='vuelta'], a:has-text('Vuelta')")).thenReturn(mockVueltaTab);
@@ -1533,10 +1018,6 @@ class PlaywrightSearchTrainsServiceTest {
         BrowserContext mockContext = mock(BrowserContext.class);
         Page mockPage = mock(Page.class);
         ElementHandle mockElementHandle = mock(ElementHandle.class);
-        Locator mockBodyLocator = mock(Locator.class);
-        Locator mockQueueLocator = mock(Locator.class);
-        Locator mockColaLocator = mock(Locator.class);
-        Locator mockTurnoLocator = mock(Locator.class);
         Locator mockCookieButton = mock(Locator.class);
 
         when(playwrightFactory.create()).thenReturn(mockPlaywright);
@@ -1555,18 +1036,9 @@ class PlaywrightSearchTrainsServiceTest {
         when(config.isHeadless()).thenReturn(true);
         when(config.getSlowMo()).thenReturn(0);
 
-        when(mockPage.locator("body")).thenReturn(mockBodyLocator);
-        when(mockBodyLocator.textContent()).thenReturn("Normal page");
         when(mockPage.content()).thenReturn("<html><body>No trains</body></html>");
         when(mockPage.waitForSelector(anyString(), any(Page.WaitForSelectorOptions.class)))
                 .thenReturn(mockElementHandle);
-        when(mockPage.locator("[class*='queue'], [id*='queue'], img[alt*='queue'], img[src*='queue']"))
-                .thenReturn(mockQueueLocator);
-        when(mockQueueLocator.count()).thenReturn(0);
-        when(mockPage.locator("text=/cola/i")).thenReturn(mockColaLocator);
-        when(mockColaLocator.count()).thenReturn(0);
-        when(mockPage.locator("text=/turno/i")).thenReturn(mockTurnoLocator);
-        when(mockTurnoLocator.count()).thenReturn(0);
         when(mockPage.locator("#onetrust-accept-btn-handler")).thenReturn(mockCookieButton);
         doThrow(new RuntimeException("Cookie button not found")).when(mockCookieButton).waitFor(any(Locator.WaitForOptions.class));
 
@@ -1597,10 +1069,6 @@ class PlaywrightSearchTrainsServiceTest {
         BrowserContext mockContext = mock(BrowserContext.class);
         Page mockPage = mock(Page.class);
         ElementHandle mockElementHandle = mock(ElementHandle.class);
-        Locator mockBodyLocator = mock(Locator.class);
-        Locator mockQueueLocator = mock(Locator.class);
-        Locator mockColaLocator = mock(Locator.class);
-        Locator mockTurnoLocator = mock(Locator.class);
         Locator mockCookieButton = mock(Locator.class);
         Locator mockVueltaTab = mock(Locator.class);
 
@@ -1620,18 +1088,9 @@ class PlaywrightSearchTrainsServiceTest {
         when(config.isHeadless()).thenReturn(true);
         when(config.getSlowMo()).thenReturn(0);
 
-        when(mockPage.locator("body")).thenReturn(mockBodyLocator);
-        when(mockBodyLocator.textContent()).thenReturn("Normal page");
         when(mockPage.content()).thenReturn("<html><body>Train results</body></html>");
         when(mockPage.waitForSelector(anyString(), any(Page.WaitForSelectorOptions.class)))
                 .thenReturn(mockElementHandle);
-        when(mockPage.locator("[class*='queue'], [id*='queue'], img[alt*='queue'], img[src*='queue']"))
-                .thenReturn(mockQueueLocator);
-        when(mockQueueLocator.count()).thenReturn(0);
-        when(mockPage.locator("text=/cola/i")).thenReturn(mockColaLocator);
-        when(mockColaLocator.count()).thenReturn(0);
-        when(mockPage.locator("text=/turno/i")).thenReturn(mockTurnoLocator);
-        when(mockTurnoLocator.count()).thenReturn(0);
         when(mockPage.locator("#onetrust-accept-btn-handler")).thenReturn(mockCookieButton);
         doThrow(new RuntimeException("Cookie button not found")).when(mockCookieButton).waitFor(any(Locator.WaitForOptions.class));
         when(mockPage.locator("[id*='vuelta'], [class*='vuelta'], a:has-text('Vuelta')")).thenReturn(mockVueltaTab);
@@ -1665,7 +1124,6 @@ class PlaywrightSearchTrainsServiceTest {
         Browser mockBrowser = mock(Browser.class);
         BrowserContext mockContext = mock(BrowserContext.class);
         Page mockPage = mock(Page.class);
-        Locator mockBodyLocator = mock(Locator.class);
         
         when(playwrightFactory.create()).thenReturn(mockPlaywright);
         when(mockPlaywright.chromium()).thenReturn(mockBrowserType);
@@ -1681,8 +1139,8 @@ class PlaywrightSearchTrainsServiceTest {
         when(config.isHeadless()).thenReturn(true);
         when(config.getSlowMo()).thenReturn(0);
 
-        when(mockPage.locator("body")).thenReturn(mockBodyLocator);
-        when(mockBodyLocator.textContent()).thenReturn("Estás en la cola de espera");
+        doThrow(new QueueException("Ticket purchase is queued. The system redirected to a queue management page. Please try again later."))
+                .when(pageValidator).checkForQueuePage(mockPage);
 
         // Act & Assert
         QueueException exception = assertThrows(QueueException.class, () -> {
@@ -1729,10 +1187,6 @@ class PlaywrightSearchTrainsServiceTest {
         BrowserContext mockContext = mock(BrowserContext.class);
         Page mockPage = mock(Page.class);
         ElementHandle mockElementHandle = mock(ElementHandle.class);
-        Locator mockBodyLocator = mock(Locator.class);
-        Locator mockQueueLocator = mock(Locator.class);
-        Locator mockColaLocator = mock(Locator.class);
-        Locator mockTurnoLocator = mock(Locator.class);
         Locator mockCookieButton = mock(Locator.class);
 
         when(playwrightFactory.create()).thenReturn(mockPlaywright);
@@ -1751,18 +1205,9 @@ class PlaywrightSearchTrainsServiceTest {
         when(config.isHeadless()).thenReturn(true);
         when(config.getSlowMo()).thenReturn(0);
 
-        when(mockPage.locator("body")).thenReturn(mockBodyLocator);
-        when(mockBodyLocator.textContent()).thenReturn("Normal page");
         when(mockPage.content()).thenReturn("<html><body>Train results</body></html>");
         when(mockPage.waitForSelector(anyString(), any(Page.WaitForSelectorOptions.class)))
                 .thenReturn(mockElementHandle);
-        when(mockPage.locator("[class*='queue'], [id*='queue'], img[alt*='queue'], img[src*='queue']"))
-                .thenReturn(mockQueueLocator);
-        when(mockQueueLocator.count()).thenReturn(0);
-        when(mockPage.locator("text=/cola/i")).thenReturn(mockColaLocator);
-        when(mockColaLocator.count()).thenReturn(0);
-        when(mockPage.locator("text=/turno/i")).thenReturn(mockTurnoLocator);
-        when(mockTurnoLocator.count()).thenReturn(0);
         when(mockPage.locator("#onetrust-accept-btn-handler")).thenReturn(mockCookieButton);
         doThrow(new RuntimeException("Cookie button not found")).when(mockCookieButton).waitFor(any(Locator.WaitForOptions.class));
 
@@ -1792,10 +1237,6 @@ class PlaywrightSearchTrainsServiceTest {
         BrowserContext mockContext = mock(BrowserContext.class);
         Page mockPage = mock(Page.class);
         ElementHandle mockElementHandle = mock(ElementHandle.class);
-        Locator mockBodyLocator = mock(Locator.class);
-        Locator mockQueueLocator = mock(Locator.class);
-        Locator mockColaLocator = mock(Locator.class);
-        Locator mockTurnoLocator = mock(Locator.class);
         Locator mockCookieButton = mock(Locator.class);
 
         when(playwrightFactory.create()).thenReturn(mockPlaywright);
@@ -1814,18 +1255,9 @@ class PlaywrightSearchTrainsServiceTest {
         when(config.isHeadless()).thenReturn(true);
         when(config.getSlowMo()).thenReturn(0);
 
-        when(mockPage.locator("body")).thenReturn(mockBodyLocator);
-        when(mockBodyLocator.textContent()).thenReturn("Normal page");
         when(mockPage.content()).thenReturn("<html><body>Train results</body></html>");
         when(mockPage.waitForSelector(anyString(), any(Page.WaitForSelectorOptions.class)))
                 .thenReturn(mockElementHandle);
-        when(mockPage.locator("[class*='queue'], [id*='queue'], img[alt*='queue'], img[src*='queue']"))
-                .thenReturn(mockQueueLocator);
-        when(mockQueueLocator.count()).thenReturn(0);
-        when(mockPage.locator("text=/cola/i")).thenReturn(mockColaLocator);
-        when(mockColaLocator.count()).thenReturn(0);
-        when(mockPage.locator("text=/turno/i")).thenReturn(mockTurnoLocator);
-        when(mockTurnoLocator.count()).thenReturn(0);
         when(mockPage.locator("#onetrust-accept-btn-handler")).thenReturn(mockCookieButton);
         doThrow(new RuntimeException("Cookie button not found")).when(mockCookieButton).waitFor(any(Locator.WaitForOptions.class));
 
