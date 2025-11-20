@@ -1,23 +1,33 @@
+/*
+ * Copyright © ${YEAR} MCP Renfe Navigation Quarkus
+ * All rights reserved.
+ */
+
 package com.delard.renfe.navigation.infrastructure.adapter.input.rest.mapper;
 
-import com.delard.renfe.navigation.domain.model.Station;
-import com.delard.renfe.navigation.infrastructure.adapter.input.rest.dto.StationDTO;
-import org.junit.jupiter.api.Test;
+
+import static org.junit.jupiter.api.Assertions.*;
 
 import java.lang.reflect.Constructor;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
-import static org.junit.jupiter.api.Assertions.*;
+import com.delard.renfe.navigation.domain.model.Station;
+import com.delard.renfe.navigation.infrastructure.adapter.input.rest.dto.StationDTO;
+
+import org.junit.jupiter.api.Test;
+
 
 /**
  * Unit tests for StationMapper
  */
-class StationMapperTest {
+class StationMapperTest
+{
 
     @Test
-    void testPrivateConstructor() throws Exception {
+    void testPrivateConstructor() throws Exception
+    {
         Constructor<StationMapper> constructor = StationMapper.class.getDeclaredConstructor();
         constructor.setAccessible(true);
         StationMapper instance = constructor.newInstance();
@@ -25,13 +35,15 @@ class StationMapperTest {
     }
 
     @Test
-    void testToDTOWithNullStation() {
+    void testToDTOWithNullStation()
+    {
         StationDTO result = StationMapper.toDTO(null);
         assertNull(result);
     }
 
     @Test
-    void testToDTOWithCompleteStation() {
+    void testToDTOWithCompleteStation()
+    {
         Station station = createCompleteStation();
         StationDTO dto = StationMapper.toDTO(station);
 
@@ -47,7 +59,8 @@ class StationMapperTest {
     }
 
     @Test
-    void testToDTOWithNullFields() {
+    void testToDTOWithNullFields()
+    {
         Station station = new Station();
         station.setStationCode("BARCE");
         station.setAdministrationCode("0071");
@@ -72,21 +85,24 @@ class StationMapperTest {
     }
 
     @Test
-    void testToDTOListWithNullList() {
+    void testToDTOListWithNullList()
+    {
         List<StationDTO> result = StationMapper.toDTOList(null);
         assertNotNull(result);
         assertTrue(result.isEmpty());
     }
 
     @Test
-    void testToDTOListWithEmptyList() {
+    void testToDTOListWithEmptyList()
+    {
         List<StationDTO> result = StationMapper.toDTOList(Collections.emptyList());
         assertNotNull(result);
         assertTrue(result.isEmpty());
     }
 
     @Test
-    void testToDTOListWithSingleStation() {
+    void testToDTOListWithSingleStation()
+    {
         Station station = createCompleteStation();
         List<StationDTO> result = StationMapper.toDTOList(Arrays.asList(station));
 
@@ -97,16 +113,15 @@ class StationMapperTest {
     }
 
     @Test
-    void testToDTOListWithMultipleStations() {
+    void testToDTOListWithMultipleStations()
+    {
         Station station1 = createCompleteStation();
         Station station2 = new Station(
-            "BARCE", "0071", 3, "Barcelona description",
-            "BARCELONA (TODAS)", "71801", "0071,BARCE,null", "BARCELONA (TODAS)"
-        );
+                "BARCE", "0071", 3, "Barcelona description",
+                "BARCELONA (TODAS)", "71801", "0071,BARCE,null", "BARCELONA (TODAS)");
         Station station3 = new Station(
-            "OUREN", "0071", 5, "Ourense description",
-            "OURENSE", "22100", "0071,OUREN,22100", "OURENSE"
-        );
+                "OUREN", "0071", 5, "Ourense description",
+                "OURENSE", "22100", "0071,OUREN,22100", "OURENSE");
 
         List<StationDTO> result = StationMapper.toDTOList(Arrays.asList(station1, station2, station3));
 
@@ -118,13 +133,13 @@ class StationMapperTest {
     }
 
     @Test
-    void testToDTOListWithNullStationInList() {
+    void testToDTOListWithNullStationInList()
+    {
         Station station1 = createCompleteStation();
         Station station2 = null;
         Station station3 = new Station(
-            "OUREN", "0071", 5, "Ourense description",
-            "OURENSE", "22100", "0071,OUREN,22100", "OURENSE"
-        );
+                "OUREN", "0071", 5, "Ourense description",
+                "OURENSE", "22100", "0071,OUREN,22100", "OURENSE");
 
         List<StationDTO> result = StationMapper.toDTOList(Arrays.asList(station1, station2, station3));
 
@@ -136,7 +151,8 @@ class StationMapperTest {
     }
 
     @Test
-    void testToDTOWithMinimalData() {
+    void testToDTOWithMinimalData()
+    {
         Station station = new Station();
         station.setStationCode("TEST");
         station.setStationName("TEST STATION");
@@ -154,17 +170,16 @@ class StationMapperTest {
         assertNull(dto.stationNamePlano());
     }
 
-    private Station createCompleteStation() {
+    private Station createCompleteStation()
+    {
         return new Station(
-            "MADRI",
-            "0071",
-            1,
-            "Madrid description",
-            "MADRID (TODAS)",
-            "71801",
-            "0071,MADRI,null",
-            "MADRID (TODAS)"
-        );
+                "MADRI",
+                "0071",
+                1,
+                "Madrid description",
+                "MADRID (TODAS)",
+                "71801",
+                "0071,MADRI,null",
+                "MADRID (TODAS)");
     }
 }
-

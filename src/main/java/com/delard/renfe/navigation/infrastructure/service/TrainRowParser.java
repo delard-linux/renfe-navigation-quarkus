@@ -1,21 +1,31 @@
+/*
+ * Copyright © ${YEAR} MCP Renfe Navigation Quarkus
+ * All rights reserved.
+ */
+
 package com.delard.renfe.navigation.infrastructure.service;
 
-import com.delard.renfe.navigation.domain.model.Train;
-import org.jboss.logging.Logger;
-import org.jsoup.nodes.Element;
-import org.jsoup.select.Elements;
 
-import jakarta.enterprise.context.ApplicationScoped;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import jakarta.enterprise.context.ApplicationScoped;
+
+import com.delard.renfe.navigation.domain.model.Train;
+
+import org.jboss.logging.Logger;
+import org.jsoup.nodes.Element;
+import org.jsoup.select.Elements;
+
+
 /**
  * Parser for extracting basic train information from a train row element
  */
 @ApplicationScoped
-public class TrainRowParser {
+public class TrainRowParser
+{
 
     private static final Logger LOG = Logger.getLogger(TrainRowParser.class);
 
@@ -26,7 +36,8 @@ public class TrainRowParser {
      * @param index The index of the train row (for fallback trainId)
      * @return Train object with basic information populated
      */
-    public Train parseTrainRow(Element row, int index) {
+    public Train parseTrainRow(Element row, int index)
+    {
         Train train = new Train();
 
         // Extract train_id from attribute id="tren_i_1"
@@ -60,7 +71,8 @@ public class TrainRowParser {
     /**
      * Extract train ID from the row element
      */
-    private String extractTrainId(Element row, int index) {
+    private String extractTrainId(Element row, int index)
+    {
         String trainIdAttr = row.id();
         return trainIdAttr != null && !trainIdAttr.isEmpty()
                 ? trainIdAttr.replace("tren_", "")
@@ -71,7 +83,8 @@ public class TrainRowParser {
      * Extract service type from train image alt text
      * HTML format: alt="Imagen de Tren. Tipo de tren AVE"
      */
-    private String extractServiceType(Element row) {
+    private String extractServiceType(Element row)
+    {
         Element img = row.selectFirst("img[alt*='Tipo de tren']");
         if (img != null && img.hasAttr("alt")) {
             Pattern pattern = Pattern.compile("Tipo de tren\\s+(\\w+)");
@@ -86,7 +99,8 @@ public class TrainRowParser {
     /**
      * Extract departure and arrival times from h5 elements
      */
-    private void extractTimes(Element row, Train train) {
+    private void extractTimes(Element row, Train train)
+    {
         Elements h5Elements = row.select("h5[aria-hidden='true']");
         if (h5Elements.size() >= 2) {
             String departureTime = h5Elements.get(0).text().replace(" h", "").trim();
@@ -99,7 +113,8 @@ public class TrainRowParser {
     /**
      * Extract duration from span.text-number
      */
-    private void extractDuration(Element row, Train train) {
+    private void extractDuration(Element row, Train train)
+    {
         Element durationElem = row.selectFirst("span.text-number");
         if (durationElem != null) {
             train.setDuration(durationElem.text().trim());
@@ -110,7 +125,8 @@ public class TrainRowParser {
      * Extract minimum price from span.precio-final
      * HTML format: title="Precio desde 63,10"
      */
-    private void extractPrice(Element row, Train train) {
+    private void extractPrice(Element row, Train train)
+    {
         Element precioElem = row.selectFirst("span.precio-final");
         if (precioElem != null && precioElem.hasAttr("title")) {
             Pattern pattern = Pattern.compile("Precio desde\\s+([\\d,]+)|([\\d,]+)");
@@ -130,7 +146,8 @@ public class TrainRowParser {
     /**
      * Extract badges (special labels) from badge elements
      */
-    private void extractBadges(Element row, Train train) {
+    private void extractBadges(Element row, Train train)
+    {
         Elements badgeElements = row.select(".badge-amarillo-junto, .badge-azul-junto");
         List<String> badges = new ArrayList<>(train.getBadges());
         for (Element badge : badgeElements) {
@@ -145,7 +162,8 @@ public class TrainRowParser {
     /**
      * Extract accessibility and eco-friendly flags from div.info-varios
      */
-    private void extractAccessibilityFlags(Element row, Train train) {
+    private void extractAccessibilityFlags(Element row, Train train)
+    {
         Element infoVarios = row.selectFirst("div.info-varios");
         if (infoVarios != null) {
             String infoText = infoVarios.text();
@@ -154,4 +172,3 @@ public class TrainRowParser {
         }
     }
 }
-

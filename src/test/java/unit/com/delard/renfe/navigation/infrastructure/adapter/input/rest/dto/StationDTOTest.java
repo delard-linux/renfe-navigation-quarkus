@@ -1,26 +1,34 @@
+/*
+ * Copyright © ${YEAR} MCP Renfe Navigation Quarkus
+ * All rights reserved.
+ */
+
 package com.delard.renfe.navigation.infrastructure.adapter.input.rest.dto;
+
+
+import static org.junit.jupiter.api.Assertions.*;
 
 import org.junit.jupiter.api.Test;
 
-import static org.junit.jupiter.api.Assertions.*;
 
 /**
  * Unit tests for StationDTO
  */
-class StationDTOTest {
+class StationDTOTest
+{
 
     @Test
-    void testRecordCreation() {
+    void testRecordCreation()
+    {
         StationDTO dto = new StationDTO(
-            "MADRI",
-            "0071",
-            1,
-            "Madrid description",
-            "MADRID (TODAS)",
-            "71801",
-            "0071,MADRI,null",
-            "MADRID (TODAS)"
-        );
+                "MADRI",
+                "0071",
+                1,
+                "Madrid description",
+                "MADRID (TODAS)",
+                "71801",
+                "0071,MADRI,null",
+                "MADRID (TODAS)");
         assertNotNull(dto);
         assertEquals("MADRI", dto.stationCode());
         assertEquals("0071", dto.administrationCode());
@@ -33,17 +41,17 @@ class StationDTOTest {
     }
 
     @Test
-    void testRecordCreationWithNullValues() {
+    void testRecordCreationWithNullValues()
+    {
         StationDTO dto = new StationDTO(
-            "BARCE",
-            "0071",
-            null,
-            null,
-            "BARCELONA (TODAS)",
-            null,
-            "0071,BARCE,null",
-            "BARCELONA (TODAS)"
-        );
+                "BARCE",
+                "0071",
+                null,
+                null,
+                "BARCELONA (TODAS)",
+                null,
+                "0071,BARCE,null",
+                "BARCELONA (TODAS)");
         assertNotNull(dto);
         assertEquals("BARCE", dto.stationCode());
         assertEquals("0071", dto.administrationCode());
@@ -56,17 +64,17 @@ class StationDTOTest {
     }
 
     @Test
-    void testRecordCreationWithAllFields() {
+    void testRecordCreationWithAllFields()
+    {
         StationDTO dto = new StationDTO(
-            "OUREN",
-            "0071",
-            5,
-            "Ourense station description",
-            "OURENSE",
-            "22100",
-            "0071,OUREN,22100",
-            "OURENSE"
-        );
+                "OUREN",
+                "0071",
+                5,
+                "Ourense station description",
+                "OURENSE",
+                "22100",
+                "0071,OUREN,22100",
+                "OURENSE");
 
         assertEquals("OUREN", dto.stationCode());
         assertEquals("0071", dto.administrationCode());
@@ -79,28 +87,27 @@ class StationDTOTest {
     }
 
     @Test
-    void testRecordEquality() {
+    void testRecordEquality()
+    {
         StationDTO dto1 = new StationDTO(
-            "MADRI",
-            "0071",
-            1,
-            "Madrid",
-            "MADRID (TODAS)",
-            "71801",
-            "0071,MADRI,null",
-            "MADRID (TODAS)"
-        );
+                "MADRI",
+                "0071",
+                1,
+                "Madrid",
+                "MADRID (TODAS)",
+                "71801",
+                "0071,MADRI,null",
+                "MADRID (TODAS)");
 
         StationDTO dto2 = new StationDTO(
-            "MADRI",
-            "0071",
-            1,
-            "Madrid",
-            "MADRID (TODAS)",
-            "71801",
-            "0071,MADRI,null",
-            "MADRID (TODAS)"
-        );
+                "MADRI",
+                "0071",
+                1,
+                "Madrid",
+                "MADRID (TODAS)",
+                "71801",
+                "0071,MADRI,null",
+                "MADRID (TODAS)");
 
         // Records implement equals based on all fields
         assertEquals(dto1, dto2);
@@ -108,30 +115,28 @@ class StationDTOTest {
     }
 
     @Test
-    void testRecordInequality() {
+    void testRecordInequality()
+    {
         StationDTO dto1 = new StationDTO(
-            "MADRI",
-            "0071",
-            1,
-            "Madrid",
-            "MADRID (TODAS)",
-            "71801",
-            "0071,MADRI,null",
-            "MADRID (TODAS)"
-        );
+                "MADRI",
+                "0071",
+                1,
+                "Madrid",
+                "MADRID (TODAS)",
+                "71801",
+                "0071,MADRI,null",
+                "MADRID (TODAS)");
 
         StationDTO dto2 = new StationDTO(
-            "BARCE",
-            "0071",
-            1,
-            "Barcelona",
-            "BARCELONA (TODAS)",
-            "71801",
-            "0071,BARCE,null",
-            "BARCELONA (TODAS)"
-        );
+                "BARCE",
+                "0071",
+                1,
+                "Barcelona",
+                "BARCELONA (TODAS)",
+                "71801",
+                "0071,BARCE,null",
+                "BARCELONA (TODAS)");
 
         assertNotEquals(dto1, dto2);
     }
 }
-

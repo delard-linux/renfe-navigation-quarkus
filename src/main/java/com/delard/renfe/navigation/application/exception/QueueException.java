@@ -1,16 +1,23 @@
+/*
+ * Copyright © ${YEAR} MCP Renfe Navigation Quarkus
+ * All rights reserved.
+ */
+
 package com.delard.renfe.navigation.application.exception;
 
 /**
  * Exception thrown when ticket purchase is queued and the system redirects to a queue management page
  */
-public class QueueException extends RuntimeException {
+public class QueueException extends RuntimeException
+{
 
-    public QueueException(String message) {
+    public QueueException(String message)
+    {
         super(message);
     }
 
-    public QueueException(String message, Throwable cause) {
+    public QueueException(String message, Throwable cause)
+    {
         super(message, cause);
     }
 }
-

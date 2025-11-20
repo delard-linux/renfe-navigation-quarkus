@@ -1,20 +1,29 @@
+/*
+ * Copyright © ${YEAR} MCP Renfe Navigation Quarkus
+ * All rights reserved.
+ */
+
 package com.delard.renfe.navigation.domain.model;
 
-import org.junit.jupiter.api.Test;
+
+import static org.junit.jupiter.api.Assertions.*;
 
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-import static org.junit.jupiter.api.Assertions.*;
+import org.junit.jupiter.api.Test;
+
 
 /**
  * Unit tests for Train domain model
  */
-class TrainTest {
+class TrainTest
+{
 
     @Test
-    void testDefaultConstructor() {
+    void testDefaultConstructor()
+    {
         // Act
         Train train = new Train();
 
@@ -36,7 +45,8 @@ class TrainTest {
     }
 
     @Test
-    void testParameterizedConstructor() {
+    void testParameterizedConstructor()
+    {
         // Arrange
         String trainId = "TRAIN123";
         String serviceType = "AVE";
@@ -65,7 +75,8 @@ class TrainTest {
     }
 
     @Test
-    void testSettersAndGetters() {
+    void testSettersAndGetters()
+    {
         // Arrange
         Train train = new Train();
         String trainId = "TRAIN456";
@@ -102,7 +113,8 @@ class TrainTest {
     }
 
     @Test
-    void testSetFaresWithNull() {
+    void testSetFaresWithNull()
+    {
         // Arrange
         Train train = new Train();
 
@@ -115,7 +127,8 @@ class TrainTest {
     }
 
     @Test
-    void testSetFaresWithList() {
+    void testSetFaresWithList()
+    {
         // Arrange
         Train train = new Train();
         FareOption fare1 = new FareOption("Basic", 45.50, "EUR", "BASIC", null, null);
@@ -133,7 +146,8 @@ class TrainTest {
     }
 
     @Test
-    void testSetFaresReturnsNewList() {
+    void testSetFaresReturnsNewList()
+    {
         // Arrange
         Train train = new Train();
         FareOption fare1 = new FareOption("Basic", 45.50, "EUR", "BASIC", null, null);
@@ -151,7 +165,8 @@ class TrainTest {
     }
 
     @Test
-    void testGetFaresReturnsNewList() {
+    void testGetFaresReturnsNewList()
+    {
         // Arrange
         Train train = new Train();
         FareOption fare1 = new FareOption("Basic", 45.50, "EUR", "BASIC", null, null);
@@ -167,7 +182,8 @@ class TrainTest {
     }
 
     @Test
-    void testSetBadgesWithNull() {
+    void testSetBadgesWithNull()
+    {
         // Arrange
         Train train = new Train();
 
@@ -180,7 +196,8 @@ class TrainTest {
     }
 
     @Test
-    void testSetBadgesWithList() {
+    void testSetBadgesWithList()
+    {
         // Arrange
         Train train = new Train();
         List<String> badges = Arrays.asList("WIFI", "POWER", "MEAL");
@@ -197,7 +214,8 @@ class TrainTest {
     }
 
     @Test
-    void testSetBadgesReturnsNewList() {
+    void testSetBadgesReturnsNewList()
+    {
         // Arrange
         Train train = new Train();
         List<String> badges = new ArrayList<>();
@@ -214,7 +232,8 @@ class TrainTest {
     }
 
     @Test
-    void testGetBadgesReturnsNewList() {
+    void testGetBadgesReturnsNewList()
+    {
         // Arrange
         Train train = new Train();
         train.setBadges(Arrays.asList("WIFI", "POWER"));
@@ -229,7 +248,8 @@ class TrainTest {
     }
 
     @Test
-    void testSetPriceFromWithZero() {
+    void testSetPriceFromWithZero()
+    {
         // Arrange
         Train train = new Train();
 
@@ -241,7 +261,8 @@ class TrainTest {
     }
 
     @Test
-    void testSetPriceFromWithNegative() {
+    void testSetPriceFromWithNegative()
+    {
         // Arrange
         Train train = new Train();
 
@@ -253,7 +274,8 @@ class TrainTest {
     }
 
     @Test
-    void testSetAccessible() {
+    void testSetAccessible()
+    {
         // Arrange
         Train train = new Train();
 
@@ -266,7 +288,8 @@ class TrainTest {
     }
 
     @Test
-    void testSetEcoFriendly() {
+    void testSetEcoFriendly()
+    {
         // Arrange
         Train train = new Train();
 
@@ -279,7 +302,8 @@ class TrainTest {
     }
 
     @Test
-    void testSetNullValues() {
+    void testSetNullValues()
+    {
         // Arrange
         Train train = new Train();
 
@@ -300,4 +324,3 @@ class TrainTest {
         assertNull(train.getCurrency());
     }
 }
-

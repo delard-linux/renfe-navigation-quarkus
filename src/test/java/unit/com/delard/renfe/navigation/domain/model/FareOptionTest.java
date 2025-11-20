@@ -1,20 +1,29 @@
+/*
+ * Copyright © ${YEAR} MCP Renfe Navigation Quarkus
+ * All rights reserved.
+ */
+
 package com.delard.renfe.navigation.domain.model;
 
-import org.junit.jupiter.api.Test;
+
+import static org.junit.jupiter.api.Assertions.*;
 
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-import static org.junit.jupiter.api.Assertions.*;
+import org.junit.jupiter.api.Test;
+
 
 /**
  * Unit tests for FareOption domain model
  */
-class FareOptionTest {
+class FareOptionTest
+{
 
     @Test
-    void testDefaultConstructor() {
+    void testDefaultConstructor()
+    {
         // Act
         FareOption fareOption = new FareOption();
 
@@ -31,7 +40,8 @@ class FareOptionTest {
     }
 
     @Test
-    void testParameterizedConstructorWithAllParameters() {
+    void testParameterizedConstructorWithAllParameters()
+    {
         // Arrange
         String name = "Basic";
         double price = 45.50;
@@ -56,7 +66,8 @@ class FareOptionTest {
     }
 
     @Test
-    void testParameterizedConstructorWithNullCurrency() {
+    void testParameterizedConstructorWithNullCurrency()
+    {
         // Arrange
         String name = "Basic";
         double price = 45.50;
@@ -79,7 +90,8 @@ class FareOptionTest {
     }
 
     @Test
-    void testParameterizedConstructorWithNullFeatures() {
+    void testParameterizedConstructorWithNullFeatures()
+    {
         // Arrange
         String name = "Basic";
         double price = 45.50;
@@ -97,7 +109,8 @@ class FareOptionTest {
     }
 
     @Test
-    void testSettersAndGetters() {
+    void testSettersAndGetters()
+    {
         // Arrange
         FareOption fareOption = new FareOption();
         String name = "Premium";
@@ -129,7 +142,8 @@ class FareOptionTest {
     }
 
     @Test
-    void testSetFeaturesWithNull() {
+    void testSetFeaturesWithNull()
+    {
         // Arrange
         FareOption fareOption = new FareOption();
 
@@ -142,7 +156,8 @@ class FareOptionTest {
     }
 
     @Test
-    void testSetFeaturesWithList() {
+    void testSetFeaturesWithList()
+    {
         // Arrange
         FareOption fareOption = new FareOption();
         List<String> features = Arrays.asList("WIFI", "POWER", "MEAL");
@@ -159,7 +174,8 @@ class FareOptionTest {
     }
 
     @Test
-    void testSetFeaturesReturnsNewList() {
+    void testSetFeaturesReturnsNewList()
+    {
         // Arrange
         FareOption fareOption = new FareOption();
         List<String> features = new ArrayList<>();
@@ -176,7 +192,8 @@ class FareOptionTest {
     }
 
     @Test
-    void testGetFeaturesReturnsNewList() {
+    void testGetFeaturesReturnsNewList()
+    {
         // Arrange
         FareOption fareOption = new FareOption();
         fareOption.setFeatures(Arrays.asList("WIFI", "POWER"));
@@ -191,7 +208,8 @@ class FareOptionTest {
     }
 
     @Test
-    void testSetPriceWithZero() {
+    void testSetPriceWithZero()
+    {
         // Arrange
         FareOption fareOption = new FareOption();
 
@@ -203,7 +221,8 @@ class FareOptionTest {
     }
 
     @Test
-    void testSetPriceWithNegative() {
+    void testSetPriceWithNegative()
+    {
         // Arrange
         FareOption fareOption = new FareOption();
 
@@ -215,7 +234,8 @@ class FareOptionTest {
     }
 
     @Test
-    void testSetNullValues() {
+    void testSetNullValues()
+    {
         // Arrange
         FareOption fareOption = new FareOption();
 
@@ -235,7 +255,8 @@ class FareOptionTest {
     }
 
     @Test
-    void testSetEmptyFeatures() {
+    void testSetEmptyFeatures()
+    {
         // Arrange
         FareOption fareOption = new FareOption();
 
@@ -248,7 +269,8 @@ class FareOptionTest {
     }
 
     @Test
-    void testParameterizedConstructorWithEmptyFeatures() {
+    void testParameterizedConstructorWithEmptyFeatures()
+    {
         // Arrange
         String name = "Basic";
         double price = 45.50;
@@ -265,4 +287,3 @@ class FareOptionTest {
         assertTrue(fareOption.getFeatures().isEmpty());
     }
 }
-

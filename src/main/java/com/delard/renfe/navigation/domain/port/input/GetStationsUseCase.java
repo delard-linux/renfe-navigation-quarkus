@@ -1,13 +1,21 @@
+/*
+ * Copyright © ${YEAR} MCP Renfe Navigation Quarkus
+ * All rights reserved.
+ */
+
 package com.delard.renfe.navigation.domain.port.input;
+
+
+import java.util.List;
 
 import com.delard.renfe.navigation.domain.model.Station;
 
-import java.util.List;
 
 /**
  * Input port for getting all stations
  */
-public interface GetStationsUseCase {
+public interface GetStationsUseCase
+{
 
     /**
      * Get all available stations
@@ -25,4 +33,3 @@ public interface GetStationsUseCase {
      */
     List<Station> searchStations(String searchText);
 }
-

@@ -1,8 +1,21 @@
+/*
+ * Copyright © ${YEAR} MCP Renfe Navigation Quarkus
+ * All rights reserved.
+ */
+
 package com.delard.renfe.navigation.application.service;
+
+
+import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.Mockito.*;
+
+import java.util.Arrays;
+import java.util.List;
 
 import com.delard.renfe.navigation.application.exception.ValidationException;
 import com.delard.renfe.navigation.domain.model.Station;
 import com.delard.renfe.navigation.domain.port.output.StationRepository;
+
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -10,17 +23,13 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
-import java.util.Arrays;
-import java.util.List;
-
-import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.Mockito.*;
 
 /**
  * Unit tests for GetStationsService
  */
 @ExtendWith(MockitoExtension.class)
-class GetStationsServiceTest {
+class GetStationsServiceTest
+{
 
     @Mock
     private StationRepository stationRepository;
@@ -31,17 +40,19 @@ class GetStationsServiceTest {
     private List<Station> mockStations;
 
     @BeforeEach
-    void setUp() {
+    void setUp()
+    {
         Station station1 = new Station("MADRI", "0071", 1, null,
                 "MADRID (TODAS)", null, "0071,MADRI,null", "MADRID (TODAS)");
         Station station2 = new Station("BARCE", "0071", 3, null,
                 "BARCELONA (TODAS)", null, "0071,BARCE,null", "BARCELONA (TODAS)");
-        
+
         mockStations = Arrays.asList(station1, station2);
     }
 
     @Test
-    void testGetAllStationsSuccess() {
+    void testGetAllStationsSuccess()
+    {
         when(stationRepository.loadAllStations()).thenReturn(mockStations);
 
         List<Station> result = getStationsService.getAllStations();
@@ -50,24 +61,26 @@ class GetStationsServiceTest {
         assertEquals(2, result.size());
         assertEquals("MADRI", result.get(0).getStationCode());
         assertEquals("BARCE", result.get(1).getStationCode());
-        
+
         verify(stationRepository, times(1)).loadAllStations();
     }
 
     @Test
-    void testGetAllStationsEmptyList() {
+    void testGetAllStationsEmptyList()
+    {
         when(stationRepository.loadAllStations()).thenReturn(List.of());
 
         List<Station> result = getStationsService.getAllStations();
 
         assertNotNull(result);
         assertTrue(result.isEmpty());
-        
+
         verify(stationRepository, times(1)).loadAllStations();
     }
 
     @Test
-    void testGetAllStationsThrowsException() {
+    void testGetAllStationsThrowsException()
+    {
         when(stationRepository.loadAllStations()).thenThrow(new RuntimeException("Database error"));
 
         RuntimeException exception = assertThrows(RuntimeException.class, () -> {
@@ -76,24 +89,26 @@ class GetStationsServiceTest {
 
         assertTrue(exception.getMessage().contains("Error loading stations"));
         assertTrue(exception.getMessage().contains("Database error"));
-        
+
         verify(stationRepository, times(1)).loadAllStations();
     }
 
     @Test
-    void testGetAllStationsWithNullFromRepository() {
+    void testGetAllStationsWithNullFromRepository()
+    {
         when(stationRepository.loadAllStations()).thenReturn(null);
 
         List<Station> result = getStationsService.getAllStations();
 
         assertNotNull(result);
         assertTrue(result.isEmpty());
-        
+
         verify(stationRepository, times(1)).loadAllStations();
     }
 
     @Test
-    void testSearchStationsSuccess() {
+    void testSearchStationsSuccess()
+    {
         Station station1 = new Station("MADRI", "0071", 1, null,
                 "MADRID (TODAS)", null, "0071,MADRI,null", "MADRID (TODAS)");
         Station station2 = new Station("60000", "0071", 2, null,
@@ -109,24 +124,26 @@ class GetStationsServiceTest {
         assertEquals(2, result.size());
         assertEquals("MADRI", result.get(0).getStationCode());
         assertEquals("60000", result.get(1).getStationCode());
-        
+
         verify(stationRepository, times(1)).searchStations("MADRID");
     }
 
     @Test
-    void testSearchStationsEmptyResult() {
+    void testSearchStationsEmptyResult()
+    {
         when(stationRepository.searchStations("NONEXISTENT")).thenReturn(List.of());
 
         List<Station> result = getStationsService.searchStations("NONEXISTENT");
 
         assertNotNull(result);
         assertTrue(result.isEmpty());
-        
+
         verify(stationRepository, times(1)).searchStations("NONEXISTENT");
     }
 
     @Test
-    void testSearchStationsWithNullText() {
+    void testSearchStationsWithNullText()
+    {
         ValidationException exception = assertThrows(ValidationException.class, () -> {
             getStationsService.searchStations(null);
         });
@@ -136,7 +153,8 @@ class GetStationsServiceTest {
     }
 
     @Test
-    void testSearchStationsWithBlankText() {
+    void testSearchStationsWithBlankText()
+    {
         ValidationException exception = assertThrows(ValidationException.class, () -> {
             getStationsService.searchStations("   ");
         });
@@ -146,7 +164,8 @@ class GetStationsServiceTest {
     }
 
     @Test
-    void testSearchStationsWithEmptyText() {
+    void testSearchStationsWithEmptyText()
+    {
         ValidationException exception = assertThrows(ValidationException.class, () -> {
             getStationsService.searchStations("");
         });
@@ -156,7 +175,8 @@ class GetStationsServiceTest {
     }
 
     @Test
-    void testSearchStationsWithLessThanThreeCharacters() {
+    void testSearchStationsWithLessThanThreeCharacters()
+    {
         ValidationException exception1 = assertThrows(ValidationException.class, () -> {
             getStationsService.searchStations("AB");
         });
@@ -171,7 +191,8 @@ class GetStationsServiceTest {
     }
 
     @Test
-    void testSearchStationsWithExactlyThreeCharacters() {
+    void testSearchStationsWithExactlyThreeCharacters()
+    {
         Station station1 = new Station("MADRI", "0071", 1, null,
                 "MADRID (TODAS)", null, "0071,MADRI,null", "MADRID (TODAS)");
         List<Station> matchingStations = Arrays.asList(station1);
@@ -186,7 +207,8 @@ class GetStationsServiceTest {
     }
 
     @Test
-    void testSearchStationsWithWhitespaceTrimmed() {
+    void testSearchStationsWithWhitespaceTrimmed()
+    {
         ValidationException exception = assertThrows(ValidationException.class, () -> {
             getStationsService.searchStations("  AB  ");
         });
@@ -196,7 +218,8 @@ class GetStationsServiceTest {
     }
 
     @Test
-    void testSearchStationsThrowsException() {
+    void testSearchStationsThrowsException()
+    {
         when(stationRepository.searchStations("MADRID")).thenThrow(new RuntimeException("Search error"));
 
         RuntimeException exception = assertThrows(RuntimeException.class, () -> {
@@ -205,24 +228,26 @@ class GetStationsServiceTest {
 
         assertTrue(exception.getMessage().contains("Error searching stations"));
         assertTrue(exception.getMessage().contains("Search error"));
-        
+
         verify(stationRepository, times(1)).searchStations("MADRID");
     }
 
     @Test
-    void testSearchStationsWithNullFromRepository() {
+    void testSearchStationsWithNullFromRepository()
+    {
         when(stationRepository.searchStations("MADRID")).thenReturn(null);
 
         List<Station> result = getStationsService.searchStations("MADRID");
 
         assertNotNull(result);
         assertTrue(result.isEmpty());
-        
+
         verify(stationRepository, times(1)).searchStations("MADRID");
     }
 
     @Test
-    void testSearchStationsWithMultipleWordsAllValid() {
+    void testSearchStationsWithMultipleWordsAllValid()
+    {
         Station station1 = new Station("MADRI", "0071", 1, null,
                 "MADRID (TODAS)", null, "0071,MADRI,null", "MADRID (TODAS)");
         List<Station> matchingStations = Arrays.asList(station1);
@@ -237,7 +262,8 @@ class GetStationsServiceTest {
     }
 
     @Test
-    void testSearchStationsWithWordLessThanThreeCharacters() {
+    void testSearchStationsWithWordLessThanThreeCharacters()
+    {
         // When all words have 3 or fewer characters, validation requires all words to have at least 3 characters
         ValidationException exception = assertThrows(ValidationException.class, () -> {
             getStationsService.searchStations("MA AB");
@@ -250,7 +276,8 @@ class GetStationsServiceTest {
     }
 
     @Test
-    void testSearchStationsWithSingleWordLessThanThreeCharacters() {
+    void testSearchStationsWithSingleWordLessThanThreeCharacters()
+    {
         ValidationException exception = assertThrows(ValidationException.class, () -> {
             getStationsService.searchStations("AB");
         });
@@ -260,7 +287,8 @@ class GetStationsServiceTest {
     }
 
     @Test
-    void testSearchStationsWithMultipleWordsOneInvalid() {
+    void testSearchStationsWithMultipleWordsOneInvalid()
+    {
         // When there's at least one word with more than 3 characters, validation per word is skipped
         Station station1 = new Station("MADRI", "0071", 1, null,
                 "MADRID (TODAS)", null, "0071,MADRI,null", "MADRID (TODAS)");
@@ -276,7 +304,8 @@ class GetStationsServiceTest {
     }
 
     @Test
-    void testSearchStationsWithMultipleSpacesBetweenWords() {
+    void testSearchStationsWithMultipleSpacesBetweenWords()
+    {
         Station station1 = new Station("MADRI", "0071", 1, null,
                 "MADRID (TODAS)", null, "0071,MADRI,null", "MADRID (TODAS)");
         List<Station> matchingStations = Arrays.asList(station1);
@@ -291,7 +320,8 @@ class GetStationsServiceTest {
     }
 
     @Test
-    void testSearchStationsWithLeadingAndTrailingSpaces() {
+    void testSearchStationsWithLeadingAndTrailingSpaces()
+    {
         Station station1 = new Station("MADRI", "0071", 1, null,
                 "MADRID (TODAS)", null, "0071,MADRI,null", "MADRID (TODAS)");
         List<Station> matchingStations = Arrays.asList(station1);
@@ -306,7 +336,8 @@ class GetStationsServiceTest {
     }
 
     @Test
-    void testSearchStationsWithThreeCharacterWords() {
+    void testSearchStationsWithThreeCharacterWords()
+    {
         Station station1 = new Station("MADRI", "0071", 1, null,
                 "MADRID (TODAS)", null, "0071,MADRI,null", "MADRID (TODAS)");
         List<Station> matchingStations = Arrays.asList(station1);
@@ -321,7 +352,8 @@ class GetStationsServiceTest {
     }
 
     @Test
-    void testSearchStationsWithShortWordsOnly() {
+    void testSearchStationsWithShortWordsOnly()
+    {
         // When all words have 3 or fewer characters, validation requires all words to have at least 3 characters
         ValidationException exception = assertThrows(ValidationException.class, () -> {
             getStationsService.searchStations("DE LA");
@@ -333,4 +365,3 @@ class GetStationsServiceTest {
         verify(stationRepository, never()).searchStations(anyString());
     }
 }
-

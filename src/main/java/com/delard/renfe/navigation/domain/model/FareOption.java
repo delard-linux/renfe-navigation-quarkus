@@ -1,12 +1,20 @@
+/*
+ * Copyright © ${YEAR} MCP Renfe Navigation Quarkus
+ * All rights reserved.
+ */
+
 package com.delard.renfe.navigation.domain.model;
+
 
 import java.util.ArrayList;
 import java.util.List;
 
+
 /**
  * Individual train fare option
  */
-public class FareOption {
+public class FareOption
+{
     private String name;
     private double price;
     private String currency;
@@ -15,12 +23,14 @@ public class FareOption {
     private String plan;
     private List<String> features;
 
-    public FareOption() {
+    public FareOption()
+    {
         this.currency = "EUR";
         this.features = new ArrayList<>();
     }
 
-    public FareOption(String name, double price, String currency, String code, String tpEnlace, List<String> features) {
+    public FareOption(String name, double price, String currency, String code, String tpEnlace, List<String> features)
+    {
         this.name = name;
         this.price = price;
         this.currency = currency != null ? currency : "EUR";
@@ -30,60 +40,73 @@ public class FareOption {
     }
 
     // Getters and Setters
-    public String getName() {
+    public String getName()
+    {
         return name;
     }
 
-    public void setName(String name) {
+    public void setName(String name)
+    {
         this.name = name;
     }
 
-    public double getPrice() {
+    public double getPrice()
+    {
         return price;
     }
 
-    public void setPrice(double price) {
+    public void setPrice(double price)
+    {
         this.price = price;
     }
 
-    public String getCurrency() {
+    public String getCurrency()
+    {
         return currency;
     }
 
-    public void setCurrency(String currency) {
+    public void setCurrency(String currency)
+    {
         this.currency = currency;
     }
 
-    public String getCode() {
+    public String getCode()
+    {
         return code;
     }
 
-    public void setCode(String code) {
+    public void setCode(String code)
+    {
         this.code = code;
     }
 
-    public String getTpEnlace() {
+    public String getTpEnlace()
+    {
         return tpEnlace;
     }
 
-    public void setTpEnlace(String tpEnlace) {
+    public void setTpEnlace(String tpEnlace)
+    {
         this.tpEnlace = tpEnlace;
     }
 
-    public String getPlan() {
+    public String getPlan()
+    {
         return plan;
     }
 
-    public void setPlan(String plan) {
+    public void setPlan(String plan)
+    {
         this.plan = plan;
     }
 
-    public List<String> getFeatures() {
+    public List<String> getFeatures()
+    {
         return new ArrayList<>(features);
     }
 
-    public void setFeatures(List<String> features) {
+    public void setFeatures(List<String> features)
+    {
         this.features = features != null ? new ArrayList<>(features) : new ArrayList<>();
     }
 }
-

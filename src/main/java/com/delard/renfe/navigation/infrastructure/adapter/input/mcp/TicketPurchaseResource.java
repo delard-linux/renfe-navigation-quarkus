@@ -1,19 +1,30 @@
+/*
+ * Copyright © ${YEAR} MCP Renfe Navigation Quarkus
+ * All rights reserved.
+ */
+
 package com.delard.renfe.navigation.infrastructure.adapter.input.mcp;
 
-import com.delard.renfe.navigation.application.exception.ValidationException;
-import com.delard.renfe.navigation.domain.port.input.PurchaseTicketUseCase;
+
+import jakarta.enterprise.context.ApplicationScoped;
+import jakarta.inject.Inject;
+
 import io.quarkiverse.mcp.server.TextContent;
 import io.quarkiverse.mcp.server.Tool;
 import io.quarkiverse.mcp.server.ToolArg;
-import jakarta.enterprise.context.ApplicationScoped;
-import jakarta.inject.Inject;
+
+import com.delard.renfe.navigation.application.exception.ValidationException;
+import com.delard.renfe.navigation.domain.port.input.PurchaseTicketUseCase;
+
 import org.jboss.logging.Logger;
+
 
 /**
  * MCP Tool that exposes ticket purchase capabilities.
  */
 @ApplicationScoped
-public class TicketPurchaseResource {
+public class TicketPurchaseResource
+{
 
     private static final Logger LOG = Logger.getLogger(TicketPurchaseResource.class);
 
@@ -30,8 +41,8 @@ public class TicketPurchaseResource {
             @ToolArg(required = true, description = "User name") String userName,
             @ToolArg(required = true, description = "Service type (e.g., AVE)") String serviceType,
             @ToolArg(required = true, description = "Departure time (HH:mm)") String departureTime,
-            @ToolArg(required = true, description = "Fare name (e.g., Básico)") String fareName
-    ) {
+            @ToolArg(required = true, description = "Fare name (e.g., Básico)") String fareName)
+    {
         try {
             LOG.infof("[MCP TOOL] Request - purchaseTicket: user=%s, %s -> %s", userName, origin, destination);
             String confirmation = purchaseTicketUseCase.purchaseTicket(
@@ -43,8 +54,7 @@ public class TicketPurchaseResource {
                     userName,
                     serviceType,
                     departureTime,
-                    fareName
-            );
+                    fareName);
             return new TextContent(confirmation);
         } catch (ValidationException e) {
             LOG.warnf("[MCP TOOL] Validation error: %s", e.getMessage());
@@ -55,4 +65,3 @@ public class TicketPurchaseResource {
         }
     }
 }
-

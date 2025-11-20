@@ -1,20 +1,29 @@
+/*
+ * Copyright © ${YEAR} MCP Renfe Navigation Quarkus
+ * All rights reserved.
+ */
+
 package com.delard.renfe.navigation.domain.model;
 
-import org.junit.jupiter.api.Test;
+
+import static org.junit.jupiter.api.Assertions.*;
 
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-import static org.junit.jupiter.api.Assertions.*;
+import org.junit.jupiter.api.Test;
+
 
 /**
  * Unit tests for TrainsResponse domain model
  */
-class TrainsResponseTest {
+class TrainsResponseTest
+{
 
     @Test
-    void testDefaultConstructor() {
+    void testDefaultConstructor()
+    {
         // Act
         TrainsResponse response = new TrainsResponse();
 
@@ -30,7 +39,8 @@ class TrainsResponseTest {
     }
 
     @Test
-    void testParameterizedConstructor() {
+    void testParameterizedConstructor()
+    {
         // Arrange
         String origin = "OURENSE";
         String destination = "MADRID";
@@ -43,7 +53,8 @@ class TrainsResponseTest {
         List<Train> trainsReturn = Arrays.asList(train1);
 
         // Act
-        TrainsResponse response = new TrainsResponse(origin, destination, dateOut, dateReturn, adults, trainsOut, trainsReturn);
+        TrainsResponse response =
+                new TrainsResponse(origin, destination, dateOut, dateReturn, adults, trainsOut, trainsReturn);
 
         // Assert
         assertEquals(origin, response.getOrigin());
@@ -58,7 +69,8 @@ class TrainsResponseTest {
     }
 
     @Test
-    void testParameterizedConstructorWithNullLists() {
+    void testParameterizedConstructorWithNullLists()
+    {
         // Arrange
         String origin = "OURENSE";
         String destination = "MADRID";
@@ -69,7 +81,8 @@ class TrainsResponseTest {
         List<Train> trainsReturn = null;
 
         // Act
-        TrainsResponse response = new TrainsResponse(origin, destination, dateOut, dateReturn, adults, trainsOut, trainsReturn);
+        TrainsResponse response =
+                new TrainsResponse(origin, destination, dateOut, dateReturn, adults, trainsOut, trainsReturn);
 
         // Assert
         assertEquals(origin, response.getOrigin());
@@ -82,7 +95,8 @@ class TrainsResponseTest {
     }
 
     @Test
-    void testSettersAndGetters() {
+    void testSettersAndGetters()
+    {
         // Arrange
         TrainsResponse response = new TrainsResponse();
         String origin = "BARCELONA";
@@ -107,7 +121,8 @@ class TrainsResponseTest {
     }
 
     @Test
-    void testSetTrainsOutWithNull() {
+    void testSetTrainsOutWithNull()
+    {
         // Arrange
         TrainsResponse response = new TrainsResponse();
 
@@ -119,7 +134,8 @@ class TrainsResponseTest {
     }
 
     @Test
-    void testSetTrainsOutWithList() {
+    void testSetTrainsOutWithList()
+    {
         // Arrange
         TrainsResponse response = new TrainsResponse();
         Train train1 = new Train("TRAIN123", "AVE", "08:00", "12:30", "4h 30m", 45.50);
@@ -137,7 +153,8 @@ class TrainsResponseTest {
     }
 
     @Test
-    void testSetTrainsOutReturnsNewList() {
+    void testSetTrainsOutReturnsNewList()
+    {
         // Arrange
         TrainsResponse response = new TrainsResponse();
         Train train1 = new Train("TRAIN123", "AVE", "08:00", "12:30", "4h 30m", 45.50);
@@ -155,7 +172,8 @@ class TrainsResponseTest {
     }
 
     @Test
-    void testGetTrainsOutReturnsNewList() {
+    void testGetTrainsOutReturnsNewList()
+    {
         // Arrange
         TrainsResponse response = new TrainsResponse();
         Train train1 = new Train("TRAIN123", "AVE", "08:00", "12:30", "4h 30m", 45.50);
@@ -171,7 +189,8 @@ class TrainsResponseTest {
     }
 
     @Test
-    void testSetTrainsReturnWithNull() {
+    void testSetTrainsReturnWithNull()
+    {
         // Arrange
         TrainsResponse response = new TrainsResponse();
 
@@ -183,7 +202,8 @@ class TrainsResponseTest {
     }
 
     @Test
-    void testSetTrainsReturnWithList() {
+    void testSetTrainsReturnWithList()
+    {
         // Arrange
         TrainsResponse response = new TrainsResponse();
         Train train1 = new Train("TRAIN123", "AVE", "08:00", "12:30", "4h 30m", 45.50);
@@ -199,7 +219,8 @@ class TrainsResponseTest {
     }
 
     @Test
-    void testSetTrainsReturnReturnsNewList() {
+    void testSetTrainsReturnReturnsNewList()
+    {
         // Arrange
         TrainsResponse response = new TrainsResponse();
         Train train1 = new Train("TRAIN123", "AVE", "08:00", "12:30", "4h 30m", 45.50);
@@ -217,7 +238,8 @@ class TrainsResponseTest {
     }
 
     @Test
-    void testGetTrainsReturnReturnsNewList() {
+    void testGetTrainsReturnReturnsNewList()
+    {
         // Arrange
         TrainsResponse response = new TrainsResponse();
         Train train1 = new Train("TRAIN123", "AVE", "08:00", "12:30", "4h 30m", 45.50);
@@ -233,7 +255,8 @@ class TrainsResponseTest {
     }
 
     @Test
-    void testSetAdultsWithZero() {
+    void testSetAdultsWithZero()
+    {
         // Arrange
         TrainsResponse response = new TrainsResponse();
 
@@ -245,7 +268,8 @@ class TrainsResponseTest {
     }
 
     @Test
-    void testSetAdultsWithNegative() {
+    void testSetAdultsWithNegative()
+    {
         // Arrange
         TrainsResponse response = new TrainsResponse();
 
@@ -257,7 +281,8 @@ class TrainsResponseTest {
     }
 
     @Test
-    void testSetNullValues() {
+    void testSetNullValues()
+    {
         // Arrange
         TrainsResponse response = new TrainsResponse();
 
@@ -275,7 +300,8 @@ class TrainsResponseTest {
     }
 
     @Test
-    void testSetEmptyLists() {
+    void testSetEmptyLists()
+    {
         // Arrange
         TrainsResponse response = new TrainsResponse();
 
@@ -290,4 +316,3 @@ class TrainsResponseTest {
         assertTrue(response.getTrainsReturn().isEmpty());
     }
 }
-

@@ -1,16 +1,25 @@
+/*
+ * Copyright © ${YEAR} MCP Renfe Navigation Quarkus
+ * All rights reserved.
+ */
+
 package com.delard.renfe.navigation.application.exception;
+
+
+import static org.junit.jupiter.api.Assertions.*;
 
 import org.junit.jupiter.api.Test;
 
-import static org.junit.jupiter.api.Assertions.*;
 
 /**
  * Unit tests for QueueException
  */
-class QueueExceptionTest {
+class QueueExceptionTest
+{
 
     @Test
-    void testConstructorWithMessage() {
+    void testConstructorWithMessage()
+    {
         String message = "Ticket purchase is queued";
         QueueException exception = new QueueException(message);
 
@@ -20,7 +29,8 @@ class QueueExceptionTest {
     }
 
     @Test
-    void testConstructorWithMessageAndCause() {
+    void testConstructorWithMessageAndCause()
+    {
         String message = "Ticket purchase is queued";
         Throwable cause = new RuntimeException("Queue system error");
         QueueException exception = new QueueException(message, cause);
@@ -31,8 +41,9 @@ class QueueExceptionTest {
     }
 
     @Test
-    void testConstructorWithNullMessage() {
-        QueueException exception = new QueueException((String) null);
+    void testConstructorWithNullMessage()
+    {
+        QueueException exception = new QueueException((String)null);
 
         assertNotNull(exception);
         assertNull(exception.getMessage());
@@ -40,7 +51,8 @@ class QueueExceptionTest {
     }
 
     @Test
-    void testConstructorWithEmptyMessage() {
+    void testConstructorWithEmptyMessage()
+    {
         QueueException exception = new QueueException("");
 
         assertNotNull(exception);
@@ -49,7 +61,8 @@ class QueueExceptionTest {
     }
 
     @Test
-    void testConstructorWithNullCause() {
+    void testConstructorWithNullCause()
+    {
         String message = "Ticket purchase is queued";
         QueueException exception = new QueueException(message, null);
 
@@ -59,14 +72,16 @@ class QueueExceptionTest {
     }
 
     @Test
-    void testExceptionIsRuntimeException() {
+    void testExceptionIsRuntimeException()
+    {
         QueueException exception = new QueueException("Test message");
 
         assertInstanceOf(RuntimeException.class, exception);
     }
 
     @Test
-    void testExceptionCanBeThrown() {
+    void testExceptionCanBeThrown()
+    {
         QueueException exception = new QueueException("Test message");
 
         assertThrows(QueueException.class, () -> {
@@ -74,4 +89,3 @@ class QueueExceptionTest {
         });
     }
 }
-

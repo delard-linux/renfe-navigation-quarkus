@@ -26,6 +26,7 @@ This project follows **Hexagonal Architecture (Ports & Adapters)** pattern.
 - ✅ Dependency injection with CDI
 - ✅ DTOs separated from domain
 - ✅ CORS enabled
+- ✅ Code formatting with Spotless
 
 ## Quick Start
 
@@ -191,6 +192,52 @@ The following adapter is created but pending implementation:
 
 Currently it returns empty/placeholder responses to allow architecture startup and testing.
 
+## Code Formatting
+
+This project uses [Spotless](https://github.com/diffplug/spotless) to ensure consistent code formatting across the codebase.
+
+### Formatting Rules
+
+Spotless configuration is located in `config/spotless/`:
+- **Java**: Eclipse formatter with custom profile (`formatter.xml`), import ordering (`imports.importorder`), and license header (`header.txt`)
+- **XML**: Eclipse WTP formatter with 2-space indentation (`xml.prefs`)
+- **YAML**: Jackson formatter with optimized settings
+- **POM**: SortPom for consistent `pom.xml` formatting
+
+### Usage
+
+**Check formatting (without applying changes):**
+```bash
+./mvnw spotless:check
+```
+
+**Apply formatting automatically:**
+```bash
+./mvnw spotless:apply
+```
+
+**Formatting is automatically checked during `verify` phase:**
+```bash
+./mvnw verify
+```
+
+### Disabling Formatting for Specific Code
+
+You can disable formatting for specific code blocks using:
+```java
+// @formatter:off
+// Your code here that should not be formatted
+// @formatter:on
+```
+
+### Configuration Files
+
+All Spotless configuration files are located in `config/spotless/`:
+- `formatter.xml` - Eclipse Java formatter profile
+- `imports.importorder` - Import ordering rules
+- `header.txt` - License header template
+- `xml.prefs` - XML formatting preferences
+
 ## Testing
 See [docs/TEST.md](./docs/TEST.md) for commands, structure, and VS Code debug instructions for `@QuarkusTest`.
 
@@ -203,6 +250,7 @@ See [docs/TEST.md](./docs/TEST.md) for commands, structure, and VS Code debug in
 - Hibernate Validator
 - JBoss Logging
 - JaCoCo 0.8.14 (Code Coverage)
+- Spotless 2.46.1 (Code Formatting)
 
 ## License
 

@@ -1,12 +1,19 @@
+/*
+ * Copyright © ${YEAR} MCP Renfe Navigation Quarkus
+ * All rights reserved.
+ */
+
 package com.delard.renfe.navigation.infrastructure.adapter.output;
 
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
+
+import static org.junit.jupiter.api.Assertions.*;
 
 import java.util.List;
 import java.util.Optional;
 
-import static org.junit.jupiter.api.Assertions.*;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+
 
 /**
  * Unit tests for LocalCacheAdapter
@@ -14,18 +21,21 @@ import static org.junit.jupiter.api.Assertions.*;
  * Note: These tests verify basic cache functionality.
  * Cache expiration and TTL are tested in integration tests due to time dependencies.
  */
-class LocalCacheAdapterTest {
+class LocalCacheAdapterTest
+{
 
     private LocalCacheAdapter localCacheAdapter;
 
     @BeforeEach
-    void setUp() {
+    void setUp()
+    {
         // Create adapter with cache enabled and default TTL of 3600 seconds
         localCacheAdapter = new LocalCacheAdapter(true, 3600L);
     }
 
     @Test
-    void testPutAndGet() {
+    void testPutAndGet()
+    {
         String key = "test:key";
         String value = "test value";
 
@@ -38,14 +48,16 @@ class LocalCacheAdapterTest {
     }
 
     @Test
-    void testGetNonExistentKey() {
+    void testGetNonExistentKey()
+    {
         Optional<String> result = localCacheAdapter.get("non:existent", String.class);
 
         assertFalse(result.isPresent());
     }
 
     @Test
-    void testEvict() {
+    void testEvict()
+    {
         String key = "test:key";
         String value = "test value";
 
@@ -57,7 +69,8 @@ class LocalCacheAdapterTest {
     }
 
     @Test
-    void testClear() {
+    void testClear()
+    {
         localCacheAdapter.put("key1", "value1", 60);
         localCacheAdapter.put("key2", "value2", 60);
 
@@ -68,14 +81,15 @@ class LocalCacheAdapterTest {
     }
 
     @Test
-    void testPutListAndGet() {
+    void testPutListAndGet()
+    {
         String key = "test:list";
         List<String> value = List.of("item1", "item2", "item3");
 
         localCacheAdapter.put(key, value, 60);
 
         @SuppressWarnings("unchecked")
-        Optional<List<String>> result = (Optional<List<String>>) (Optional<?>) localCacheAdapter.get(key, List.class);
+        Optional<List<String>> result = (Optional<List<String>>)(Optional<?>)localCacheAdapter.get(key, List.class);
 
         assertTrue(result.isPresent());
         assertEquals(3, result.get().size());
@@ -83,12 +97,14 @@ class LocalCacheAdapterTest {
     }
 
     @Test
-    void testCacheIsEnabled() {
+    void testCacheIsEnabled()
+    {
         assertTrue(localCacheAdapter.isEnabled());
     }
 
     @Test
-    void testCacheDisabled() {
+    void testCacheDisabled()
+    {
         // Create a new adapter with cache disabled
         LocalCacheAdapter disabledCache = new LocalCacheAdapter(false, 3600L);
 

@@ -1,18 +1,28 @@
+/*
+ * Copyright © ${YEAR} MCP Renfe Navigation Quarkus
+ * All rights reserved.
+ */
+
 package com.delard.renfe.navigation.infrastructure.service;
 
+
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
+import jakarta.enterprise.context.ApplicationScoped;
+
 import com.delard.renfe.navigation.domain.model.TrainConnection;
+
 import org.jboss.logging.Logger;
 import org.jsoup.nodes.Element;
 
-import jakarta.enterprise.context.ApplicationScoped;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 /**
  * Parser for extracting train connection information from HTML elements
  */
 @ApplicationScoped
-public class TrainConnectionParser {
+public class TrainConnectionParser
+{
 
     private static final Logger LOG = Logger.getLogger(TrainConnectionParser.class);
 
@@ -23,7 +33,8 @@ public class TrainConnectionParser {
      * @param trainId The train ID for logging
      * @return TrainConnection if a connection is found, null otherwise
      */
-    public TrainConnection parseTrainConnection(Element row, String trainId) {
+    public TrainConnection parseTrainConnection(Element row, String trainId)
+    {
         try {
             // Find the reorder-trenes-enlaces div
             Element enlacesDiv = row.selectFirst("div.reorder-trenes-enlaces");
@@ -52,21 +63,24 @@ public class TrainConnectionParser {
             // Extract first train type
             String firstTrainType = extractTrainTypeFromImage(enlacesDiv, "div.principal-tren-enlace");
             if (firstTrainType == null) {
-                LOG.warnf("[TRAIN_CONNECTION_PARSER] Connection found for train %s but first train type is missing", trainId);
+                LOG.warnf("[TRAIN_CONNECTION_PARSER] Connection found for train %s but first train type is missing",
+                        trainId);
                 return null;
             }
 
             // Extract second train type
             String secondTrainType = extractTrainTypeFromImage(enlacesDiv, "div.principal-tren-enlace-2");
             if (secondTrainType == null) {
-                LOG.warnf("[TRAIN_CONNECTION_PARSER] Connection found for train %s but second train type is missing", trainId);
+                LOG.warnf("[TRAIN_CONNECTION_PARSER] Connection found for train %s but second train type is missing",
+                        trainId);
                 return null;
             }
 
             return new TrainConnection(duration, firstTrainType, secondTrainType);
 
         } catch (Exception e) {
-            LOG.warnf(e, "[TRAIN_CONNECTION_PARSER] Error parsing connection for train %s: %s", trainId, e.getMessage());
+            LOG.warnf(e, "[TRAIN_CONNECTION_PARSER] Error parsing connection for train %s: %s", trainId,
+                    e.getMessage());
             return null;
         }
     }
@@ -74,19 +88,20 @@ public class TrainConnectionParser {
     /**
      * Extract connection duration from span.enlace-tren-min
      */
-    private String extractConnectionDuration(Element enlacesDiv, String trainId) {
+    private String extractConnectionDuration(Element enlacesDiv, String trainId)
+    {
         Element durationSpan = enlacesDiv.selectFirst("span.enlace-tren-min");
         if (durationSpan == null) {
             LOG.warnf("[TRAIN_CONNECTION_PARSER] Connection found for train %s but duration span is missing", trainId);
             return null;
         }
-        
+
         String duration = durationSpan.text().trim();
         if (duration.isEmpty()) {
             LOG.warnf("[TRAIN_CONNECTION_PARSER] Connection found for train %s but duration is empty", trainId);
             return null;
         }
-        
+
         return duration;
     }
 
@@ -97,7 +112,8 @@ public class TrainConnectionParser {
      * @param containerSelector The selector for the container div (e.g., "div.principal-tren-enlace")
      * @return The train type if found, null otherwise
      */
-    private String extractTrainTypeFromImage(Element enlacesDiv, String containerSelector) {
+    private String extractTrainTypeFromImage(Element enlacesDiv, String containerSelector)
+    {
         Element trainDiv = enlacesDiv.selectFirst(containerSelector);
         if (trainDiv == null) {
             return null;
@@ -117,4 +133,3 @@ public class TrainConnectionParser {
         return null;
     }
 }
-

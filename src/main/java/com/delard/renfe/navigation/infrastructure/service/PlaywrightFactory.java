@@ -1,7 +1,15 @@
+/*
+ * Copyright © ${YEAR} MCP Renfe Navigation Quarkus
+ * All rights reserved.
+ */
+
 package com.delard.renfe.navigation.infrastructure.service;
 
-import com.microsoft.playwright.Playwright;
+
 import jakarta.enterprise.context.ApplicationScoped;
+
+import com.microsoft.playwright.Playwright;
+
 
 /**
  * Simple factory to centralize the creation of Playwright instances.
@@ -9,11 +17,11 @@ import jakarta.enterprise.context.ApplicationScoped;
  * launching a real browser.
  */
 @ApplicationScoped
-public class PlaywrightFactory {
+public class PlaywrightFactory
+{
 
-    public Playwright create() {
+    public Playwright create()
+    {
         return Playwright.create();
     }
 }
-
-

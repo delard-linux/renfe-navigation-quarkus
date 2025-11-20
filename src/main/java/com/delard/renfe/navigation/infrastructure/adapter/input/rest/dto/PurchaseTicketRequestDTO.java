@@ -1,9 +1,15 @@
+/*
+ * Copyright © ${YEAR} MCP Renfe Navigation Quarkus
+ * All rights reserved.
+ */
+
 package com.delard.renfe.navigation.infrastructure.adapter.input.rest.dto;
 
 /**
  * DTO representing a ticket purchase request.
  */
-public class PurchaseTicketRequestDTO {
+public class PurchaseTicketRequestDTO
+{
 
     public String origin;
     public String destination;
@@ -15,4 +21,3 @@ public class PurchaseTicketRequestDTO {
     public String departureTime;
     public String fareName;
 }
-

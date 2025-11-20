@@ -1,16 +1,25 @@
+/*
+ * Copyright © ${YEAR} MCP Renfe Navigation Quarkus
+ * All rights reserved.
+ */
+
 package com.delard.renfe.navigation.application.exception;
+
+
+import static org.junit.jupiter.api.Assertions.*;
 
 import org.junit.jupiter.api.Test;
 
-import static org.junit.jupiter.api.Assertions.*;
 
 /**
  * Unit tests for ValidationException
  */
-class ValidationExceptionTest {
+class ValidationExceptionTest
+{
 
     @Test
-    void testConstructorWithMessage() {
+    void testConstructorWithMessage()
+    {
         String message = "Validation error message";
         ValidationException exception = new ValidationException(message);
 
@@ -20,7 +29,8 @@ class ValidationExceptionTest {
     }
 
     @Test
-    void testConstructorWithMessageAndCause() {
+    void testConstructorWithMessageAndCause()
+    {
         String message = "Validation error message";
         Throwable cause = new IllegalArgumentException("Root cause");
         ValidationException exception = new ValidationException(message, cause);
@@ -31,8 +41,9 @@ class ValidationExceptionTest {
     }
 
     @Test
-    void testConstructorWithNullMessage() {
-        ValidationException exception = new ValidationException((String) null);
+    void testConstructorWithNullMessage()
+    {
+        ValidationException exception = new ValidationException((String)null);
 
         assertNotNull(exception);
         assertNull(exception.getMessage());
@@ -40,7 +51,8 @@ class ValidationExceptionTest {
     }
 
     @Test
-    void testConstructorWithEmptyMessage() {
+    void testConstructorWithEmptyMessage()
+    {
         ValidationException exception = new ValidationException("");
 
         assertNotNull(exception);
@@ -49,7 +61,8 @@ class ValidationExceptionTest {
     }
 
     @Test
-    void testConstructorWithNullCause() {
+    void testConstructorWithNullCause()
+    {
         String message = "Validation error message";
         ValidationException exception = new ValidationException(message, null);
 
@@ -59,14 +72,16 @@ class ValidationExceptionTest {
     }
 
     @Test
-    void testExceptionIsRuntimeException() {
+    void testExceptionIsRuntimeException()
+    {
         ValidationException exception = new ValidationException("Test message");
 
         assertInstanceOf(RuntimeException.class, exception);
     }
 
     @Test
-    void testExceptionCanBeThrown() {
+    void testExceptionCanBeThrown()
+    {
         ValidationException exception = new ValidationException("Test message");
 
         assertThrows(ValidationException.class, () -> {
@@ -74,4 +89,3 @@ class ValidationExceptionTest {
         });
     }
 }
-

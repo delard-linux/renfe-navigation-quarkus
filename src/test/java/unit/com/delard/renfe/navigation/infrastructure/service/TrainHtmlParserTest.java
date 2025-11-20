@@ -1,25 +1,34 @@
+/*
+ * Copyright © ${YEAR} MCP Renfe Navigation Quarkus
+ * All rights reserved.
+ */
+
 package com.delard.renfe.navigation.infrastructure.service;
 
-import com.delard.renfe.navigation.domain.model.FareOption;
-import com.delard.renfe.navigation.domain.model.Train;
-import com.delard.renfe.navigation.domain.model.TrainConnection;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.junit.jupiter.MockitoExtension;
+
+import static org.junit.jupiter.api.Assertions.*;
 
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 import java.util.List;
 
-import static org.junit.jupiter.api.Assertions.*;
+import com.delard.renfe.navigation.domain.model.FareOption;
+import com.delard.renfe.navigation.domain.model.Train;
+import com.delard.renfe.navigation.domain.model.TrainConnection;
+
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.junit.jupiter.MockitoExtension;
+
 
 /**
  * Unit tests for TrainHtmlParser
  */
 @ExtendWith(MockitoExtension.class)
-class TrainHtmlParserTest {
+class TrainHtmlParserTest
+{
 
     private TrainHtmlParser parser;
     private TrainRowParser trainRowParser;
@@ -27,23 +36,25 @@ class TrainHtmlParserTest {
     private TrainConnectionParser trainConnectionParser;
 
     @BeforeEach
-    void setUp() {
+    void setUp()
+    {
         trainRowParser = new TrainRowParser();
         fareCardParser = new FareCardParser();
         trainConnectionParser = new TrainConnectionParser();
-        
+
         parser = new TrainHtmlParser();
         // Manually inject dependencies using reflection
         try {
             java.lang.reflect.Field trainRowParserField = TrainHtmlParser.class.getDeclaredField("trainRowParser");
             trainRowParserField.setAccessible(true);
             trainRowParserField.set(parser, trainRowParser);
-            
+
             java.lang.reflect.Field fareCardParserField = TrainHtmlParser.class.getDeclaredField("fareCardParser");
             fareCardParserField.setAccessible(true);
             fareCardParserField.set(parser, fareCardParser);
-            
-            java.lang.reflect.Field trainConnectionParserField = TrainHtmlParser.class.getDeclaredField("trainConnectionParser");
+
+            java.lang.reflect.Field trainConnectionParserField =
+                    TrainHtmlParser.class.getDeclaredField("trainConnectionParser");
             trainConnectionParserField.setAccessible(true);
             trainConnectionParserField.set(parser, trainConnectionParser);
         } catch (Exception e) {
@@ -52,21 +63,24 @@ class TrainHtmlParserTest {
     }
 
     @Test
-    void testParseTrainListWithEmptyHtml() {
+    void testParseTrainListWithEmptyHtml()
+    {
         List<Train> trains = parser.parseTrainList("");
         assertNotNull(trains);
         assertTrue(trains.isEmpty());
     }
 
     @Test
-    void testParseTrainListWithNullHtml() {
+    void testParseTrainListWithNullHtml()
+    {
         assertThrows(IllegalArgumentException.class, () -> {
             parser.parseTrainList(null);
         });
     }
 
     @Test
-    void testParseTrainListWithNoTrains() {
+    void testParseTrainListWithNoTrains()
+    {
         String html = "<html><body><div>No trains here</div></body></html>";
         List<Train> trains = parser.parseTrainList(html);
         assertNotNull(trains);
@@ -74,25 +88,26 @@ class TrainHtmlParserTest {
     }
 
     @Test
-    void testParseTrainListWithSingleTrain() {
+    void testParseTrainListWithSingleTrain()
+    {
         String html = """
-            <html>
-            <body>
-                <div class="selectedTren" role="listitem" id="tren_i_1">
-                    <img alt="Tipo de tren AVE" />
-                    <h5 aria-hidden="true">08:00</h5>
-                    <h5 aria-hidden="true">12:30</h5>
-                    <span class="text-number">4h 30m</span>
-                    <span class="precio-final" title="45,50">45,50 €</span>
-                </div>
-            </body>
-            </html>
-            """;
+                <html>
+                <body>
+                    <div class="selectedTren" role="listitem" id="tren_i_1">
+                        <img alt="Tipo de tren AVE" />
+                        <h5 aria-hidden="true">08:00</h5>
+                        <h5 aria-hidden="true">12:30</h5>
+                        <span class="text-number">4h 30m</span>
+                        <span class="precio-final" title="45,50">45,50 €</span>
+                    </div>
+                </body>
+                </html>
+                """;
 
         List<Train> trains = parser.parseTrainList(html);
         assertNotNull(trains);
         assertEquals(1, trains.size());
-        
+
         Train train = trains.get(0);
         assertEquals("i_1", train.getTrainId());
         assertEquals("AVE", train.getServiceType());
@@ -103,25 +118,26 @@ class TrainHtmlParserTest {
     }
 
     @Test
-    void testParseTrainListWithMultipleTrains() {
+    void testParseTrainListWithMultipleTrains()
+    {
         String html = """
-            <html>
-            <body>
-                <div class="selectedTren" role="listitem" id="tren_i_1">
-                    <h5 aria-hidden="true">08:00</h5>
-                    <h5 aria-hidden="true">12:30</h5>
-                    <span class="text-number">4h 30m</span>
-                    <span class="precio-final" title="45,50">45,50 €</span>
-                </div>
-                <div class="selectedTren" role="listitem" id="tren_i_2">
-                    <h5 aria-hidden="true">10:00</h5>
-                    <h5 aria-hidden="true">14:30</h5>
-                    <span class="text-number">4h 30m</span>
-                    <span class="precio-final" title="50,00">50,00 €</span>
-                </div>
-            </body>
-            </html>
-            """;
+                <html>
+                <body>
+                    <div class="selectedTren" role="listitem" id="tren_i_1">
+                        <h5 aria-hidden="true">08:00</h5>
+                        <h5 aria-hidden="true">12:30</h5>
+                        <span class="text-number">4h 30m</span>
+                        <span class="precio-final" title="45,50">45,50 €</span>
+                    </div>
+                    <div class="selectedTren" role="listitem" id="tren_i_2">
+                        <h5 aria-hidden="true">10:00</h5>
+                        <h5 aria-hidden="true">14:30</h5>
+                        <span class="text-number">4h 30m</span>
+                        <span class="precio-final" title="50,00">50,00 €</span>
+                    </div>
+                </body>
+                </html>
+                """;
 
         List<Train> trains = parser.parseTrainList(html);
         assertEquals(2, trains.size());
@@ -130,19 +146,20 @@ class TrainHtmlParserTest {
     }
 
     @Test
-    void testParseTrainListWithBadges() {
+    void testParseTrainListWithBadges()
+    {
         String html = """
-            <html>
-            <body>
-                <div class="selectedTren" role="listitem" id="tren_i_1">
-                    <h5 aria-hidden="true">08:00</h5>
-                    <h5 aria-hidden="true">12:30</h5>
-                    <span class="badge-amarillo-junto">WIFI</span>
-                    <span class="badge-azul-junto">POWER</span>
-                </div>
-            </body>
-            </html>
-            """;
+                <html>
+                <body>
+                    <div class="selectedTren" role="listitem" id="tren_i_1">
+                        <h5 aria-hidden="true">08:00</h5>
+                        <h5 aria-hidden="true">12:30</h5>
+                        <span class="badge-amarillo-junto">WIFI</span>
+                        <span class="badge-azul-junto">POWER</span>
+                    </div>
+                </body>
+                </html>
+                """;
 
         List<Train> trains = parser.parseTrainList(html);
         assertEquals(1, trains.size());
@@ -153,18 +170,19 @@ class TrainHtmlParserTest {
     }
 
     @Test
-    void testParseTrainListWithAccessibilityFlags() {
+    void testParseTrainListWithAccessibilityFlags()
+    {
         String html = """
-            <html>
-            <body>
-                <div class="selectedTren" role="listitem" id="tren_i_1">
-                    <h5 aria-hidden="true">08:00</h5>
-                    <h5 aria-hidden="true">12:30</h5>
-                    <div class="info-varios">Plaza H disponible</div>
-                </div>
-            </body>
-            </html>
-            """;
+                <html>
+                <body>
+                    <div class="selectedTren" role="listitem" id="tren_i_1">
+                        <h5 aria-hidden="true">08:00</h5>
+                        <h5 aria-hidden="true">12:30</h5>
+                        <div class="info-varios">Plaza H disponible</div>
+                    </div>
+                </body>
+                </html>
+                """;
 
         List<Train> trains = parser.parseTrainList(html);
         assertEquals(1, trains.size());
@@ -173,18 +191,19 @@ class TrainHtmlParserTest {
     }
 
     @Test
-    void testParseTrainListWithEcoFriendlyFlag() {
+    void testParseTrainListWithEcoFriendlyFlag()
+    {
         String html = """
-            <html>
-            <body>
-                <div class="selectedTren" role="listitem" id="tren_i_1">
-                    <h5 aria-hidden="true">08:00</h5>
-                    <h5 aria-hidden="true">12:30</h5>
-                    <div class="info-varios">Cero emisiones</div>
-                </div>
-            </body>
-            </html>
-            """;
+                <html>
+                <body>
+                    <div class="selectedTren" role="listitem" id="tren_i_1">
+                        <h5 aria-hidden="true">08:00</h5>
+                        <h5 aria-hidden="true">12:30</h5>
+                        <div class="info-varios">Cero emisiones</div>
+                    </div>
+                </body>
+                </html>
+                """;
 
         List<Train> trains = parser.parseTrainList(html);
         assertEquals(1, trains.size());
@@ -193,30 +212,32 @@ class TrainHtmlParserTest {
     }
 
     @Test
-    void testParseTrainListWithFares() {
-        String html = """
-            <html>
-            <body>
-                <div class="selectedTren" role="listitem" id="tren_i_1">
-                    <h5 aria-hidden="true">08:00</h5>
-                    <h5 aria-hidden="true">12:30</h5>
-                    <div class="planes-opciones">
-                        <div class="seleccion-resumen-bottom card" data-precio-tarifa="45,50" data-cod-tarifa="BASIC" data-cod-tpenlacesilencio="TP1" data-titulo-tarifa="Basic">
-                            <div class="card-header">
-                                <span style="padding-right: 10px">Basic</span>
+    void testParseTrainListWithFares()
+    {
+        String html =
+                """
+                        <html>
+                        <body>
+                            <div class="selectedTren" role="listitem" id="tren_i_1">
+                                <h5 aria-hidden="true">08:00</h5>
+                                <h5 aria-hidden="true">12:30</h5>
+                                <div class="planes-opciones">
+                                    <div class="seleccion-resumen-bottom card" data-precio-tarifa="45,50" data-cod-tarifa="BASIC" data-cod-tpenlacesilencio="TP1" data-titulo-tarifa="Basic">
+                                        <div class="card-header">
+                                            <span style="padding-right: 10px">Basic</span>
+                                        </div>
+                                        <div class="card-body">
+                                            <ul class="lista-opciones list-group list-group-flush">
+                                                <li>WIFI</li>
+                                                <li>Power</li>
+                                            </ul>
+                                        </div>
+                                    </div>
+                                </div>
                             </div>
-                            <div class="card-body">
-                                <ul class="lista-opciones list-group list-group-flush">
-                                    <li>WIFI</li>
-                                    <li>Power</li>
-                                </ul>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </body>
-            </html>
-            """;
+                        </body>
+                        </html>
+                        """;
 
         List<Train> trains = parser.parseTrainList(html);
         assertEquals(1, trains.size());
@@ -224,7 +245,7 @@ class TrainHtmlParserTest {
         // Fares selector looks for div with both 'seleccion-resumen-bottom' and 'card' classes inside planes-opciones
         assertFalse(train.getFares().isEmpty(), "Should parse at least one fare");
         assertEquals(1, train.getFares().size(), "Should parse exactly one fare");
-        
+
         FareOption fare = train.getFares().get(0);
         assertEquals("Basic", fare.getName());
         assertEquals(45.50, fare.getPrice(), 0.01);
@@ -236,17 +257,18 @@ class TrainHtmlParserTest {
     }
 
     @Test
-    void testParseTrainListWithTrainWithoutId() {
+    void testParseTrainListWithTrainWithoutId()
+    {
         String html = """
-            <html>
-            <body>
-                <div class="selectedTren" role="listitem">
-                    <h5 aria-hidden="true">08:00</h5>
-                    <h5 aria-hidden="true">12:30</h5>
-                </div>
-            </body>
-            </html>
-            """;
+                <html>
+                <body>
+                    <div class="selectedTren" role="listitem">
+                        <h5 aria-hidden="true">08:00</h5>
+                        <h5 aria-hidden="true">12:30</h5>
+                    </div>
+                </body>
+                </html>
+                """;
 
         List<Train> trains = parser.parseTrainList(html);
         assertEquals(1, trains.size());
@@ -254,7 +276,8 @@ class TrainHtmlParserTest {
     }
 
     @Test
-    void testParseTrainListWithInvalidHtml() {
+    void testParseTrainListWithInvalidHtml()
+    {
         String html = "<html><body><div class=\"selectedTren\" role=\"listitem\" id=\"tren_i_1\">";
         List<Train> trains = parser.parseTrainList(html);
         // Should not throw exception, return empty or partial results
@@ -262,18 +285,19 @@ class TrainHtmlParserTest {
     }
 
     @Test
-    void testParseTrainListWithMalformedPrice() {
+    void testParseTrainListWithMalformedPrice()
+    {
         String html = """
-            <html>
-            <body>
-                <div class="selectedTren" role="listitem" id="tren_i_1">
-                    <h5 aria-hidden="true">08:00</h5>
-                    <h5 aria-hidden="true">12:30</h5>
-                    <span class="precio-final" title="invalid">Invalid</span>
-                </div>
-            </body>
-            </html>
-            """;
+                <html>
+                <body>
+                    <div class="selectedTren" role="listitem" id="tren_i_1">
+                        <h5 aria-hidden="true">08:00</h5>
+                        <h5 aria-hidden="true">12:30</h5>
+                        <span class="precio-final" title="invalid">Invalid</span>
+                    </div>
+                </body>
+                </html>
+                """;
 
         List<Train> trains = parser.parseTrainList(html);
         assertEquals(1, trains.size());
@@ -285,7 +309,8 @@ class TrainHtmlParserTest {
      * Helper method to load HTML content from test resources
      * Resources are located in src/test/resources/unit/resources/mock-data/
      */
-    private String loadHtmlFromResources(String resourceName) throws IOException {
+    private String loadHtmlFromResources(String resourceName) throws IOException
+    {
         // Resources are in unit/resources/mock-data/ directory
         String resourcePath = "unit/resources/mock-data/" + resourceName;
         InputStream inputStream = getClass().getClassLoader().getResourceAsStream(resourcePath);
@@ -296,32 +321,33 @@ class TrainHtmlParserTest {
     }
 
     @Test
-    void testParseTrainListWithRealHtmlFile() throws IOException {
+    void testParseTrainListWithRealHtmlFile() throws IOException
+    {
         // Read the real HTML file from test resources
         String htmlContent = loadHtmlFromResources("resultado_search_trains.html");
-        
+
         List<Train> trains = parser.parseTrainList(htmlContent);
-        
+
         // Verify that trains were parsed
         assertNotNull(trains);
         assertFalse(trains.isEmpty(), "Should parse at least one train from real HTML");
-        
+
         // Verify first train structure
         Train firstTrain = trains.get(0);
         assertNotNull(firstTrain.getTrainId());
         assertTrue(firstTrain.getTrainId().startsWith("i_"), "Train ID should start with 'i_'");
-        
+
         // Verify train has basic information
         assertNotNull(firstTrain.getDepartureTime(), "Train should have departure time");
         assertNotNull(firstTrain.getArrivalTime(), "Train should have arrival time");
         assertNotNull(firstTrain.getDuration(), "Train should have duration");
         assertTrue(firstTrain.getPriceFrom() > 0, "Train should have a price");
-        
+
         // Verify service type is extracted (should be "AVE" for the first train)
         if (firstTrain.getServiceType() != null) {
             assertEquals("AVE", firstTrain.getServiceType(), "First train should be AVE");
         }
-        
+
         // Verify fares are parsed (first train should have multiple fares)
         // Note: Fares might be empty if they're not fully parsed, but the parser should at least attempt to parse them
         if (!firstTrain.getFares().isEmpty()) {
@@ -334,9 +360,10 @@ class TrainHtmlParserTest {
         } else {
             // If no fares were parsed, log a warning but don't fail the test
             // This allows the test to verify that the parser works with real HTML structure
-            System.out.println("WARNING: No fares were parsed for the first train, but train structure was parsed correctly");
+            System.out.println(
+                    "WARNING: No fares were parsed for the first train, but train structure was parsed correctly");
         }
-        
+
         // Verify accessibility and eco-friendly flags if present
         // These are optional, so we just check they don't throw exceptions
         assertNotNull(firstTrain.isAccessible());
@@ -344,26 +371,27 @@ class TrainHtmlParserTest {
     }
 
     @Test
-    void testParseCompleteTrainListFromRealHtml() throws IOException {
+    void testParseCompleteTrainListFromRealHtml() throws IOException
+    {
         // Read the real HTML file from test resources
         String htmlContent = loadHtmlFromResources("resultado_search_trains.html");
-        
+
         List<Train> trains = parser.parseTrainList(htmlContent);
-        
+
         // Verify that multiple trains were parsed
         assertNotNull(trains);
         assertTrue(trains.size() > 1, "Should parse multiple trains from real HTML");
-        
+
         // Verify exact count: should be 41 trains
         assertEquals(41, trains.size(), "Should parse exactly 41 trains from real HTML");
-        
+
         // Verify that exactly 10 trains have duration "3 horas 19 minutos"
         long trainsWithDuration3h19m = trains.stream()
                 .filter(train -> "3 horas 19 minutos".equals(train.getDuration()))
                 .count();
-        assertEquals(10, trainsWithDuration3h19m, 
+        assertEquals(10, trainsWithDuration3h19m,
                 "Should find exactly 10 trains with duration '3 horas 19 minutos'");
-        
+
         // Verify all trains have required fields
         for (Train train : trains) {
             assertNotNull(train.getTrainId(), "Train ID should not be null");
@@ -371,18 +399,18 @@ class TrainHtmlParserTest {
             assertNotNull(train.getArrivalTime(), "Arrival time should not be null");
             assertNotNull(train.getDuration(), "Duration should not be null");
             assertTrue(train.getPriceFrom() >= 0, "Price should be non-negative");
-            
+
             // Verify train ID format (should be "i_X" for outbound or "v_X" for return)
-            assertTrue(train.getTrainId().matches("^(i_|v_)\\d+$"), 
+            assertTrue(train.getTrainId().matches("^(i_|v_)\\d+$"),
                     "Train ID should match pattern i_X or v_X: " + train.getTrainId());
-            
+
             // Verify time format (should be HH:MM)
-            assertTrue(train.getDepartureTime().matches("\\d{2}:\\d{2}"), 
+            assertTrue(train.getDepartureTime().matches("\\d{2}:\\d{2}"),
                     "Departure time should be in HH:MM format: " + train.getDepartureTime());
-            assertTrue(train.getArrivalTime().matches("\\d{2}:\\d{2}"), 
+            assertTrue(train.getArrivalTime().matches("\\d{2}:\\d{2}"),
                     "Arrival time should be in HH:MM format: " + train.getArrivalTime());
         }
-        
+
         // Verify that at least some trains have fares
         // Note: Fares parsing might not be complete, but the parser should attempt to parse them
         long trainsWithFares = trains.stream()
@@ -393,7 +421,7 @@ class TrainHtmlParserTest {
         if (trainsWithFares == 0) {
             System.out.println("INFO: No fares were parsed, but train structure parsing is working correctly");
         }
-        
+
         // Verify that fares have complete information when present
         trains.stream()
                 .filter(train -> !train.getFares().isEmpty())
@@ -406,7 +434,7 @@ class TrainHtmlParserTest {
                         assertNotNull(fare.getFeatures(), "Fare features list should not be null");
                     });
                 });
-        
+
         // Verify that at least one train has accessibility or eco-friendly flags
         // This is optional, so we just verify it doesn't throw exceptions
         trains.stream()
@@ -415,22 +443,23 @@ class TrainHtmlParserTest {
     }
 
     @Test
-    void testParseFareCardWithEmptyDataTituloTarifa() {
+    void testParseFareCardWithEmptyDataTituloTarifa()
+    {
         // Covers branch: data-titulo-tarifa exists but is empty (line 197)
         String html = """
-            <html>
-            <body>
-                <div class="selectedTren" role="listitem" id="tren_i_1">
-                    <h5 aria-hidden="true">08:00</h5>
-                    <h5 aria-hidden="true">12:30</h5>
-                    <div class="planes-opciones">
-                        <div class="seleccion-resumen-bottom card" data-titulo-tarifa="" data-precio-tarifa="45,50">
+                <html>
+                <body>
+                    <div class="selectedTren" role="listitem" id="tren_i_1">
+                        <h5 aria-hidden="true">08:00</h5>
+                        <h5 aria-hidden="true">12:30</h5>
+                        <div class="planes-opciones">
+                            <div class="seleccion-resumen-bottom card" data-titulo-tarifa="" data-precio-tarifa="45,50">
+                            </div>
                         </div>
                     </div>
-                </div>
-            </body>
-            </html>
-            """;
+                </body>
+                </html>
+                """;
 
         List<Train> trains = parser.parseTrainList(html);
         assertEquals(1, trains.size());
@@ -442,25 +471,26 @@ class TrainHtmlParserTest {
     }
 
     @Test
-    void testParseFareCardWithoutDataTituloTarifaButWithHeader() {
+    void testParseFareCardWithoutDataTituloTarifaButWithHeader()
+    {
         // Covers branch: no data-titulo-tarifa, but has header with span[style*='padding-right'] (line 206)
         String html = """
-            <html>
-            <body>
-                <div class="selectedTren" role="listitem" id="tren_i_1">
-                    <h5 aria-hidden="true">08:00</h5>
-                    <h5 aria-hidden="true">12:30</h5>
-                    <div class="planes-opciones">
-                        <div class="seleccion-resumen-bottom card" data-precio-tarifa="45,50">
-                            <div class="card-header">
-                                <span style="padding-right: 10px">Premium</span>
+                <html>
+                <body>
+                    <div class="selectedTren" role="listitem" id="tren_i_1">
+                        <h5 aria-hidden="true">08:00</h5>
+                        <h5 aria-hidden="true">12:30</h5>
+                        <div class="planes-opciones">
+                            <div class="seleccion-resumen-bottom card" data-precio-tarifa="45,50">
+                                <div class="card-header">
+                                    <span style="padding-right: 10px">Premium</span>
+                                </div>
                             </div>
                         </div>
                     </div>
-                </div>
-            </body>
-            </html>
-            """;
+                </body>
+                </html>
+                """;
 
         List<Train> trains = parser.parseTrainList(html);
         assertEquals(1, trains.size());
@@ -471,26 +501,27 @@ class TrainHtmlParserTest {
     }
 
     @Test
-    void testParseFareCardWithoutNameSpanButWithHeaderText() {
+    void testParseFareCardWithoutNameSpanButWithHeaderText()
+    {
         // Covers branch: no nameSpan, but header text with regex match (line 215)
         // The regex captures text before digits/€, so we need text that doesn't start with a digit
         String html = """
-            <html>
-            <body>
-                <div class="selectedTren" role="listitem" id="tren_i_1">
-                    <h5 aria-hidden="true">08:00</h5>
-                    <h5 aria-hidden="true">12:30</h5>
-                    <div class="planes-opciones">
-                        <div class="seleccion-resumen-bottom card" data-precio-tarifa="45,50">
-                            <div class="card-header">
-                                Premium 45,50 €
+                <html>
+                <body>
+                    <div class="selectedTren" role="listitem" id="tren_i_1">
+                        <h5 aria-hidden="true">08:00</h5>
+                        <h5 aria-hidden="true">12:30</h5>
+                        <div class="planes-opciones">
+                            <div class="seleccion-resumen-bottom card" data-precio-tarifa="45,50">
+                                <div class="card-header">
+                                    Premium 45,50 €
+                                </div>
                             </div>
                         </div>
                     </div>
-                </div>
-            </body>
-            </html>
-            """;
+                </body>
+                </html>
+                """;
 
         List<Train> trains = parser.parseTrainList(html);
         assertEquals(1, trains.size());
@@ -504,27 +535,28 @@ class TrainHtmlParserTest {
     }
 
     @Test
-    void testParseFareCardWithHeaderOwnText() {
+    void testParseFareCardWithHeaderOwnText()
+    {
         // Covers branch: no regex match, but header.ownText() exists (line 225)
         // When regex doesn't match, it falls back to header.ownText()
         String html = """
-            <html>
-            <body>
-                <div class="selectedTren" role="listitem" id="tren_i_1">
-                    <h5 aria-hidden="true">08:00</h5>
-                    <h5 aria-hidden="true">12:30</h5>
-                    <div class="planes-opciones">
-                        <div class="seleccion-resumen-bottom card" data-precio-tarifa="45,50">
-                            <div class="card-header">
-                                <span>Some other content</span>
-                                FareName
+                <html>
+                <body>
+                    <div class="selectedTren" role="listitem" id="tren_i_1">
+                        <h5 aria-hidden="true">08:00</h5>
+                        <h5 aria-hidden="true">12:30</h5>
+                        <div class="planes-opciones">
+                            <div class="seleccion-resumen-bottom card" data-precio-tarifa="45,50">
+                                <div class="card-header">
+                                    <span>Some other content</span>
+                                    FareName
+                                </div>
                             </div>
                         </div>
                     </div>
-                </div>
-            </body>
-            </html>
-            """;
+                </body>
+                </html>
+                """;
 
         List<Train> trains = parser.parseTrainList(html);
         assertEquals(1, trains.size());
@@ -538,22 +570,23 @@ class TrainHtmlParserTest {
     }
 
     @Test
-    void testParseFareCardWithoutHeader() {
+    void testParseFareCardWithoutHeader()
+    {
         // Covers branch: no header element (line 205), should fallback to "Unknown"
         String html = """
-            <html>
-            <body>
-                <div class="selectedTren" role="listitem" id="tren_i_1">
-                    <h5 aria-hidden="true">08:00</h5>
-                    <h5 aria-hidden="true">12:30</h5>
-                    <div class="planes-opciones">
-                        <div class="seleccion-resumen-bottom card" data-precio-tarifa="45,50">
+                <html>
+                <body>
+                    <div class="selectedTren" role="listitem" id="tren_i_1">
+                        <h5 aria-hidden="true">08:00</h5>
+                        <h5 aria-hidden="true">12:30</h5>
+                        <div class="planes-opciones">
+                            <div class="seleccion-resumen-bottom card" data-precio-tarifa="45,50">
+                            </div>
                         </div>
                     </div>
-                </div>
-            </body>
-            </html>
-            """;
+                </body>
+                </html>
+                """;
 
         List<Train> trains = parser.parseTrainList(html);
         assertEquals(1, trains.size());
@@ -564,23 +597,25 @@ class TrainHtmlParserTest {
     }
 
     @Test
-    void testParseFareCardWithPlanElement() {
+    void testParseFareCardWithPlanElement()
+    {
         // Covers branch: planElem != null and planText not empty (line 242, 244)
-        String html = """
-            <html>
-            <body>
-                <div class="selectedTren" role="listitem" id="tren_i_1">
-                    <h5 aria-hidden="true">08:00</h5>
-                    <h5 aria-hidden="true">12:30</h5>
-                    <div class="planes-opciones">
-                        <div class="seleccion-resumen-bottom card" data-titulo-tarifa="Premium" data-precio-tarifa="45,50">
-                            <span class="plan-premium">La más completa</span>
-                        </div>
-                    </div>
-                </div>
-            </body>
-            </html>
-            """;
+        String html =
+                """
+                        <html>
+                        <body>
+                            <div class="selectedTren" role="listitem" id="tren_i_1">
+                                <h5 aria-hidden="true">08:00</h5>
+                                <h5 aria-hidden="true">12:30</h5>
+                                <div class="planes-opciones">
+                                    <div class="seleccion-resumen-bottom card" data-titulo-tarifa="Premium" data-precio-tarifa="45,50">
+                                        <span class="plan-premium">La más completa</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </body>
+                        </html>
+                        """;
 
         List<Train> trains = parser.parseTrainList(html);
         assertEquals(1, trains.size());
@@ -591,23 +626,25 @@ class TrainHtmlParserTest {
     }
 
     @Test
-    void testParseFareCardWithEmptyPlanText() {
+    void testParseFareCardWithEmptyPlanText()
+    {
         // Covers branch: planElem != null but planText is empty (line 244)
-        String html = """
-            <html>
-            <body>
-                <div class="selectedTren" role="listitem" id="tren_i_1">
-                    <h5 aria-hidden="true">08:00</h5>
-                    <h5 aria-hidden="true">12:30</h5>
-                    <div class="planes-opciones">
-                        <div class="seleccion-resumen-bottom card" data-titulo-tarifa="Premium" data-precio-tarifa="45,50">
-                            <span class="plan-premium">   </span>
-                        </div>
-                    </div>
-                </div>
-            </body>
-            </html>
-            """;
+        String html =
+                """
+                        <html>
+                        <body>
+                            <div class="selectedTren" role="listitem" id="tren_i_1">
+                                <h5 aria-hidden="true">08:00</h5>
+                                <h5 aria-hidden="true">12:30</h5>
+                                <div class="planes-opciones">
+                                    <div class="seleccion-resumen-bottom card" data-titulo-tarifa="Premium" data-precio-tarifa="45,50">
+                                        <span class="plan-premium">   </span>
+                                    </div>
+                                </div>
+                            </div>
+                        </body>
+                        </html>
+                        """;
 
         List<Train> trains = parser.parseTrainList(html);
         assertEquals(1, trains.size());
@@ -619,22 +656,23 @@ class TrainHtmlParserTest {
     }
 
     @Test
-    void testParseFareCardWithoutPrice() {
+    void testParseFareCardWithoutPrice()
+    {
         // Covers branch: no data-precio-tarifa attribute (line 250)
         String html = """
-            <html>
-            <body>
-                <div class="selectedTren" role="listitem" id="tren_i_1">
-                    <h5 aria-hidden="true">08:00</h5>
-                    <h5 aria-hidden="true">12:30</h5>
-                    <div class="planes-opciones">
-                        <div class="seleccion-resumen-bottom card" data-titulo-tarifa="Premium">
+                <html>
+                <body>
+                    <div class="selectedTren" role="listitem" id="tren_i_1">
+                        <h5 aria-hidden="true">08:00</h5>
+                        <h5 aria-hidden="true">12:30</h5>
+                        <div class="planes-opciones">
+                            <div class="seleccion-resumen-bottom card" data-titulo-tarifa="Premium">
+                            </div>
                         </div>
                     </div>
-                </div>
-            </body>
-            </html>
-            """;
+                </body>
+                </html>
+                """;
 
         List<Train> trains = parser.parseTrainList(html);
         assertEquals(1, trains.size());
@@ -646,22 +684,24 @@ class TrainHtmlParserTest {
     }
 
     @Test
-    void testParseFareCardWithoutCode() {
+    void testParseFareCardWithoutCode()
+    {
         // Covers branch: no data-cod-tarifa attribute (line 258)
-        String html = """
-            <html>
-            <body>
-                <div class="selectedTren" role="listitem" id="tren_i_1">
-                    <h5 aria-hidden="true">08:00</h5>
-                    <h5 aria-hidden="true">12:30</h5>
-                    <div class="planes-opciones">
-                        <div class="seleccion-resumen-bottom card" data-titulo-tarifa="Premium" data-precio-tarifa="45,50">
-                        </div>
-                    </div>
-                </div>
-            </body>
-            </html>
-            """;
+        String html =
+                """
+                        <html>
+                        <body>
+                            <div class="selectedTren" role="listitem" id="tren_i_1">
+                                <h5 aria-hidden="true">08:00</h5>
+                                <h5 aria-hidden="true">12:30</h5>
+                                <div class="planes-opciones">
+                                    <div class="seleccion-resumen-bottom card" data-titulo-tarifa="Premium" data-precio-tarifa="45,50">
+                                    </div>
+                                </div>
+                            </div>
+                        </body>
+                        </html>
+                        """;
 
         List<Train> trains = parser.parseTrainList(html);
         assertEquals(1, trains.size());
@@ -673,22 +713,24 @@ class TrainHtmlParserTest {
     }
 
     @Test
-    void testParseFareCardWithoutTpEnlace() {
+    void testParseFareCardWithoutTpEnlace()
+    {
         // Covers branch: no data-cod-tpenlacesilencio attribute (line 263)
-        String html = """
-            <html>
-            <body>
-                <div class="selectedTren" role="listitem" id="tren_i_1">
-                    <h5 aria-hidden="true">08:00</h5>
-                    <h5 aria-hidden="true">12:30</h5>
-                    <div class="planes-opciones">
-                        <div class="seleccion-resumen-bottom card" data-titulo-tarifa="Premium" data-precio-tarifa="45,50" data-cod-tarifa="PREMIUM">
-                        </div>
-                    </div>
-                </div>
-            </body>
-            </html>
-            """;
+        String html =
+                """
+                        <html>
+                        <body>
+                            <div class="selectedTren" role="listitem" id="tren_i_1">
+                                <h5 aria-hidden="true">08:00</h5>
+                                <h5 aria-hidden="true">12:30</h5>
+                                <div class="planes-opciones">
+                                    <div class="seleccion-resumen-bottom card" data-titulo-tarifa="Premium" data-precio-tarifa="45,50" data-cod-tarifa="PREMIUM">
+                                    </div>
+                                </div>
+                            </div>
+                        </body>
+                        </html>
+                        """;
 
         List<Train> trains = parser.parseTrainList(html);
         assertEquals(1, trains.size());
@@ -700,27 +742,29 @@ class TrainHtmlParserTest {
     }
 
     @Test
-    void testParseFareCardWithEmptyFeatures() {
+    void testParseFareCardWithEmptyFeatures()
+    {
         // Covers branch: featureText.isEmpty() (line 274)
-        String html = """
-            <html>
-            <body>
-                <div class="selectedTren" role="listitem" id="tren_i_1">
-                    <h5 aria-hidden="true">08:00</h5>
-                    <h5 aria-hidden="true">12:30</h5>
-                    <div class="planes-opciones">
-                        <div class="seleccion-resumen-bottom card" data-titulo-tarifa="Premium" data-precio-tarifa="45,50">
-                            <ul class="lista-opciones">
-                                <li>   </li>
-                                <li>WIFI</li>
-                                <li>   </li>
-                            </ul>
-                        </div>
-                    </div>
-                </div>
-            </body>
-            </html>
-            """;
+        String html =
+                """
+                        <html>
+                        <body>
+                            <div class="selectedTren" role="listitem" id="tren_i_1">
+                                <h5 aria-hidden="true">08:00</h5>
+                                <h5 aria-hidden="true">12:30</h5>
+                                <div class="planes-opciones">
+                                    <div class="seleccion-resumen-bottom card" data-titulo-tarifa="Premium" data-precio-tarifa="45,50">
+                                        <ul class="lista-opciones">
+                                            <li>   </li>
+                                            <li>WIFI</li>
+                                            <li>   </li>
+                                        </ul>
+                                    </div>
+                                </div>
+                            </div>
+                        </body>
+                        </html>
+                        """;
 
         List<Train> trains = parser.parseTrainList(html);
         assertEquals(1, trains.size());
@@ -733,32 +777,33 @@ class TrainHtmlParserTest {
     }
 
     @Test
-    void testParseFareCardWithAllAttributes() {
+    void testParseFareCardWithAllAttributes()
+    {
         // Covers all positive branches: all attributes present
         String html = """
-            <html>
-            <body>
-                <div class="selectedTren" role="listitem" id="tren_i_1">
-                    <h5 aria-hidden="true">08:00</h5>
-                    <h5 aria-hidden="true">12:30</h5>
-                    <div class="planes-opciones">
-                        <div class="seleccion-resumen-bottom card" 
-                             data-titulo-tarifa="Premium" 
-                             data-precio-tarifa="45,50" 
-                             data-cod-tarifa="PREMIUM" 
-                             data-cod-tpenlacesilencio="TP1">
-                            <span class="plan-premium">La más completa</span>
-                            <ul class="lista-opciones">
-                                <li>WIFI</li>
-                                <li>Power</li>
-                                <li>Comfort</li>
-                            </ul>
+                <html>
+                <body>
+                    <div class="selectedTren" role="listitem" id="tren_i_1">
+                        <h5 aria-hidden="true">08:00</h5>
+                        <h5 aria-hidden="true">12:30</h5>
+                        <div class="planes-opciones">
+                            <div class="seleccion-resumen-bottom card"
+                                 data-titulo-tarifa="Premium"
+                                 data-precio-tarifa="45,50"
+                                 data-cod-tarifa="PREMIUM"
+                                 data-cod-tpenlacesilencio="TP1">
+                                <span class="plan-premium">La más completa</span>
+                                <ul class="lista-opciones">
+                                    <li>WIFI</li>
+                                    <li>Power</li>
+                                    <li>Comfort</li>
+                                </ul>
+                            </div>
                         </div>
                     </div>
-                </div>
-            </body>
-            </html>
-            """;
+                </body>
+                </html>
+                """;
 
         List<Train> trains = parser.parseTrainList(html);
         assertEquals(1, trains.size());
@@ -777,30 +822,32 @@ class TrainHtmlParserTest {
     }
 
     @Test
-    void testParseFareCardWithDifferentListClasses() {
+    void testParseFareCardWithDifferentListClasses()
+    {
         // Covers branch: different list classes (list-group, list-group-flush)
-        String html = """
-            <html>
-            <body>
-                <div class="selectedTren" role="listitem" id="tren_i_1">
-                    <h5 aria-hidden="true">08:00</h5>
-                    <h5 aria-hidden="true">12:30</h5>
-                    <div class="planes-opciones">
-                        <div class="seleccion-resumen-bottom card" data-titulo-tarifa="Basic" data-precio-tarifa="30,00">
-                            <ul class="list-group">
-                                <li>Feature 1</li>
-                            </ul>
-                        </div>
-                        <div class="seleccion-resumen-bottom card" data-titulo-tarifa="Premium" data-precio-tarifa="50,00">
-                            <ul class="list-group-flush">
-                                <li>Feature 2</li>
-                            </ul>
-                        </div>
-                    </div>
-                </div>
-            </body>
-            </html>
-            """;
+        String html =
+                """
+                        <html>
+                        <body>
+                            <div class="selectedTren" role="listitem" id="tren_i_1">
+                                <h5 aria-hidden="true">08:00</h5>
+                                <h5 aria-hidden="true">12:30</h5>
+                                <div class="planes-opciones">
+                                    <div class="seleccion-resumen-bottom card" data-titulo-tarifa="Basic" data-precio-tarifa="30,00">
+                                        <ul class="list-group">
+                                            <li>Feature 1</li>
+                                        </ul>
+                                    </div>
+                                    <div class="seleccion-resumen-bottom card" data-titulo-tarifa="Premium" data-precio-tarifa="50,00">
+                                        <ul class="list-group-flush">
+                                            <li>Feature 2</li>
+                                        </ul>
+                                    </div>
+                                </div>
+                            </div>
+                        </body>
+                        </html>
+                        """;
 
         List<Train> trains = parser.parseTrainList(html);
         assertEquals(1, trains.size());
@@ -811,25 +858,26 @@ class TrainHtmlParserTest {
     }
 
     @Test
-    void testParseTrainWithoutConnection() {
+    void testParseTrainWithoutConnection()
+    {
         // Train without connection (aria-hidden="true" on reorder-trenes-enlaces)
         String html = """
-            <html>
-            <body>
-                <div class="selectedTren" role="listitem" id="tren_i_1">
-                    <div class="reorder-trenes-enlaces col-lg-8" aria-hidden="true">
-                        <div class="col-md-8 principal-tren-enlace">
-                            <div class="trenes-enlaces">
-                                <img alt="Imagen de Tren. Tipo de tren AVE" />
+                <html>
+                <body>
+                    <div class="selectedTren" role="listitem" id="tren_i_1">
+                        <div class="reorder-trenes-enlaces col-lg-8" aria-hidden="true">
+                            <div class="col-md-8 principal-tren-enlace">
+                                <div class="trenes-enlaces">
+                                    <img alt="Imagen de Tren. Tipo de tren AVE" />
+                                </div>
                             </div>
                         </div>
+                        <h5 aria-hidden="true">08:00</h5>
+                        <h5 aria-hidden="true">12:30</h5>
                     </div>
-                    <h5 aria-hidden="true">08:00</h5>
-                    <h5 aria-hidden="true">12:30</h5>
-                </div>
-            </body>
-            </html>
-            """;
+                </body>
+                </html>
+                """;
 
         List<Train> trains = parser.parseTrainList(html);
         assertEquals(1, trains.size());
@@ -838,40 +886,42 @@ class TrainHtmlParserTest {
     }
 
     @Test
-    void testParseTrainWithConnection() {
+    void testParseTrainWithConnection()
+    {
         // Train with connection (no aria-hidden, has enlace-tren span)
-        String html = """
-            <html>
-            <body>
-                <div class="selectedTren" role="listitem" id="tren_i_1">
-                    <div class="reorder-trenes-enlaces col-lg-8">
-                        <div class="col-md principal-tren-enlace">
-                            <div class="trenes-enlaces">
-                                <img alt="Imagen de Tren. Tipo de tren REG.EXP." />
+        String html =
+                """
+                        <html>
+                        <body>
+                            <div class="selectedTren" role="listitem" id="tren_i_1">
+                                <div class="reorder-trenes-enlaces col-lg-8">
+                                    <div class="col-md principal-tren-enlace">
+                                        <div class="trenes-enlaces">
+                                            <img alt="Imagen de Tren. Tipo de tren REG.EXP." />
+                                        </div>
+                                    </div>
+                                    <div>
+                                        <span class="enlace-tren" aria-label="Tren enlazado">Enlace</span>
+                                        <hr class="linea-divisoria-enlace" />
+                                        <span class="enlace-tren-min" aria-label="Duracion de transbordo">1 horas 10 minutos</span>
+                                    </div>
+                                    <div class="col-md principal-tren-enlace-2">
+                                        <div class="trenes-enlaces">
+                                            <img alt="Imagen de Tren. Tipo de tren AVE" />
+                                        </div>
+                                    </div>
+                                </div>
+                                <h5 aria-hidden="true">08:00</h5>
+                                <h5 aria-hidden="true">12:30</h5>
                             </div>
-                        </div>
-                        <div>
-                            <span class="enlace-tren" aria-label="Tren enlazado">Enlace</span>
-                            <hr class="linea-divisoria-enlace" />
-                            <span class="enlace-tren-min" aria-label="Duracion de transbordo">1 horas 10 minutos</span>
-                        </div>
-                        <div class="col-md principal-tren-enlace-2">
-                            <div class="trenes-enlaces">
-                                <img alt="Imagen de Tren. Tipo de tren AVE" />
-                            </div>
-                        </div>
-                    </div>
-                    <h5 aria-hidden="true">08:00</h5>
-                    <h5 aria-hidden="true">12:30</h5>
-                </div>
-            </body>
-            </html>
-            """;
+                        </body>
+                        </html>
+                        """;
 
         List<Train> trains = parser.parseTrainList(html);
         assertEquals(1, trains.size());
         Train train = trains.get(0);
-        
+
         assertNotNull(train.getConnection(), "Train with connection should have a connection");
         TrainConnection connection = train.getConnection();
         assertEquals("1 horas 10 minutos", connection.getDuration());
@@ -880,39 +930,40 @@ class TrainHtmlParserTest {
     }
 
     @Test
-    void testParseTrainWithConnectionDifferentTrainTypes() {
+    void testParseTrainWithConnectionDifferentTrainTypes()
+    {
         // Test with different train types
         String html = """
-            <html>
-            <body>
-                <div class="selectedTren" role="listitem" id="tren_i_1">
-                    <div class="reorder-trenes-enlaces col-lg-8">
-                        <div class="col-md principal-tren-enlace">
-                            <div class="trenes-enlaces">
-                                <img alt="Imagen de Tren. Tipo de tren ALVIA" />
+                <html>
+                <body>
+                    <div class="selectedTren" role="listitem" id="tren_i_1">
+                        <div class="reorder-trenes-enlaces col-lg-8">
+                            <div class="col-md principal-tren-enlace">
+                                <div class="trenes-enlaces">
+                                    <img alt="Imagen de Tren. Tipo de tren ALVIA" />
+                                </div>
+                            </div>
+                            <div>
+                                <span class="enlace-tren">Enlace</span>
+                                <span class="enlace-tren-min">45 minutos</span>
+                            </div>
+                            <div class="col-md principal-tren-enlace-2">
+                                <div class="trenes-enlaces">
+                                    <img alt="Imagen de Tren. Tipo de tren EUROMED" />
+                                </div>
                             </div>
                         </div>
-                        <div>
-                            <span class="enlace-tren">Enlace</span>
-                            <span class="enlace-tren-min">45 minutos</span>
-                        </div>
-                        <div class="col-md principal-tren-enlace-2">
-                            <div class="trenes-enlaces">
-                                <img alt="Imagen de Tren. Tipo de tren EUROMED" />
-                            </div>
-                        </div>
+                        <h5 aria-hidden="true">10:00</h5>
+                        <h5 aria-hidden="true">15:00</h5>
                     </div>
-                    <h5 aria-hidden="true">10:00</h5>
-                    <h5 aria-hidden="true">15:00</h5>
-                </div>
-            </body>
-            </html>
-            """;
+                </body>
+                </html>
+                """;
 
         List<Train> trains = parser.parseTrainList(html);
         assertEquals(1, trains.size());
         Train train = trains.get(0);
-        
+
         assertNotNull(train.getConnection());
         TrainConnection connection = train.getConnection();
         assertEquals("45 minutos", connection.getDuration());
@@ -921,34 +972,35 @@ class TrainHtmlParserTest {
     }
 
     @Test
-    void testParseTrainWithConnectionMissingDuration() {
+    void testParseTrainWithConnectionMissingDuration()
+    {
         // Connection found but duration is missing - should not create connection
         String html = """
-            <html>
-            <body>
-                <div class="selectedTren" role="listitem" id="tren_i_1">
-                    <div class="reorder-trenes-enlaces col-lg-8">
-                        <div class="col-md principal-tren-enlace">
-                            <div class="trenes-enlaces">
-                                <img alt="Imagen de Tren. Tipo de tren AVE" />
+                <html>
+                <body>
+                    <div class="selectedTren" role="listitem" id="tren_i_1">
+                        <div class="reorder-trenes-enlaces col-lg-8">
+                            <div class="col-md principal-tren-enlace">
+                                <div class="trenes-enlaces">
+                                    <img alt="Imagen de Tren. Tipo de tren AVE" />
+                                </div>
+                            </div>
+                            <div>
+                                <span class="enlace-tren">Enlace</span>
+                                <!-- Missing enlace-tren-min -->
+                            </div>
+                            <div class="col-md principal-tren-enlace-2">
+                                <div class="trenes-enlaces">
+                                    <img alt="Imagen de Tren. Tipo de tren AVE" />
+                                </div>
                             </div>
                         </div>
-                        <div>
-                            <span class="enlace-tren">Enlace</span>
-                            <!-- Missing enlace-tren-min -->
-                        </div>
-                        <div class="col-md principal-tren-enlace-2">
-                            <div class="trenes-enlaces">
-                                <img alt="Imagen de Tren. Tipo de tren AVE" />
-                            </div>
-                        </div>
+                        <h5 aria-hidden="true">08:00</h5>
+                        <h5 aria-hidden="true">12:30</h5>
                     </div>
-                    <h5 aria-hidden="true">08:00</h5>
-                    <h5 aria-hidden="true">12:30</h5>
-                </div>
-            </body>
-            </html>
-            """;
+                </body>
+                </html>
+                """;
 
         List<Train> trains = parser.parseTrainList(html);
         assertEquals(1, trains.size());
@@ -957,4 +1009,3 @@ class TrainHtmlParserTest {
         assertNull(train.getConnection());
     }
 }
-

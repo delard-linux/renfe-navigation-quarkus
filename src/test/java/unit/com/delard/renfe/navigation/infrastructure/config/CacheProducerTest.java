@@ -1,28 +1,39 @@
+/*
+ * Copyright © ${YEAR} MCP Renfe Navigation Quarkus
+ * All rights reserved.
+ */
+
 package com.delard.renfe.navigation.infrastructure.config;
 
-import com.delard.renfe.navigation.domain.port.output.CachePort;
-import com.delard.renfe.navigation.infrastructure.adapter.output.LocalCacheAdapter;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
+
+import static org.junit.jupiter.api.Assertions.*;
 
 import java.lang.reflect.Field;
 
-import static org.junit.jupiter.api.Assertions.*;
+import com.delard.renfe.navigation.domain.port.output.CachePort;
+import com.delard.renfe.navigation.infrastructure.adapter.output.LocalCacheAdapter;
+
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+
 
 /**
  * Unit tests for CacheProducer
  */
-class CacheProducerTest {
+class CacheProducerTest
+{
 
     private CacheProducer cacheProducer;
 
     @BeforeEach
-    void setUp() {
+    void setUp()
+    {
         cacheProducer = new CacheProducer();
     }
 
     @Test
-    void testProduceCachePortWithLocalType() throws Exception {
+    void testProduceCachePortWithLocalType() throws Exception
+    {
         // Set cache type to "local"
         setField("cacheType", "local");
         setField("cacheEnabled", true);
@@ -36,7 +47,8 @@ class CacheProducerTest {
     }
 
     @Test
-    void testProduceCachePortWithRedisType() throws Exception {
+    void testProduceCachePortWithRedisType() throws Exception
+    {
         // Set cache type to "redis" (should fallback to local)
         setField("cacheType", "redis");
         setField("cacheEnabled", true);
@@ -51,7 +63,8 @@ class CacheProducerTest {
     }
 
     @Test
-    void testProduceCachePortWithUnknownType() throws Exception {
+    void testProduceCachePortWithUnknownType() throws Exception
+    {
         // Set cache type to unknown value (should fallback to local)
         setField("cacheType", "unknown");
         setField("cacheEnabled", true);
@@ -65,7 +78,8 @@ class CacheProducerTest {
     }
 
     @Test
-    void testProduceCachePortWithCaseInsensitiveType() throws Exception {
+    void testProduceCachePortWithCaseInsensitiveType() throws Exception
+    {
         // Test that cache type is case-insensitive
         setField("cacheType", "LOCAL");
         setField("cacheEnabled", true);
@@ -78,7 +92,8 @@ class CacheProducerTest {
     }
 
     @Test
-    void testProduceCachePortWithMixedCaseType() throws Exception {
+    void testProduceCachePortWithMixedCaseType() throws Exception
+    {
         // Test that cache type is case-insensitive
         setField("cacheType", "LoCaL");
         setField("cacheEnabled", true);
@@ -91,7 +106,8 @@ class CacheProducerTest {
     }
 
     @Test
-    void testProduceCachePortWithCacheDisabled() throws Exception {
+    void testProduceCachePortWithCacheDisabled() throws Exception
+    {
         // Test with cache disabled
         setField("cacheType", "local");
         setField("cacheEnabled", false);
@@ -105,7 +121,8 @@ class CacheProducerTest {
     }
 
     @Test
-    void testProduceCachePortWithCustomTtl() throws Exception {
+    void testProduceCachePortWithCustomTtl() throws Exception
+    {
         // Test with custom TTL
         setField("cacheType", "local");
         setField("cacheEnabled", true);
@@ -119,7 +136,8 @@ class CacheProducerTest {
     }
 
     @Test
-    void testProduceCachePortWithZeroTtl() throws Exception {
+    void testProduceCachePortWithZeroTtl() throws Exception
+    {
         // Test with zero TTL
         setField("cacheType", "local");
         setField("cacheEnabled", true);
@@ -138,10 +156,10 @@ class CacheProducerTest {
      * @param value Value to set
      * @throws Exception if reflection fails
      */
-    private void setField(String fieldName, Object value) throws Exception {
+    private void setField(String fieldName, Object value) throws Exception
+    {
         Field field = CacheProducer.class.getDeclaredField(fieldName);
         field.setAccessible(true);
         field.set(cacheProducer, value);
     }
 }
-
