@@ -42,7 +42,7 @@ class RenfePageValidatorTest {
         });
         
         assertTrue(exception.getMessage().contains("queued"));
-        verify(mockPage, times(1)).waitForTimeout(500L);
+        verify(mockPage, times(1)).waitForTimeout(2000L);
         verify(mockPage, times(1)).locator("body");
     }
 
@@ -200,7 +200,7 @@ class RenfePageValidatorTest {
             validator.checkForQueuePage(mockPage);
         });
         
-        verify(mockPage, times(1)).waitForTimeout(500L);
+        verify(mockPage, times(1)).waitForTimeout(2000L);
     }
 
     @Test
@@ -235,7 +235,7 @@ class RenfePageValidatorTest {
         // Arrange
         Page mockPage = mock(Page.class);
         
-        doThrow(new QueueException("Already queued")).when(mockPage).waitForTimeout(500L);
+        doThrow(new QueueException("Already queued")).when(mockPage).waitForTimeout(2000L);
 
         // Act & Assert
         QueueException exception = assertThrows(QueueException.class, () -> {
@@ -251,7 +251,7 @@ class RenfePageValidatorTest {
         // Arrange
         Page mockPage = mock(Page.class);
         
-        doThrow(new RuntimeException("General error")).when(mockPage).waitForTimeout(500L);
+        doThrow(new RuntimeException("General error")).when(mockPage).waitForTimeout(2000L);
 
         // Act & Assert - Should not throw (exception is caught and logged)
         assertDoesNotThrow(() -> {
