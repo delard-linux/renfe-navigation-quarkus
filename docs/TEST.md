@@ -122,6 +122,22 @@ Run all end-to-end tests:
 ./mvnw verify -DskipTests=true -DskipITs=false
 ```
 
+**Important**: E2E tests require the application to be packaged first. If you get an error about missing artifact metadata, run `package` before the tests:
+
+```bash
+# Package the application first
+./mvnw package -DskipTests
+
+# Then run E2E tests
+./mvnw verify -DskipTests=true -DskipITs=false
+```
+
+Or combine both in a single command:
+
+```bash
+./mvnw package -DskipTests -DskipITs=false verify
+```
+
 ### Unit + Integration Tests (Skip E2E)
 
 Run unit and integration tests together (skipping E2E):
@@ -153,6 +169,48 @@ Run a specific integration test class:
 ```bash
 ./mvnw test -Dtest=PlaywrightSearchTrainsServiceIT
 ```
+
+### Run a Specific E2E Test (Packaged App)
+
+When you only want to execute a single `@QuarkusIntegrationTest` class and skip the rest of the lifecycle, call Failsafe directly. This prevents Surefire from launching unit and integration suites while still running the targeted E2E test:
+
+**Important**: E2E tests require the application to be packaged first. Make sure to run `package` before executing the test:
+
+```bash
+# Package the application first
+./mvnw package -DskipTests
+
+# Then run the specific E2E test
+./mvnw -DskipTests -DskipITs=false failsafe:integration-test failsafe:verify -Dit.test=StationsEndpointE2E
+```
+
+Or combine both in a single command:
+
+```bash
+./mvnw package -DskipTests -DskipITs=false failsafe:integration-test failsafe:verify -Dit.test=StationsEndpointE2E
+```
+
+**Examples:**
+- Run only `StationsEndpointE2E`:
+  ```bash
+  ./mvnw package -DskipTests -DskipITs=false failsafe:integration-test failsafe:verify -Dit.test=StationsEndpointE2E
+  ```
+
+- Run only `TrainsEndpointE2E`:
+  ```bash
+  ./mvnw package -DskipTests -DskipITs=false failsafe:integration-test failsafe:verify -Dit.test=TrainsEndpointE2E
+  ```
+
+- Run only `TicketsEndpointE2E`:
+  ```bash
+  ./mvnw package -DskipTests -DskipITs=false failsafe:integration-test failsafe:verify -Dit.test=TicketsEndpointE2E
+  ```
+
+- `-DskipTests` stops Surefire (`*Test.java` + `*IT.java`) from executing.
+- `-DskipITs=false` enables Failsafe so `*E2E.java` tests run.
+- `-Dit.test=StationsEndpointE2E` can be replaced with any class or pattern (e.g., `*Stations*E2E` or `StationsEndpointE2E,TicketsEndpointE2E`).
+
+Use this command whenever you need to focus on a single endpoint’s E2E coverage without paying the cost of every other suite.
 
 ### Run a Specific Test Method
 

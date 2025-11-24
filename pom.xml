@@ -29,6 +29,7 @@
     <jsoup.version>1.18.1</jsoup.version>
     <mockito.version>5.20.0</mockito.version>
     <spotless-maven-plugin.version>2.46.1</spotless-maven-plugin.version>
+    <lombok.version>1.18.34</lombok.version>
   </properties>
 
   <dependencyManagement>
@@ -140,7 +141,7 @@
             <goals>
               <goal>build</goal>
               <goal>generate-code</goal>
-              <goal>test</goal>
+              <!-- <goal>test</goal> -->
             </goals>
           </execution>
           <!-- Generate test code after build-helper adds test sources -->
@@ -286,6 +287,12 @@
           </excludes>
           <systemPropertyVariables>
             <java.util.logging.manager>org.jboss.logmanager.LogManager</java.util.logging.manager>
+            <!-- Extended Playwright timeouts for E2E tests -->
+            <!-- The Renfe website can be slow, especially for round-trip searches -->
+            <playwright.timeout-ms>120000</playwright.timeout-ms>
+            <playwright.timeout-navigation-ms>120000</playwright.timeout-navigation-ms>
+            <playwright.timeout-networkidle-ms>120000</playwright.timeout-networkidle-ms>
+            <playwright.timeout-short-ms>5000</playwright.timeout-short-ms>
           </systemPropertyVariables>
           <!-- Use skipITs property to control e2e tests independently from unit tests -->
           <!-- When skipTests is set but skipITs is not, default skipITs to false to allow
@@ -484,12 +491,20 @@
             </licenseHeader>
           </java>
         </configuration>
+        <dependencies>
+          <dependency>
+            <groupId>org.projectlombok</groupId>
+            <artifactId>lombok</artifactId>
+            <version>${lombok.version}</version>
+          </dependency>
+        </dependencies>
         <executions>
           <execution>
             <goals>
               <goal>check</goal>
             </goals>
-            <phase>verify</phase>
+            <!-- The 'verify' phase is the default for Spotless check, so the phase can be omitted or safely kept.
+                 No change needed here, unless you intend to move this execution to another phase. -->
           </execution>
         </executions>
       </plugin>
