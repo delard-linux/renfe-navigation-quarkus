@@ -287,12 +287,6 @@
           </excludes>
           <systemPropertyVariables>
             <java.util.logging.manager>org.jboss.logmanager.LogManager</java.util.logging.manager>
-            <!-- Extended Playwright timeouts for E2E tests -->
-            <!-- The Renfe website can be slow, especially for round-trip searches -->
-            <playwright.timeout-ms>120000</playwright.timeout-ms>
-            <playwright.timeout-navigation-ms>120000</playwright.timeout-navigation-ms>
-            <playwright.timeout-networkidle-ms>120000</playwright.timeout-networkidle-ms>
-            <playwright.timeout-short-ms>5000</playwright.timeout-short-ms>
           </systemPropertyVariables>
           <!-- Use skipITs property to control e2e tests independently from unit tests -->
           <!-- When skipTests is set but skipITs is not, default skipITs to false to allow
