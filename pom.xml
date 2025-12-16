@@ -497,7 +497,7 @@
             <goals>
               <goal>check</goal>
             </goals>
-            <!-- The 'verify' phase is the default for Spotless check, so the phase can be omitted or safely kept. -->
+            <phase>verify</phase>
           </execution>
         </executions>
       </plugin>
