@@ -36,13 +36,14 @@
 - Scaffolding de tool MCP para compra de billetes
 - Incluir la visualización de billetes con enlaces
 - Warnings de agente mockito en el arranque
+- spotless para formatear con maven
+- error spotless/lombok
+- failsafe e2e complete testing
 
 ## Current pending
 
-- spotless para formatear con maven
-
 ## Next
-
+- containers
 - Manejar la validationException que es una Runtime no declarada en los servicios.. puede saltar en un REST o en un MCP
 - renfe.responses-dir=target/responses
 - Support multiple passenger types (not only adults)

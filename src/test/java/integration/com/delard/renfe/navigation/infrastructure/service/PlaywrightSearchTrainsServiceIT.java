@@ -63,6 +63,48 @@ class PlaywrightSearchTrainsServiceIT {
     }
 
     @Test
+    void shouldSearchOursenseToMadridRoundTrip() {
+        // Mirrors the E2E scenario (OURENSE -> MADRID with return) to allow faster debugging
+        String dateOut = calculateOutboundDate();
+        String dateReturn = calculateReturnDate(dateOut);
+
+        try {
+            PlaywrightSearchTrainsService.SearchTrainsResult result =
+                playwrightSearchTrainsService.searchTrains(
+                    "OURENSE",
+                    "MADRID (TODAS)",
+                    "OURENSE",
+                    "MADRID (TODAS)",
+                    "0071,22100,22100", // OURENSE clave
+                    "0071,MADRI,null",  // MADRID (TODAS) clave
+                    dateOut,
+                    dateReturn,
+                    "2");
+
+            assertNotNull(result, "Search result should not be null");
+            assertNotNull(result.outboundTrains, "Outbound trains list should not be null");
+            assertFalse(result.outboundTrains.isEmpty(), "Outbound trains list should not be empty");
+
+            if (result.returnTrains != null) {
+                assertFalse(result.returnTrains.isEmpty(), "Return trains list should not be empty if present");
+            } else {
+                LOG.warn("Return trains not available for this search (tab not found or extraction error)");
+            }
+
+            LOG.infof("Unit-level OURENSE -> MADRID search: outbound=%d, return=%s",
+                result.outboundTrains.size(),
+                result.returnTrains == null ? "null" : result.returnTrains.size());
+
+        } catch (QueueException e) {
+            LOG.warnf("Queue detected (valid controlled response) in unit-level test: %s", e.getMessage());
+            assertNotNull(e.getMessage());
+        } catch (TrainUnavailabilityException e) {
+            LOG.warnf("Train unavailability detected in unit-level test: %s", e.getMessage());
+            assertNotNull(e.getDirection());
+        }
+    }
+
+    @Test
     void shouldRetrieveOutboundTrainsFromRenfe() {
         // Test Madrid to Barcelona one-way trip
         // This test accepts both successful results and QueueException as valid outcomes
