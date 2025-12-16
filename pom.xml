@@ -497,8 +497,7 @@
             <goals>
               <goal>check</goal>
             </goals>
-            <!-- The 'verify' phase is the default for Spotless check, so the phase can be omitted or safely kept.
-                 No change needed here, unless you intend to move this execution to another phase. -->
+            <!-- The 'verify' phase is the default for Spotless check, so the phase can be omitted or safely kept. -->
           </execution>
         </executions>
       </plugin>
